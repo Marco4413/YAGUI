@@ -1,0 +1,3 @@
+# Make only lua files detectable by linguist
+*.* linguist-detectable=false
+*.lua linguist-detectable=true
