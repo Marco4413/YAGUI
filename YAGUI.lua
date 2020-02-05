@@ -16,9 +16,29 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "0.1",
+    ver = "0.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI"
+}
+
+-- CONSTANTS TABLE
+-- THESE WILL BE TRANSFORMED IN GLOBAL VARIABLES WHEN LIBRARY IS RETURNED
+local const = {
+    TOUCH = "screen_touch",
+    LOW_PRIORITY = 1,
+    HIGH_PRIORITY = 2,
+    ONDRAW = 3,
+    ONPRESS = 4,
+    ONCLOCK = 5,
+    ONEVENT = 6
+}
+
+-- GENERIC UTILS TABLE
+local generic_utils = {
+    -- JUST RETURNS A TABLE WITH X AS X AND Y AS Y (for now)
+    vector2 = function (x, y)
+        return {x = x, y = y}
+    end
 }
 
 -- STRING UTILS TABLE
@@ -37,13 +57,18 @@ string_utils = {
     end,
     -- SPLITS STRING EVERY TIME SEPARATOR CHARSET IS FOUND
     split = function (str, sep)
-        if not sep then
-            sep = "%s"
-        end
         local tbl = {}
-        for current_string in str:gmatch("([^"..sep.."]+)") do
-            table.insert(tbl, current_string)
+        while true do
+            local pos = str:find(sep)
+            if pos then
+                table.insert(tbl, str:sub(1, pos - 1))
+                str = str:sub(pos + 1)
+            else
+                table.insert(tbl, str)
+                break
+            end
         end
+
         return tbl
     end,
     -- COMPARES V1 AND V2 AND IF V1 IS NEWER THAN V2 THEN IT RETURNS 1, IF THEY'RE THE SAME IT RETURNS 0 ELSE IT RETURNS -1
@@ -68,6 +93,43 @@ string_utils = {
             return -1
         end
         return 0
+    end
+}
+
+-- EVENT UTILS TABLE
+local event_utils = {
+    -- USED TO CHECK IF AN AREA OF THE SCREEN WAS PRESSED
+    isAreaPressed = function (press_x, press_y, x, y, width, height)
+        if press_x >= x and press_x < x + width then
+            if press_y >= y and press_y < y + height then
+                return true
+            end
+        end
+        return false
+    end,
+    -- USED TO FORMAT "RAW_EVENTS"
+    -- RAW_EVENTS = {os.pullEvent()}
+    formatEventTable = function (event_table)
+        local event = {}
+        event.name = event_table[1]
+        if event.name == "mouse_click" then
+            event.name = const.TOUCH
+            event.from = "terminal"
+            event.button = event_table[2]
+            event.x = event_table[3]
+            event.y = event_table[4]
+            return event
+        elseif event.name == "monitor_touch" then
+            event.name = const.TOUCH
+            event.from = event_table[2]
+            event.button = 1
+            event.x = event_table[3]
+            event.y = event_table[4]
+            return event
+        end
+        table.remove(event_table, 1)
+        event.parameters = event_table
+        return event
     end
 }
 
@@ -276,13 +338,295 @@ local screen_buffer = {
     end
 }
 
+-- GUI ELEMENTS
+local gui_elements = {}
+gui_elements = {
+    setCallback = function (gui_element, event, callback)
+        if event == const.ONDRAW then
+            gui_element.callbacks.onDraw = callback
+        elseif event == const.ONPRESS then
+            gui_element.callbacks.onPress = callback
+        elseif event == const.ONCLOCK then
+            gui_element.callbacks.onClock = callback
+        end
+    end,
+    Clock = {
+        new = function (interval)
+            local newClock = {
+                clock = os.clock(),
+                interval = interval,
+                callbacks = {
+                    onClock = function() end
+                }
+            }
+            setmetatable(newClock, gui_elements.Clock)
+            return newClock
+        end,
+        event = function (self, formatted_event)
+            if os.clock() >= self.clock + self.interval then
+                self.clock = os.clock()
+                self.callbacks.onClock(self, formatted_event)
+                return true
+            end
+            return false
+        end
+    },
+    Label = {
+        new = function (x, y, text, foreground, background)
+            local newLabel = {
+                draw_priority = const.LOW_PRIORITY,
+                focussed = false,
+                hidden = false,
+                text = text,
+                pos = generic_utils.vector2(x, y),
+                colors = {
+                    foreground = foreground,
+                    background = background
+                },
+                callbacks = {
+                    onDraw = function () end,
+                    onPress = function () end
+                }
+            }
+            setmetatable(newLabel, gui_elements.Label)
+            return newLabel
+        end,
+        draw = function (self)
+            self.callbacks.onDraw(self)
+            screen_buffer:write(self.pos.x, self.pos.y, self.text, self.colors.foreground, self.colors.background)
+        end,
+        event = function (self, formatted_event)
+            if formatted_event.name == const.TOUCH then
+                if event_utils.isAreaPressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, #self.text, 1) then
+                    self.callbacks.onPress(self, formatted_event)
+                end
+            end
+        end
+    },
+    Button = {
+        new = function (x, y, width, height, text, foreground, active_background, unactive_background)
+            local newButton = {
+                draw_priority = const.LOW_PRIORITY,
+                focussed = false,
+                hidden = false,
+                active = false,
+                text = text,
+                pos = generic_utils.vector2(x, y),
+                size = generic_utils.vector2(width, height),
+                colors = {
+                    foreground = foreground,
+                    active_background = active_background,
+                    unactive_background = unactive_background
+                },
+                callbacks = {
+                    onDraw = function () end,
+                    onPress = function () end
+                }
+            }
+            setmetatable(newButton, gui_elements.Button)
+            return newButton
+        end,
+        draw = function (self)
+            self.callbacks.onDraw(self)
+            if self.active then 
+                screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.active_background)
+            else
+                screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.unactive_background)
+            end
+
+            local text_lines = string_utils.split(self.text, "\n")
+            local text_y = math.floor((self.size.y - #text_lines) / 2) + self.pos.y
+
+            for rel_y=0, #text_lines - 1 do
+                local value = text_lines[rel_y + 1]
+                local line_x = math.floor((self.size.x - #value) / 2) + self.pos.x
+                screen_buffer:write(line_x, text_y + rel_y, value, self.colors.foreground)
+            end
+        end,
+        event = function (self, formatted_event)
+            if formatted_event.name == const.TOUCH then
+                if event_utils.isAreaPressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                    self:press()
+                    self.callbacks.onPress(self, formatted_event)
+                else
+                    self.focussed = false
+                end
+            end
+        end,
+        press = function (self)
+            self.active = not self.active
+        end
+    }
+}
+
+gui_elements.Clock.__index = gui_elements.Clock
+gui_elements.Label.__index = gui_elements.Label
+gui_elements.Button.__index = gui_elements.Button
+
 -- LOOP TABLE
-local loop = {}
+local Loop = {}
+Loop = {
+    -- CREATES A NEW LOOP
+    new = function (FPS_target, EPS_target)
+        local newLoop = {
+            options = {
+                enabled = false,
+                FPS_target = FPS_target,
+                EPS_target = EPS_target
+            },
+            monitors = {
+                terminal = term
+            },
+            elements = {
+                high_priority = {},
+                low_priority = {},
+                loop = {
+                    clock = gui_elements.Clock.new(1 / FPS_target)
+                }
+            },
+            callbacks = {
+                onDraw = function () end,
+                onClock = function () end,
+                onEvent = function () end
+            }
+        }
+        setmetatable(newLoop, Loop)
+        return newLoop
+    end,
+    -- SETS THE MONITORS WHERE EVENTS CAN BE TAKEN FROM
+    set_monitors = function (self, monitors_table)
+        self.monitors = {}
+        for key, value in pairs(monitors_table) do
+            if value == "terminal" then
+                self.monitors[value] = term
+            else
+                if peripheral.getType(value) == "monitor" then
+                    self.monitors[value] = peripheral.wrap(value)
+                end
+            end
+        end 
+    end,
+    -- SETS THE ELEMENTS THAT ARE GOING TO GET LOOP EVENTS
+    set_elements = function (self, elements_table)
+        self.elements.high_priority = {}
+        self.elements.low_priority = {}
+        for key, value in pairs(elements_table) do
+            if value.draw_priority == const.HIGH_PRIORITY then
+                table.insert(self.elements.high_priority, value)
+            else
+                table.insert(self.elements.low_priority, value)
+            end
+        end
+    end,
+    -- DRAWS ALL ELEMENTS ON SCREEN BUFFER AND DRAWS IT
+    draw_elements = function (self)
+        self.callbacks.onDraw(self)
+        local old_screen = screen_buffer.screen
+        for monitor_name, monitor in pairs(self.monitors) do
+            screen_buffer.screen = monitor
+            for key, element in pairs(self.elements.low_priority) do
+                if element.draw then
+                    element:draw()
+                end
+            end
+            for key, element in pairs(self.elements.high_priority) do
+                if element.draw then
+                    element:draw()
+                end
+            end
+            for key, element in pairs(self.elements.loop) do
+                if element.draw then
+                    element:draw()
+                end
+            end
+            screen_buffer:draw()
+        end
+        screen_buffer.screen = old_screen
+    end,
+    -- GIVES AN EVENT TO ALL LOOP ELEMENTS
+    event_elements = function (self, raw_event)
+        local formatted_event = event_utils.formatEventTable(raw_event)
+        self.callbacks.onEvent(self, formatted_event)
+        if formatted_event.name == const.TOUCH then
+            local is_monitor_whitelisted = false
+            for monitor_name, monitor in pairs(self.monitors) do
+                if formatted_event.from == monitor_name then
+                    is_monitor_whitelisted = true
+                    break
+                end
+            end
+            if not is_monitor_whitelisted then
+                return
+            end
+        end
+        local was_element_focussed = false
+        for key, element in pairs(self.elements.loop) do
+            if was_element_focussed then
+                element.focussed = false
+            else
+                element:event(formatted_event)
+                was_element_focussed = element.focussed
+            end
+        end
+        for key, element in pairs(self.elements.high_priority) do
+            if was_element_focussed then
+                element.focussed = false
+            else
+                element:event(formatted_event)
+                was_element_focussed = element.focussed
+            end
+        end
+        for key, element in pairs(self.elements.low_priority) do
+            if was_element_focussed then
+                element.focussed = false
+            else
+                element:event(formatted_event)
+                was_element_focussed = element.focussed
+            end
+        end
+    end,
+    -- STARTS THE LOOP
+    start = function (self)
+        self.enabled = true
+        gui_elements.setCallback(
+            self.elements.loop.clock,
+            const.ONCLOCK,
+            function (CLOCK, formatted_event)
+                self.callbacks.onClock(self, formatted_event)
+                self:draw_elements()
+            end
+        )
+        while self.enabled do
+            local timer = os.startTimer(1 / self.options.EPS_target)
+            local raw_event = {os.pullEvent()}
+
+            self:event_elements(raw_event)
+
+            os.cancelTimer(timer)
+        end
+    end,
+    -- STOPS THE LOOP
+    stop = function (self)
+        self.enabled = false
+    end
+}
+
+Loop.__index = Loop
 
 -- RETURNS LIB TO MAKE REQUIRE OR DOFILE WORK
-return {
+local lib = {
     info = info,
+    generic_utils = generic_utils,
     string_utils = string_utils,
+    event_utils = event_utils,
     screen_buffer = screen_buffer,
-    loop = loop
+    gui_elements = gui_elements,
+    Loop = Loop
 }
+
+-- MAKE CONSTANTS BE GLOBAL VARIABLES OF THE LIBRARY
+for key, value in pairs(const) do
+    lib[key] = value
+end
+
+return lib
