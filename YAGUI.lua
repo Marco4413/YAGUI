@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "0.2",
+    ver = "0.3",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI"
 }
@@ -35,9 +35,29 @@ local const = {
 
 -- GENERIC UTILS TABLE
 local generic_utils = {
-    -- JUST RETURNS A TABLE WITH X AS X AND Y AS Y (for now)
-    vector2 = function (x, y)
-        return {x = x, y = y}
+    -- SETS A CALLBACK TO THE SPECIFIED OBJECT
+    set_callback = function (gui_element, event, callback)
+        if event == const.ONDRAW then
+            gui_element.callbacks.onDraw = callback
+        elseif event == const.ONPRESS then
+            gui_element.callbacks.onPress = callback
+        elseif event == const.ONCLOCK then
+            gui_element.callbacks.onClock = callback
+        end
+    end,
+    -- RETURNS A TABLE WHICH CONTAINS ALL VALID MONITORS FROM monitor_names
+    get_monitors = function (monitor_names)
+        local monitors = {}
+        for key, peripheral_name in pairs(monitor_names) do
+            if peripheral_name == "terminal" then
+                monitors[peripheral_name] = term
+            else
+                if peripheral.getType(peripheral_name) == "monitor" then
+                    monitors[peripheral_name] = peripheral.wrap(peripheral_name)
+                end
+            end
+        end
+        return monitors
     end
 }
 
@@ -75,7 +95,7 @@ string_utils = {
     -- v1 = "0.2"; v2 = "0.1" -> returns 1
     -- v1 = "0.1"; v2 = "0.1" -> returns 0
     -- v1 = "0.1"; v2 = "0.2" -> returns -1
-    compareVersions = function(v1, v2)
+    compare_versions = function(v1, v2)
         local v1s = string_utils.split(v1, ".")
         local v2s = string_utils.split(v2, ".")
         local v1l = #v1s
@@ -96,10 +116,29 @@ string_utils = {
     end
 }
 
+-- MATH UTILS TABLE
+local math_utils = {}
+math_utils = {
+    -- JUST RETURNS A TABLE WITH X AS X AND Y AS Y (for now)
+    vector2 = function (x, y)
+        return {x = x, y = y}
+    end,
+    -- MAPS A NUMBER FROM A RANGE TO ANOTHER ONE
+    map = function (value, value_start, value_stop, return_start, return_stop, constrained)
+        local mapped_value = (value - value_start) / (value_stop - value_start) * (return_stop - return_start) + return_start
+        if constrained then return math_utils.constrain(mapped_value, return_start, return_stop); end
+        return mapped_value
+    end,
+    -- CONSTRAINS A NUMBER TO A RANGE
+    constrain = function (value, min_value, max_value)
+        return math.min(max_value, math.max(min_value, value))
+    end
+}
+
 -- EVENT UTILS TABLE
 local event_utils = {
     -- USED TO CHECK IF AN AREA OF THE SCREEN WAS PRESSED
-    isAreaPressed = function (press_x, press_y, x, y, width, height)
+    is_area_pressed = function (press_x, press_y, x, y, width, height)
         if press_x >= x and press_x < x + width then
             if press_y >= y and press_y < y + height then
                 return true
@@ -109,7 +148,7 @@ local event_utils = {
     end,
     -- USED TO FORMAT "RAW_EVENTS"
     -- RAW_EVENTS = {os.pullEvent()}
-    formatEventTable = function (event_table)
+    format_event_table = function (event_table)
         local event = {}
         event.name = event_table[1]
         if event.name == "mouse_click" then
@@ -135,16 +174,18 @@ local event_utils = {
 
 -- SCREEN BUFFER TABLE
 local screen_buffer = {
-    -- DEFAULT SCREEN IS TERMINAL
-    screen = term,
+    -- TABLE THAT CONTAINS ALL SCREENS THAT THE BUFFER SHOULD DRAW TO
+    screens = {
+        terminal = term
+    },
     -- BUFFER WILL BE CLEARED AFTER HAVING CALLED THE DRAW FUNCTION
     clear_after_draw = true,
     -- BUFFER STORES ALL PIXELS
     buffer = {
         pixels = {},
         background = colors.black,
-        -- CHECKS IF SPECIFIED PIXEL WAS CREATED WITH "setPixel" FUNCTION
-        isPixelCustom = function (self, x, y)
+        -- CHECKS IF SPECIFIED PIXEL WAS CREATED WITH "set_pixel" FUNCTION
+        is_pixel_custom = function (self, x, y)
             x = tostring(x)
             y = tostring(y)
             if self.pixels[x] then
@@ -156,10 +197,10 @@ local screen_buffer = {
         end,
         -- RETURNS PIXEL AT X, Y IF CUSTOM ELSE IT WILL RETURN THE DEFAULT PIXEL
         -- "DEFAULT PIXEL" IS THE BACKGROUND PIXEL
-        getPixel = function (self, x, y)
+        get_pixel = function (self, x, y)
             x = tostring(x)
             y = tostring(y)
-            if self:isPixelCustom(x, y) then return self.pixels[x][y]; end
+            if self:is_pixel_custom(x, y) then return self.pixels[x][y]; end
             return {
                 char = " ",
                 foreground = self.background,
@@ -167,11 +208,11 @@ local screen_buffer = {
             }
         end,
         -- SETS PROPERTIES FOR A PIXEL SO IT ISN'T A "DEFAULT PIXEL" ANYMORE
-        setPixel = function (self, x, y, char, foreground, background)
+        set_pixel = function (self, x, y, char, foreground, background)
             x = tostring(x)
             y = tostring(y)
 
-            local pixel = self:getPixel(x, y)
+            local pixel = self:get_pixel(x, y)
 
             if char and #char == 1 then pixel.char = char; end
             if foreground then pixel.foreground = foreground; end
@@ -185,45 +226,50 @@ local screen_buffer = {
             self.pixels = {}
         end
     },
+    set_screens = function (self, screen_names)
+        self.screens = generic_utils.get_monitors(screen_names)
+    end,
     -- CLEARS BUFFER'S PIXELS TABLE
     clear = function (self)
         self.buffer:clear()
     end,
     -- DRAWS SCREEN BUFFER
     draw = function (self)
-        local screen = self.screen
+        local screens = self.screens
         local buffer = self.buffer
         
-        local old_bg = screen.getBackgroundColor()
-        local old_fg = screen.getTextColor()
-        local old_x, old_y = screen.getCursorPos()
-        
-        local width, height = screen.getSize()
-        for x=1, width do
-            for y=1, height do
-                screen.setCursorPos(x, y)
-                local pixel = buffer:getPixel(x, y)
-                screen.setBackgroundColor(pixel.background)
-                screen.setTextColor(pixel.foreground)
-                screen.write(pixel.char)
+        for screen_name, screen in pairs(screens) do
+            local old_bg = screen.getBackgroundColor()
+            local old_fg = screen.getTextColor()
+            local old_x, old_y = screen.getCursorPos()
+            
+            local width, height = screen.getSize()
+            for x=1, width do
+                for y=1, height do
+                    screen.setCursorPos(x, y)
+                    local pixel = buffer:get_pixel(x, y)
+                    screen.setBackgroundColor(pixel.background)
+                    screen.setTextColor(pixel.foreground)
+                    screen.write(pixel.char)
+                end
             end
+            
+            screen.setBackgroundColor(old_bg)
+            screen.setTextColor(old_fg)
+            screen.setCursorPos(old_x, old_y)
         end
-        
-        screen.setBackgroundColor(old_bg)
-        screen.setTextColor(old_fg)
-        screen.setCursorPos(old_x, old_y)
 
         if self.clear_after_draw then self:clear(); end
     end,
     -- DRAWS A POINT ON THE SCREEN
     point = function (self, x, y, color)
-        self.buffer:setPixel(x, y, " ", color, color)
+        self.buffer:set_pixel(x, y, " ", color, color)
     end,
     -- WRITES A TEXT ON THE SCREEN
     write = function (self, x, y, text, foreground, background)
         for rel_x=0, #text - 1 do
             char = text:sub(rel_x + 1, rel_x + 1)
-            self.buffer:setPixel(x + rel_x, y, char, foreground, background)
+            self.buffer:set_pixel(x + rel_x, y, char, foreground, background)
         end
     end,
     -- DRAWS A RECTANGLE ON THE SCREEN
@@ -303,7 +349,7 @@ local screen_buffer = {
         end
     end,
     -- DRAWS A CIRCLE ON THE SCREEN
-    circle = function (xCenter, yCenter, radius, color) -- SOURCE: http://groups.csail.mit.edu/graphics/classes/6.837/F98/Lecture6/circle.html
+    circle = function (self, xCenter, yCenter, radius, color) -- SOURCE: http://groups.csail.mit.edu/graphics/classes/6.837/F98/Lecture6/circle.html
     
         local r2 = radius * radius
     
@@ -341,15 +387,6 @@ local screen_buffer = {
 -- GUI ELEMENTS
 local gui_elements = {}
 gui_elements = {
-    setCallback = function (gui_element, event, callback)
-        if event == const.ONDRAW then
-            gui_element.callbacks.onDraw = callback
-        elseif event == const.ONPRESS then
-            gui_element.callbacks.onPress = callback
-        elseif event == const.ONCLOCK then
-            gui_element.callbacks.onClock = callback
-        end
-    end,
     Clock = {
         new = function (interval)
             local newClock = {
@@ -378,7 +415,7 @@ gui_elements = {
                 focussed = false,
                 hidden = false,
                 text = text,
-                pos = generic_utils.vector2(x, y),
+                pos = math_utils.vector2(x, y),
                 colors = {
                     foreground = foreground,
                     background = background
@@ -397,7 +434,7 @@ gui_elements = {
         end,
         event = function (self, formatted_event)
             if formatted_event.name == const.TOUCH then
-                if event_utils.isAreaPressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, #self.text, 1) then
+                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, #self.text, 1) then
                     self.callbacks.onPress(self, formatted_event)
                 end
             end
@@ -411,8 +448,8 @@ gui_elements = {
                 hidden = false,
                 active = false,
                 text = text,
-                pos = generic_utils.vector2(x, y),
-                size = generic_utils.vector2(width, height),
+                pos = math_utils.vector2(x, y),
+                size = math_utils.vector2(width, height),
                 colors = {
                     foreground = foreground,
                     active_background = active_background,
@@ -445,7 +482,7 @@ gui_elements = {
         end,
         event = function (self, formatted_event)
             if formatted_event.name == const.TOUCH then
-                if event_utils.isAreaPressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self:press()
                     self.callbacks.onPress(self, formatted_event)
                 else
@@ -456,12 +493,70 @@ gui_elements = {
         press = function (self)
             self.active = not self.active
         end
+    },
+    Progressbar = {
+        new = function (x, y, width, height, current_value, min_value, max_value, foreground, filled_background, unfilled_background)
+            local newProgressbar = {
+                draw_priority = const.LOW_PRIORITY,
+                focussed = false,
+                hidden = false,
+                active = false,
+                pos = math_utils.vector2(x, y),
+                size = math_utils.vector2(width, height),
+                value = {
+                    max = max_value,
+                    min = min_value,
+                    current = current_value,
+                    draw_percentage = true
+                },
+                colors = {
+                    foreground = foreground,
+                    filled_background = filled_background,
+                    unfilled_background = unfilled_background
+                },
+                callbacks = {
+                    onDraw = function () end,
+                    onPress = function () end
+                }
+            }
+            setmetatable(newProgressbar, gui_elements.Progressbar)
+            return newProgressbar
+        end,
+        draw = function (self)
+            self.callbacks.onDraw(self)
+            local value_percentage = math_utils.map(self.value.current, self.value.min, self.value.max, 0, 1, true)
+            
+            local filled_progress_width = math.floor(self.size.x * value_percentage)
+            screen_buffer:rectangle(self.pos.x, self.pos.y, filled_progress_width, self.size.y, self.colors.filled_background)
+            screen_buffer:rectangle(self.pos.x + filled_progress_width, self.pos.y, self.size.x - filled_progress_width, self.size.y, self.colors.unfilled_background)
+
+            if self.value.draw_percentage then
+                local percentage_text = tostring(value_percentage * 100).."%"
+                local text_x = math.floor((self.size.x - #percentage_text) / 2) + self.pos.x
+                local text_y = math.floor((self.size.y - 1) / 2) + self.pos.y
+                screen_buffer:write(text_x, text_y, percentage_text, self.colors.foreground)
+            end
+        end,
+        event = function (self, formatted_event)
+            if formatted_event.name == const.TOUCH then
+                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                    self.callbacks.onPress(self, formatted_event)
+                else
+                    self.focussed = false
+                end
+            end
+        end,
+        set = function (self, value)
+            local ranged_value = math_utils.constrain(value, self.value.min, self.value.max)
+            self.value.current = ranged_value
+        end
     }
 }
 
 gui_elements.Clock.__index = gui_elements.Clock
 gui_elements.Label.__index = gui_elements.Label
 gui_elements.Button.__index = gui_elements.Button
+gui_elements.Progressbar.__index = gui_elements.Progressbar
 
 -- LOOP TABLE
 local Loop = {}
@@ -494,17 +589,8 @@ Loop = {
         return newLoop
     end,
     -- SETS THE MONITORS WHERE EVENTS CAN BE TAKEN FROM
-    set_monitors = function (self, monitors_table)
-        self.monitors = {}
-        for key, value in pairs(monitors_table) do
-            if value == "terminal" then
-                self.monitors[value] = term
-            else
-                if peripheral.getType(value) == "monitor" then
-                    self.monitors[value] = peripheral.wrap(value)
-                end
-            end
-        end 
+    set_monitors = function (self, monitor_names)
+        self.monitors = generic_utils.get_monitors(monitor_names)
     end,
     -- SETS THE ELEMENTS THAT ARE GOING TO GET LOOP EVENTS
     set_elements = function (self, elements_table)
@@ -521,31 +607,29 @@ Loop = {
     -- DRAWS ALL ELEMENTS ON SCREEN BUFFER AND DRAWS IT
     draw_elements = function (self)
         self.callbacks.onDraw(self)
-        local old_screen = screen_buffer.screen
-        for monitor_name, monitor in pairs(self.monitors) do
-            screen_buffer.screen = monitor
-            for key, element in pairs(self.elements.low_priority) do
-                if element.draw then
-                    element:draw()
-                end
+        local old_screens = screen_buffer.screens
+        screen_buffer.screens = self.monitors
+        for key, element in pairs(self.elements.low_priority) do
+            if element.draw then
+                element:draw()
             end
-            for key, element in pairs(self.elements.high_priority) do
-                if element.draw then
-                    element:draw()
-                end
-            end
-            for key, element in pairs(self.elements.loop) do
-                if element.draw then
-                    element:draw()
-                end
-            end
-            screen_buffer:draw()
         end
-        screen_buffer.screen = old_screen
+        for key, element in pairs(self.elements.high_priority) do
+            if element.draw then
+                element:draw()
+            end
+        end
+        for key, element in pairs(self.elements.loop) do
+            if element.draw then
+                element:draw()
+            end
+        end
+        screen_buffer:draw()
+        screen_buffer.screens = old_screens
     end,
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
     event_elements = function (self, raw_event)
-        local formatted_event = event_utils.formatEventTable(raw_event)
+        local formatted_event = event_utils.format_event_table(raw_event)
         self.callbacks.onEvent(self, formatted_event)
         if formatted_event.name == const.TOUCH then
             local is_monitor_whitelisted = false
@@ -588,7 +672,7 @@ Loop = {
     -- STARTS THE LOOP
     start = function (self)
         self.enabled = true
-        gui_elements.setCallback(
+        generic_utils.set_callback(
             self.elements.loop.clock,
             const.ONCLOCK,
             function (CLOCK, formatted_event)
@@ -618,6 +702,7 @@ local lib = {
     info = info,
     generic_utils = generic_utils,
     string_utils = string_utils,
+    math_utils = math_utils,
     event_utils = event_utils,
     screen_buffer = screen_buffer,
     gui_elements = gui_elements,
