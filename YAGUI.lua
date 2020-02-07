@@ -16,9 +16,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "0.3",
+    ver = "0.4",
     author = "hds536jhmk",
-    website = "https://github.com/hds536jhmk/YAGUI"
+    website = "https://github.com/hds536jhmk/YAGUI",
+    copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
 }
 
 -- CONSTANTS TABLE
@@ -44,20 +45,6 @@ local generic_utils = {
         elseif event == const.ONCLOCK then
             gui_element.callbacks.onClock = callback
         end
-    end,
-    -- RETURNS A TABLE WHICH CONTAINS ALL VALID MONITORS FROM monitor_names
-    get_monitors = function (monitor_names)
-        local monitors = {}
-        for key, peripheral_name in pairs(monitor_names) do
-            if peripheral_name == "terminal" then
-                monitors[peripheral_name] = term
-            else
-                if peripheral.getType(peripheral_name) == "monitor" then
-                    monitors[peripheral_name] = peripheral.wrap(peripheral_name)
-                end
-            end
-        end
-        return monitors
     end
 }
 
@@ -172,6 +159,58 @@ local event_utils = {
     end
 }
 
+-- SETTING UTILS TABLE
+local setting_utils = {
+    -- PATH WHERE SETTINGS WILL BE SAVED (shouldn't be changed)
+    _path = "/.settings",
+    -- SETS SETTING AND THEN SAVES ALL SETTINGS
+    set = function (self, name, value)
+        settings.set(name, value)
+        settings.save(self._path)
+    end,
+    -- UNSETS SETTING AND THEN SAVES ALL SETTINGS
+    unset = function (self, name)
+        settings.unset(name)
+        settings.save(self._path)
+    end,
+    -- GETS SETTING AND RETURNS IT
+    get = function (name)
+        return settings.get(name)
+    end
+}
+
+-- MONITOR UTILS TABLE
+local monitor_utils = {
+    -- RETURNS A TABLE WHICH CONTAINS ALL VALID MONITORS FROM monitor_names
+    get_monitors = function (monitor_names)
+        local monitors = {}
+        for key, peripheral_name in pairs(monitor_names) do
+            if peripheral_name == "terminal" then
+                monitors[peripheral_name] = term
+            else
+                if peripheral.getType(peripheral_name) == "monitor" then
+                    monitors[peripheral_name] = peripheral.wrap(peripheral_name)
+                end
+            end
+        end
+        return monitors
+    end,
+    -- PRINTS STRINGS ON SPECIFIED MONITOR WITH SPECIFIED FOREGROUND AND BACKGROUND
+    better_print = function (monitor, foreground, background, ...)
+        local strings = string_utils.join({...}, "")
+        local old_foreground = monitor.getTextColor()
+        local old_background = monitor.getBackgroundColor()
+
+        if foreground then monitor.setTextColor(foreground); end
+        if background then monitor.setBackgroundColor(background); end
+
+        print(strings)
+
+        monitor.setTextColor(old_foreground)
+        monitor.setBackgroundColor(old_background)
+    end
+}
+
 -- SCREEN BUFFER TABLE
 local screen_buffer = {
     -- TABLE THAT CONTAINS ALL SCREENS THAT THE BUFFER SHOULD DRAW TO
@@ -227,7 +266,7 @@ local screen_buffer = {
         end
     },
     set_screens = function (self, screen_names)
-        self.screens = generic_utils.get_monitors(screen_names)
+        self.screens = monitor_utils.get_monitors(screen_names)
     end,
     -- CLEARS BUFFER'S PIXELS TABLE
     clear = function (self)
@@ -590,7 +629,7 @@ Loop = {
     end,
     -- SETS THE MONITORS WHERE EVENTS CAN BE TAKEN FROM
     set_monitors = function (self, monitor_names)
-        self.monitors = generic_utils.get_monitors(monitor_names)
+        self.monitors = monitor_utils.get_monitors(monitor_names)
     end,
     -- SETS THE ELEMENTS THAT ARE GOING TO GET LOOP EVENTS
     set_elements = function (self, elements_table)
@@ -697,6 +736,51 @@ Loop = {
 
 Loop.__index = Loop
 
+-- TARGS
+local tArgs = {...}
+if tArgs[1] == "help" then
+    local lines = {
+        { text = "LIBFILE <COMMAND>"                                , foreground = colors.green , background = nil},
+        { text = " - help (shows this list of commands)"            , foreground = colors.blue  , background = nil},
+        { text = " - info (prints info about the lib)"              , foreground = colors.yellow, background = nil},
+        { text = " - ver (prints version of the lib)"               , foreground = colors.green , background = nil},
+        { text = " - copyright (prints copyright of the lib)"       , foreground = colors.blue  , background = nil},
+        { text = " - setup (adds YAGUI_PATH to computer's settings)", foreground = colors.yellow, background = nil}
+    }
+
+    for key, line in pairs(lines) do
+        monitor_utils.better_print(term, line.foreground, line.background, line.text)
+    end
+elseif tArgs[1] == "info" then
+    monitor_utils.better_print(term, colors.red, nil, "Library Version: ", info.ver)
+    monitor_utils.better_print(term, colors.yellow, nil, "Library Author: ", info.author)
+    monitor_utils.better_print(term, colors.green, nil, "Library Website: ", info.website)
+elseif tArgs[1] == "ver" then
+    monitor_utils.better_print(term, colors.red, nil, "Library Version: ", info.ver)
+elseif tArgs[1] == "copyright" then
+    local paragraph_colors = {
+        colors.red,
+        colors.yellow,
+        colors.green
+    }
+    local paragraphs = string_utils.split(info.copyright, "\n\n")
+
+    for key, paragraph in pairs(paragraphs) do
+        monitor_utils.better_print(term, paragraph_colors[key], nil, paragraph)
+        if key < #paragraphs then read(""); end
+    end
+elseif tArgs[1] == "setup" then
+    if shell then
+        local settings_entry = "YAGUI_PATH"
+        local path = "/"..shell.getRunningProgram()
+        setting_utils:set(settings_entry, path)
+
+        monitor_utils.better_print(term, colors.green, nil, "Lib path was set to ", setting_utils.get(settings_entry))
+    else
+        monitor_utils.better_print(term, colors.red, nil, "SHELL API ISN'T AVAILABLE")
+    end
+end
+
 -- RETURNS LIB TO MAKE REQUIRE OR DOFILE WORK
 local lib = {
     info = info,
@@ -704,6 +788,8 @@ local lib = {
     string_utils = string_utils,
     math_utils = math_utils,
     event_utils = event_utils,
+    setting_utils = setting_utils,
+    monitor_utils = monitor_utils,
     screen_buffer = screen_buffer,
     gui_elements = gui_elements,
     Loop = Loop

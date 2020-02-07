@@ -1,6 +1,8 @@
 
 -- LOAD LIBRARY
-local YAGUI = dofile("/YAGUI/YAGUI.lua")
+local YAGUI_PATH = settings.get("YAGUI_PATH")
+if not YAGUI_PATH then YAGUI_PATH = "/YAGUI/YAGUI.lua"; end
+local YAGUI = dofile(YAGUI_PATH)
 
 -- CREATE A BUTTON (THAT WILL DO NOTHING)
 local bDummy = YAGUI.gui_elements.Button.new(
