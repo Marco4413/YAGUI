@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "0.4",
+    ver = "0.5",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -26,6 +26,8 @@ local info = {
 -- THESE WILL BE TRANSFORMED IN GLOBAL VARIABLES WHEN LIBRARY IS RETURNED
 local const = {
     TOUCH = "screen_touch",
+    MOUSEUP = "mouse_up",
+    DELETED = "DELETED",
     LOW_PRIORITY = 1,
     HIGH_PRIORITY = 2,
     ONDRAW = 3,
@@ -429,6 +431,7 @@ gui_elements = {
     Clock = {
         new = function (interval)
             local newClock = {
+                enabled = true,
                 clock = os.clock(),
                 interval = interval,
                 callbacks = {
@@ -439,12 +442,14 @@ gui_elements = {
             return newClock
         end,
         event = function (self, formatted_event)
+            if not self.enabled then self:reset_timer(); return; end
             if os.clock() >= self.clock + self.interval then
-                self.clock = os.clock()
+                self:reset_timer()
                 self.callbacks.onClock(self, formatted_event)
-                return true
             end
-            return false
+        end,
+        reset_timer = function (self)
+            self.clock = os.clock()
         end
     },
     Label = {
@@ -489,6 +494,10 @@ gui_elements = {
                 text = text,
                 pos = math_utils.vector2(x, y),
                 size = math_utils.vector2(width, height),
+                timed = {
+                    enabled = false,
+                    clock = gui_elements.Clock.new(0.5)
+                },
                 colors = {
                     foreground = foreground,
                     active_background = active_background,
@@ -499,6 +508,16 @@ gui_elements = {
                     onPress = function () end
                 }
             }
+            newButton.timed.clock.binded_button = newButton
+            generic_utils.set_callback(
+                newButton.timed.clock,
+                const.ONCLOCK,
+                function (self, formatted_event)
+                    self.binded_button.active = false
+                    self.binded_button.callbacks.onPress(self.binded_button, formatted_event)
+                    self.enabled = false
+                end
+            )
             setmetatable(newButton, gui_elements.Button)
             return newButton
         end,
@@ -522,12 +541,21 @@ gui_elements = {
         event = function (self, formatted_event)
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
-                    self:press()
-                    self.callbacks.onPress(self, formatted_event)
-                else
-                    self.focussed = false
+                    if self.timed.enabled then
+                        self.timed.clock:reset_timer()
+                        self.timed.clock.enabled = true
+                        if not self.active then
+                            self.active = true
+                            self.callbacks.onPress(self, formatted_event)
+                        end
+                    else
+                        self:press()
+                        self.callbacks.onPress(self, formatted_event)
+                    end
+                    return true -- RETURNING TRUE DELETES THE EVENT
                 end
             end
+            if self.timed.enabled then self.timed.clock:event(formatted_event); end
         end,
         press = function (self)
             self.active = not self.active
@@ -580,8 +608,6 @@ gui_elements = {
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self.callbacks.onPress(self, formatted_event)
-                else
-                    self.focussed = false
                 end
             end
         end,
@@ -645,30 +671,35 @@ Loop = {
     end,
     -- DRAWS ALL ELEMENTS ON SCREEN BUFFER AND DRAWS IT
     draw_elements = function (self)
+        local function draw_table(tbl)
+            for key=#tbl, 1, -1 do
+                local element = tbl[key]
+                if element.draw then
+                    element:draw()
+                end
+            end
+        end
+
         self.callbacks.onDraw(self)
         local old_screens = screen_buffer.screens
         screen_buffer.screens = self.monitors
-        for key, element in pairs(self.elements.low_priority) do
-            if element.draw then
-                element:draw()
-            end
-        end
-        for key, element in pairs(self.elements.high_priority) do
-            if element.draw then
-                element:draw()
-            end
-        end
-        for key, element in pairs(self.elements.loop) do
-            if element.draw then
-                element:draw()
-            end
-        end
+
+        draw_table(self.elements.low_priority)
+        draw_table(self.elements.high_priority)
+        draw_table(self.elements.loop)
+
         screen_buffer:draw()
         screen_buffer.screens = old_screens
     end,
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
     event_elements = function (self, raw_event)
         local formatted_event = event_utils.format_event_table(raw_event)
+        local function event_table(tbl)
+            for key, element in pairs(tbl) do
+                if element:event(formatted_event) then formatted_event = {name = const.DELETED}; end
+            end
+        end
+        
         self.callbacks.onEvent(self, formatted_event)
         if formatted_event.name == const.TOUCH then
             local is_monitor_whitelisted = false
@@ -679,34 +710,13 @@ Loop = {
                 end
             end
             if not is_monitor_whitelisted then
-                return
+                formatted_event = {name = const.DELETED}
             end
         end
-        local was_element_focussed = false
-        for key, element in pairs(self.elements.loop) do
-            if was_element_focussed then
-                element.focussed = false
-            else
-                element:event(formatted_event)
-                was_element_focussed = element.focussed
-            end
-        end
-        for key, element in pairs(self.elements.high_priority) do
-            if was_element_focussed then
-                element.focussed = false
-            else
-                element:event(formatted_event)
-                was_element_focussed = element.focussed
-            end
-        end
-        for key, element in pairs(self.elements.low_priority) do
-            if was_element_focussed then
-                element.focussed = false
-            else
-                element:event(formatted_event)
-                was_element_focussed = element.focussed
-            end
-        end
+        
+        event_table(self.elements.loop)
+        event_table(self.elements.high_priority)
+        event_table(self.elements.low_priority)
     end,
     -- STARTS THE LOOP
     start = function (self)
@@ -779,6 +789,9 @@ elseif tArgs[1] == "setup" then
     else
         monitor_utils.better_print(term, colors.red, nil, "SHELL API ISN'T AVAILABLE")
     end
+elseif tArgs[1] then
+    monitor_utils.better_print(term, colors.red, nil, "UNKNOWN COMMAND: \"", tArgs[1], "\"")
+    monitor_utils.better_print(term, colors.green, nil, "Use \"help\" to get a list of available commands!")
 end
 
 -- RETURNS LIB TO MAKE REQUIRE OR DOFILE WORK

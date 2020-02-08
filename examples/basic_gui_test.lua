@@ -27,6 +27,8 @@ local bIncrease = YAGUI.gui_elements.Button.new(
     "Increase", colors.white,
     colors.green, colors.red
 )
+bIncrease.timed.enabled = true
+bIncrease.timed.clock.interval = 0.25
 
 -- CREATE A BUTTON (THAT WILL BE USED TO DECREASE THE PROGRESS ON THE PROGRESSBAR)
 local bDecrease = YAGUI.gui_elements.Button.new(
@@ -35,6 +37,8 @@ local bDecrease = YAGUI.gui_elements.Button.new(
     "Decrease", colors.white,
     colors.red, colors.green
 )
+bDecrease.timed.enabled = true
+bDecrease.timed.clock.interval = 0.25
 
 -- CREATE A PROGRESSBAR
 local pbProgress = YAGUI.gui_elements.Progressbar.new(
@@ -84,6 +88,7 @@ YAGUI.generic_utils.set_callback(
 
 -- SET LOOP ELEMENTS (adds objects to the loop)
 loop:set_elements({bDummy, bQuit, bIncrease, bDecrease, pbProgress})
+loop:set_monitors({"terminal", "left"})
 -- START THE LOOP
 loop:start()
 
