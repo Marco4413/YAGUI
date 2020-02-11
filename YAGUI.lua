@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "0.5",
+    ver = "1.0",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -28,6 +28,7 @@ local const = {
     TOUCH = "screen_touch",
     MOUSEUP = "mouse_up",
     DELETED = "DELETED",
+    DISCONNECTED = "DISCONNECTED",
     LOW_PRIORITY = 1,
     HIGH_PRIORITY = 2,
     ONDRAW = 3,
@@ -215,6 +216,8 @@ local monitor_utils = {
 
 -- SCREEN BUFFER TABLE
 local screen_buffer = {
+    -- CONTAINS THE LAST DRAWN FRAME
+    frame = {},
     -- TABLE THAT CONTAINS ALL SCREENS THAT THE BUFFER SHOULD DRAW TO
     screens = {
         terminal = term
@@ -300,6 +303,7 @@ local screen_buffer = {
             screen.setCursorPos(old_x, old_y)
         end
 
+        self.frame = self.buffer.pixels
         if self.clear_after_draw then self:clear(); end
     end,
     -- DRAWS A POINT ON THE SCREEN
@@ -424,6 +428,117 @@ local screen_buffer = {
         end
     end
 }
+
+-- SCREEN BUFFER TABLE
+-- NOTE THAT NO VARIABLE FROM THIS TABLE SHOULD BE CHANGED MANUALLY
+-- YOU CAN ONLY USE FUNCTIONS FROM THIS TABLE OR GET VARIABLES,
+-- DON'T CHANGE THEM IF YOU WANT IT TO WORK
+local WSS = {}
+WSS = {
+    -- SIDE WHERE THE MODEM IS
+    side = nil,
+    -- PROTOCOL WHERE THE HOST WILL BE CREATED OR SEARCHED IN
+    protocol = "YAGUI-"..info.ver.."_WSS",
+    -- PREFIX FOR HOST COMPUTERS
+    host_prefix = "_Host:",
+    -- DEFAULT TIMEOUT FOR client:listen()
+    default_timeout = 0.5,
+    -- OPENS REDNET ON SIDE
+    open = function (self, side)
+        rednet.open(side)
+        self.side = side
+    end,
+    -- CLOSES REDNET ON SIDE
+    close = function (self)
+        rednet.close(self.side)
+        self.side = nil
+    end,
+    -- FUNCTIONS TO MAKE AND MANAGE A WSS SERVER
+    server = {
+        -- LINK TO WSS TABLE
+        root = {},
+        -- NAME OF THE HOSTED SERVER
+        servername = nil,
+        -- HOSTNAME ON THE SERVER
+        hostname = nil,
+        -- HOSTS A WSS SERVER ON CURRENT COMPUTER AS hostname
+        host = function (self, hostname)
+            if not hostname then hostname = os.getComputerID(); end
+            hostname = tostring(hostname)
+            local servername = self.root.protocol..self.root.host_prefix..hostname
+            
+            if rednet.lookup(servername, hostname) then return false; end
+
+            rednet.host(servername, hostname)
+            self.servername = servername
+            self.hostname = hostname
+            return true
+        end,
+        -- UNHOSTS CURRENTLY RUNNING SERVER
+        unhost = function (self)
+            rednet.broadcast(
+                const.DISCONNECTED,
+                self.servername
+            )
+            rednet.unhost(self.servername, self.hostname)
+            self.servername = nil
+            self.hostname = nil
+        end,
+        -- BROADCASTS SCREEN_BUFFER TO ALL CONNECTED COMPUTERS
+        broadcast = function (self)
+            rednet.broadcast(
+                {
+                    background = screen_buffer.buffer.background,
+                    frame = screen_buffer.frame
+                },
+                self.servername
+            )
+        end
+    },
+    -- FUNCTIONS TO CONNECT AND RECEIVE FROM A WSS SERVER
+    client = {
+        -- LINK TO WSS TABLE
+        root = {},
+        -- NAME OF THE SERVER WHERE THIS COMPUTER IS CONNECTED
+        servername = nil,
+        -- ID OF SERVER HOST
+        host_id = nil,
+        -- CONNECTS TO SERVER HOSTED BY hostname
+        connect = function (self, hostname)
+            local servername = self.root.protocol..self.root.host_prefix..hostname
+            hostname = tostring(hostname)
+
+            local ID = rednet.lookup(servername, hostname)
+            if not ID then return false; end
+
+            self.servername = servername
+            self.host_id = ID
+
+            return true
+        end,
+        -- DISCONNECTS FROM SERVER
+        disconnect = function (self)
+            self.servername = nil
+            self.host_id = nil
+        end,
+        -- LISTENS FOR MESSAGES FROM THE SERVER
+        listen = function (self, timeout)
+            if not timeout then timeout = self.root.default_timeout; end
+            local message = {rednet.receive(self.servername, timeout)}
+            if message[1] == self.host_id then
+                local buffer = message[2]
+                if not buffer then return false; end
+                if buffer == const.DISCONNECTED then return buffer; end
+                screen_buffer.buffer.background = buffer.background
+                screen_buffer.buffer.pixels = buffer.frame
+                return true
+            end
+            return false
+        end
+    }
+}
+WSS.server.root = WSS
+WSS.client.root = WSS
 
 -- GUI ELEMENTS
 local gui_elements = {}
@@ -804,6 +919,8 @@ local lib = {
     setting_utils = setting_utils,
     monitor_utils = monitor_utils,
     screen_buffer = screen_buffer,
+    WSS = WSS,
+    wireless_screen_share = WSS,
     gui_elements = gui_elements,
     Loop = Loop
 }

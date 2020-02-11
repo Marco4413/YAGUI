@@ -4,6 +4,29 @@ local YAGUI_PATH = settings.get("YAGUI_PATH")
 if not YAGUI_PATH then YAGUI_PATH = "/YAGUI/YAGUI.lua"; end
 local YAGUI = dofile(YAGUI_PATH)
 
+-- This is used to make WSS Server (Wireless Screen Share Server) broadcast
+-- On YAGUI.WSS:open() there's an argument that's the computer's side
+--   where the modem is located.
+-- On the computer where you want to receive the information
+--   you can download YAGUI_WSS_listener.lua from https://github.com/hds536jhmk/YAGUI/tree/master/examples
+--   then you launch it with <modem_side> <Computer ID> terminal arguments,
+--   Computer ID is the ID of the computer where this example is ran from.
+-- If You want to try it you should remove all comment blocks that
+--   start with "--[[WSS" (you can find them near the next line and the last one)
+local cWSS = YAGUI.gui_elements.Clock.new(3)
+--[[WSS
+YAGUI.WSS:open("left")
+YAGUI.WSS.server:host()
+
+YAGUI.generic_utils.set_callback(
+    cWSS,
+    YAGUI.ONCLOCK,
+    function (self)
+        YAGUI.WSS.server:broadcast()
+    end
+)
+--]]
+
 -- CREATE A BUTTON (THAT WILL DO NOTHING)
 local bDummy = YAGUI.gui_elements.Button.new(
     2, 2,
@@ -87,7 +110,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- SET LOOP ELEMENTS (adds objects to the loop)
-loop:set_elements({bDummy, bQuit, bIncrease, bDecrease, pbProgress})
+loop:set_elements({cWSS, bDummy, bQuit, bIncrease, bDecrease, pbProgress})
 loop:set_monitors({"terminal", "left"})
 -- START THE LOOP
 loop:start()
@@ -100,3 +123,8 @@ YAGUI.screen_buffer:draw()
 
 -- SET TERMINAL CURSOR TO ORIGIN
 term.setCursorPos(1, 1)
+
+--[[WSS
+YAGUI.WSS.server:unhost()
+YAGUI.WSS:close()
+--]]
