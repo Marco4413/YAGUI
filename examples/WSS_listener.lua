@@ -7,8 +7,8 @@ local YAGUI = dofile(YAGUI_PATH)
 -- Get tArgs
 local tArgs = {...}
 
-local modem_side = tArgs[1]
-local hostname = tArgs[2]
+local modem_side = tostring(tArgs[1])
+local hostname = tostring(tArgs[2])
 
 -- Check if modem_side is a valid modem peripheral
 if peripheral.getType(modem_side) ~= "modem" then
