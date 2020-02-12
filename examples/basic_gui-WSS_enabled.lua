@@ -11,10 +11,7 @@ local YAGUI = dofile(YAGUI_PATH)
 --   you can download YAGUI_WSS_listener.lua from https://github.com/hds536jhmk/YAGUI/tree/master/examples
 --   then you launch it with <modem_side> <Computer ID> terminal arguments,
 --   Computer ID is the ID of the computer where this example is ran from.
--- If You want to try it you should remove all comment blocks that
---   start with "--[[WSS" (you can find them near the next line and the last one)
 local cWSS = YAGUI.gui_elements.Clock.new(3)
---[[WSS
 YAGUI.WSS:open("left")
 YAGUI.WSS.server:host()
 
@@ -25,7 +22,6 @@ YAGUI.generic_utils.set_callback(
         YAGUI.WSS.server:broadcast()
     end
 )
---]]
 
 -- CREATE A BUTTON (THAT WILL DO NOTHING)
 local bDummy = YAGUI.gui_elements.Button.new(
@@ -124,7 +120,6 @@ YAGUI.screen_buffer:draw()
 -- SET TERMINAL CURSOR TO ORIGIN
 term.setCursorPos(1, 1)
 
---[[WSS
+-- CLOSES WSS SERVER
 YAGUI.WSS.server:unhost()
 YAGUI.WSS:close()
---]]

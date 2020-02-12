@@ -10,9 +10,19 @@ local tArgs = {...}
 local modem_side = tArgs[1]
 local hostname = tArgs[2]
 
+-- Check if modem_side is a valid modem peripheral
+if peripheral.getType(modem_side) ~= "modem" then
+    YAGUI.monitor_utils.better_print(term, colors.red, nil, "Modem: ", modem_side, " wasn't found.")
+    return
+end
 -- Connect and open rednet
 YAGUI.WSS:open(modem_side)
-YAGUI.WSS.client:connect(hostname)
+-- If computer didn't find hostname then return
+if not YAGUI.WSS.client:connect(hostname) then
+    YAGUI.monitor_utils.better_print(term, colors.red, nil, "Hostname: ", hostname, " wasn't found.")
+    YAGUI.WSS:close()
+    return
+end
 
 -- Make a local variable called response
 local response

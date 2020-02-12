@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "1.0",
+    ver = "1.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -505,8 +505,8 @@ WSS = {
         host_id = nil,
         -- CONNECTS TO SERVER HOSTED BY hostname
         connect = function (self, hostname)
-            local servername = self.root.protocol..self.root.host_prefix..hostname
             hostname = tostring(hostname)
+            local servername = self.root.protocol..self.root.host_prefix..hostname
 
             local ID = rednet.lookup(servername, hostname)
             if not ID then return false; end
@@ -547,6 +547,7 @@ gui_elements = {
         new = function (interval)
             local newClock = {
                 enabled = true,
+                oneshot = false,
                 clock = os.clock(),
                 interval = interval,
                 callbacks = {
@@ -561,7 +562,15 @@ gui_elements = {
             if os.clock() >= self.clock + self.interval then
                 self:reset_timer()
                 self.callbacks.onClock(self, formatted_event)
+                if self.oneshot then self:stop() end
             end
+        end,
+        start = function (self)
+            self:reset_timer()
+            self.enabled = true
+        end,
+        stop = function (self)
+            self.enabled = false
         end,
         reset_timer = function (self)
             self.clock = os.clock()
@@ -624,13 +633,13 @@ gui_elements = {
                 }
             }
             newButton.timed.clock.binded_button = newButton
+            newButton.timed.clock.oneshot = true
             generic_utils.set_callback(
                 newButton.timed.clock,
                 const.ONCLOCK,
                 function (self, formatted_event)
                     self.binded_button.active = false
                     self.binded_button.callbacks.onPress(self.binded_button, formatted_event)
-                    self.enabled = false
                 end
             )
             setmetatable(newButton, gui_elements.Button)
@@ -657,8 +666,7 @@ gui_elements = {
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     if self.timed.enabled then
-                        self.timed.clock:reset_timer()
-                        self.timed.clock.enabled = true
+                        self.timed.clock:start()
                         if not self.active then
                             self.active = true
                             self.callbacks.onPress(self, formatted_event)
