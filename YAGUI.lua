@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "1.1",
+    ver = "1.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -27,6 +27,9 @@ local info = {
 local const = {
     TOUCH = "screen_touch",
     MOUSEUP = "mouse_up",
+    MOUSEDRAG = "mouse_drag",
+    CHAR = "char",
+    KEY = "key",
     DELETED = "DELETED",
     DISCONNECTED = "DISCONNECTED",
     LOW_PRIORITY = 1,
@@ -34,7 +37,19 @@ local const = {
     ONDRAW = 3,
     ONPRESS = 4,
     ONCLOCK = 5,
-    ONEVENT = 6
+    ONEVENT = 6,
+    ONFOCUS = 7,
+    KEY_UP_ARROW = 200,
+    KEY_DOWN_ARROW = 208,
+    KEY_RIGHT_ARROW = 205,
+    KEY_LEFT_ARROW = 203,
+    KEY_ENTER = 28,
+    KEY_BACKSPACE = 14,
+    KEY_DELETE = 211,
+    KEY_TAB = 15,
+    MOUSE_LEFT = 1,
+    MOUSE_RIGHT = 2,
+    MOUSE_MIDDLE = 3
 }
 
 -- GENERIC UTILS TABLE
@@ -47,6 +62,10 @@ local generic_utils = {
             gui_element.callbacks.onPress = callback
         elseif event == const.ONCLOCK then
             gui_element.callbacks.onClock = callback
+        elseif event == const.ONEVENT then
+            gui_element.callbacks.onEvent = callback
+        elseif event == const.ONFOCUS then
+            gui_element.callbacks.onFocus = callback
         end
     end
 }
@@ -155,6 +174,20 @@ local event_utils = {
             event.x = event_table[3]
             event.y = event_table[4]
             return event
+        elseif event.name == "char" then
+            event.name = const.CHAR
+            event.char = event_table[2]
+            return event
+        elseif event.name == "key" then
+            event.name = const.KEY
+            event.key = event_table[2]
+            return event
+        elseif event.name == "mouse_drag" then
+            event.name = const.MOUSEDRAG
+            event.button = event_table[2]
+            event.x = event_table[3]
+            event.y = event_table[4]
+            return event
         end
         table.remove(event_table, 1)
         event.parameters = event_table
@@ -217,7 +250,10 @@ local monitor_utils = {
 -- SCREEN BUFFER TABLE
 local screen_buffer = {
     -- CONTAINS THE LAST DRAWN FRAME
-    frame = {},
+    frame = {
+        pixels = {},
+        background = nil
+    },
     -- TABLE THAT CONTAINS ALL SCREENS THAT THE BUFFER SHOULD DRAW TO
     screens = {
         terminal = term
@@ -303,7 +339,8 @@ local screen_buffer = {
             screen.setCursorPos(old_x, old_y)
         end
 
-        self.frame = self.buffer.pixels
+        self.frame.pixels = self.buffer.pixels
+        self.frame.background = self.buffer.background
         if self.clear_after_draw then self:clear(); end
     end,
     -- DRAWS A POINT ON THE SCREEN
@@ -487,10 +524,7 @@ WSS = {
         -- BROADCASTS SCREEN_BUFFER TO ALL CONNECTED COMPUTERS
         broadcast = function (self)
             rednet.broadcast(
-                {
-                    background = screen_buffer.buffer.background,
-                    frame = screen_buffer.frame
-                },
+                screen_buffer.frame,
                 self.servername
             )
         end
@@ -530,7 +564,7 @@ WSS = {
                 if not buffer then return false; end
                 if buffer == const.DISCONNECTED then return buffer; end
                 screen_buffer.buffer.background = buffer.background
-                screen_buffer.buffer.pixels = buffer.frame
+                screen_buffer.buffer.pixels = buffer.pixels
                 return true
             end
             return false
@@ -544,6 +578,7 @@ WSS.client.root = WSS
 local gui_elements = {}
 gui_elements = {
     Clock = {
+        -- RETURNS NEW CLOCK
         new = function (interval)
             local newClock = {
                 enabled = true,
@@ -557,6 +592,7 @@ gui_elements = {
             setmetatable(newClock, gui_elements.Clock)
             return newClock
         end,
+        -- GIVES EVENT TO CLOCK
         event = function (self, formatted_event)
             if not self.enabled then self:reset_timer(); return; end
             if os.clock() >= self.clock + self.interval then
@@ -565,18 +601,22 @@ gui_elements = {
                 if self.oneshot then self:stop() end
             end
         end,
+        -- STARTS CLOCK
         start = function (self)
             self:reset_timer()
             self.enabled = true
         end,
+        -- STOPS CLOCK
         stop = function (self)
             self.enabled = false
         end,
+        -- RESETS CLOCK TIME
         reset_timer = function (self)
             self.clock = os.clock()
         end
     },
     Label = {
+        -- RETURNS NEW LABEL
         new = function (x, y, text, foreground, background)
             local newLabel = {
                 draw_priority = const.LOW_PRIORITY,
@@ -596,10 +636,13 @@ gui_elements = {
             setmetatable(newLabel, gui_elements.Label)
             return newLabel
         end,
+        -- DRAWS LABEL
         draw = function (self)
+            if self.hidden then return; end
             self.callbacks.onDraw(self)
             screen_buffer:write(self.pos.x, self.pos.y, self.text, self.colors.foreground, self.colors.background)
         end,
+        -- GIVES EVENT TO LABEL
         event = function (self, formatted_event)
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, #self.text, 1) then
@@ -609,6 +652,7 @@ gui_elements = {
         end
     },
     Button = {
+        -- RETURNS NEW BUTTON
         new = function (x, y, width, height, text, foreground, active_background, unactive_background)
             local newButton = {
                 draw_priority = const.LOW_PRIORITY,
@@ -645,7 +689,9 @@ gui_elements = {
             setmetatable(newButton, gui_elements.Button)
             return newButton
         end,
+        -- DRAWS BUTTON
         draw = function (self)
+            if self.hidden then return; end
             self.callbacks.onDraw(self)
             if self.active then 
                 screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.active_background)
@@ -662,6 +708,7 @@ gui_elements = {
                 screen_buffer:write(line_x, text_y + rel_y, value, self.colors.foreground)
             end
         end,
+        -- GIVES EVENT TO BUTTON
         event = function (self, formatted_event)
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
@@ -673,7 +720,6 @@ gui_elements = {
                         end
                     else
                         self:press()
-                        self.callbacks.onPress(self, formatted_event)
                     end
                     return true -- RETURNING TRUE DELETES THE EVENT
                 end
@@ -682,9 +728,11 @@ gui_elements = {
         end,
         press = function (self)
             self.active = not self.active
+            self.callbacks.onPress(self, formatted_event)
         end
     },
     Progressbar = {
+        -- RETURNS NEW PROGRESSBAR
         new = function (x, y, width, height, current_value, min_value, max_value, foreground, filled_background, unfilled_background)
             local newProgressbar = {
                 draw_priority = const.LOW_PRIORITY,
@@ -712,7 +760,9 @@ gui_elements = {
             setmetatable(newProgressbar, gui_elements.Progressbar)
             return newProgressbar
         end,
+        -- DRAWS PROGRESSBAR
         draw = function (self)
+            if self.hidden then return; end
             self.callbacks.onDraw(self)
             local value_percentage = math_utils.map(self.value.current, self.value.min, self.value.max, 0, 1, true)
             
@@ -727,6 +777,7 @@ gui_elements = {
                 screen_buffer:write(text_x, text_y, percentage_text, self.colors.foreground)
             end
         end,
+        -- GIVES EVENT TO PROGRESSBAR
         event = function (self, formatted_event)
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
@@ -734,10 +785,363 @@ gui_elements = {
                 end
             end
         end,
+        -- SETS PROGRESSBAR'S VALUE
         set = function (self, value)
             local ranged_value = math_utils.constrain(value, self.value.min, self.value.max)
             self.value.current = ranged_value
         end
+    },
+    Memo = {
+        -- RETURNS NEW MEMO
+        new = function (x, y, width, height, foreground, background)
+            local newMemo = {
+                draw_priority = const.LOW_PRIORITY,
+                focussed = false,
+                hidden = false,
+                pos = math_utils.vector2(x, y),
+                size = math_utils.vector2(width, height),
+                lines = {},
+                first_visible_line = 1,
+                first_visible_char = 1,
+                cursor = {
+                    visible = false,
+                    text = " ",
+                    blink = gui_elements.Clock.new(0.5),
+                    pos = math_utils.vector2(1, 1)
+                },
+                colors = {
+                    foreground = foreground,
+                    background = background,
+                    cursor = colors.white
+                },
+                callbacks = {
+                    onDraw = function () end,
+                    onFocus = function () end
+                }
+            }
+            newMemo.cursor.blink.binded_cursor = newMemo.cursor
+            generic_utils.set_callback(
+                newMemo.cursor.blink,
+                const.ONCLOCK,
+                function (self, formatted_event)
+                    self.binded_cursor.visible = not self.binded_cursor.visible
+                end
+            )
+            setmetatable(newMemo, gui_elements.Memo)
+            return newMemo
+        end,
+        -- DRAWS MEMO
+        draw = function (self)
+            if self.hidden then return; end
+            screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background)
+
+            local rel_cursor_x = self.cursor.pos.x - self.first_visible_char
+            local rel_cursor_y = self.cursor.pos.y - self.first_visible_line
+
+            if rel_cursor_x >= self.size.x then
+                self.first_visible_char = self.first_visible_char + rel_cursor_x - self.size.x + 1
+                rel_cursor_x = self.cursor.pos.x - self.first_visible_char - 1
+            elseif rel_cursor_x < 1 then
+                self.first_visible_char = self.first_visible_char + rel_cursor_x
+                rel_cursor_x = 0
+            end
+
+            if rel_cursor_y >= self.size.y then
+                self.first_visible_line = self.first_visible_line + rel_cursor_y - self.size.y + 1
+                rel_cursor_y = self.cursor.pos.y - self.first_visible_line - 1
+            elseif rel_cursor_y < 1 then
+                self.first_visible_line = self.first_visible_line + rel_cursor_y
+                rel_cursor_y = 0
+            end
+
+            for y=1, self.size.y do
+                local line = self.lines[y + self.first_visible_line - 1] or ""
+                local visible_line = line:sub(self.first_visible_char, self.first_visible_char + self.size.x - 1)
+                screen_buffer:write(self.pos.x, self.pos.y + y - 1, visible_line, self.colors.foreground)
+            end
+
+            if self.cursor.visible then
+                screen_buffer:point(
+                    rel_cursor_x + self.pos.x,
+                    rel_cursor_y + self.pos.y,
+                    self.colors.cursor
+                )
+            end
+        end,
+        -- GIVES EVENT TO MEMO
+        event = function (self, formatted_event)
+            if formatted_event.name == const.TOUCH then
+                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                    self.focussed = true
+                    self.callbacks.onFocus(self, formatted_event)
+                    return true -- RETURNING TRUE DELETES THE EVENT
+                else
+                    self.focussed = false
+                    self.cursor.visible = false
+                    self.callbacks.onFocus(self, formatted_event)
+                    return false
+                end
+            elseif formatted_event.name == const.DELETED then
+                self.focussed = false
+                self.cursor.visible = false
+                self.callbacks.onFocus(self, formatted_event)
+                return false
+            end
+            if self.focussed then
+                self.cursor.blink:event(self.cursor.blink, formatted_event)
+                if formatted_event.name == const.CHAR then
+                    self:write(formatted_event.char)
+                    return true
+                elseif formatted_event.name == const.KEY then
+                    if formatted_event.key == const.KEY_UP_ARROW then
+                        self:set_cursor(self.cursor.pos.x, self.cursor.pos.y - 1)
+
+
+                    elseif formatted_event.key == const.KEY_DOWN_ARROW then
+                        self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + 1)
+
+
+                    elseif formatted_event.key == const.KEY_RIGHT_ARROW then
+                        local line = self.lines[self.cursor.pos.y]
+                        if self.lines[self.cursor.pos.y + 1] and self.cursor.pos.x >= #line + 1 then
+                            self:set_cursor(1, self.cursor.pos.y + 1)
+                        else
+                            self:set_cursor(self.cursor.pos.x + 1, self.cursor.pos.y)
+                        end
+
+
+                    elseif formatted_event.key == const.KEY_LEFT_ARROW then
+                        if self.cursor.pos.x <= 1 and self.cursor.pos.y > 1 then
+                            local previous_line = self.lines[self.cursor.pos.y - 1]
+                            self:set_cursor(#previous_line + 1, self.cursor.pos.y - 1)
+                        else
+                            self:set_cursor(self.cursor.pos.x - 1, self.cursor.pos.y)
+                        end
+
+
+                    elseif formatted_event.key == const.KEY_BACKSPACE then
+                        local line = self.lines[self.cursor.pos.y]
+                        if self.cursor.pos.x <= 1 and self.cursor.pos.y > 1 then
+                            table.remove(self.lines, self.cursor.pos.y)
+
+                            local cursor_x = #self.lines[self.cursor.pos.y - 1] + 1
+                            local cursor_y = self.cursor.pos.y - 1
+
+                            self:set_cursor(cursor_x, cursor_y)
+                            self:write(line)
+                            self:set_cursor(cursor_x, cursor_y)
+                        else
+                            self.lines[self.cursor.pos.y] = line:sub(1, self.cursor.pos.x - 2)..line:sub(self.cursor.pos.x)
+                            self:set_cursor(self.cursor.pos.x - 1, self.cursor.pos.y)
+                        end
+
+
+                    elseif formatted_event.key == const.KEY_DELETE then
+                        local line = self.lines[self.cursor.pos.y]
+                        local line_end = line:sub(self.cursor.pos.x)
+
+                        if #line_end > 0 then
+                            self.lines[self.cursor.pos.y] = line:sub(1, self.cursor.pos.x - 1)..line:sub(self.cursor.pos.x + 1)
+                        else
+                            local next_line = self.lines[self.cursor.pos.y + 1]
+                            if next_line then
+                                local cursor_x = self.cursor.pos.x
+                                local cursor_y = self.cursor.pos.y
+                                table.remove(self.lines, self.cursor.pos.y + 1)
+                                self:write(next_line)
+                                self:set_cursor(cursor_x, cursor_y)
+                            end
+                        end
+                        
+
+                    elseif formatted_event.key == const.KEY_ENTER then
+                        self:write("\n")
+
+
+                    elseif formatted_event.key == const.KEY_TAB then
+                        self:write("  ")
+
+
+                    end
+                    return true
+                end
+            end
+        end,
+        -- SETS THE CURSOR TO A POSITION
+        --  (if create_lines is true, it will create all the lines that
+        --   are missing between cursor_y and the last line)
+        set_cursor = function (self, cursor_x, cursor_y, create_lines)
+            if create_lines then
+                for y=#self.lines + 1, cursor_y do
+                    if not self.lines[y] then
+                        self.lines[y] = ""
+                    end
+                end
+            else
+                cursor_y = math_utils.constrain(cursor_y, 1, #self.lines)
+            end
+
+            cursor_x = math_utils.constrain(cursor_x, 1, #self.lines[cursor_y] + 1)
+            self.cursor.pos = math_utils.vector2(cursor_x, cursor_y)
+        end,
+        -- WRITES TEXT WHERE THE CURSOR IS
+        write = function (self, ...)
+            local text = string_utils.join({...}, "")
+            local lines = string_utils.split(text, "\n")
+            self:set_cursor(self.cursor.pos.x, self.cursor.pos.y, true)
+
+            if #lines > 1 then
+                for line_key, line in pairs(lines) do
+                    if line_key <= 1 then
+                        local cursor_line = self.lines[self.cursor.pos.y]
+                        local line_start = cursor_line:sub(1, self.cursor.pos.x - 1)
+                        local line_end = cursor_line:sub(self.cursor.pos.x)
+
+                        local last_line = lines[#lines]
+
+
+                        self.lines[self.cursor.pos.y] = line_start..line
+                        self:set_cursor(1, self.cursor.pos.y + 1, true)
+                        table.insert(self.lines, self.cursor.pos.y, last_line..line_end)
+                        self:set_cursor(#last_line + 1, self.cursor.pos.y)
+                    elseif line_key >= #lines then
+                        break
+                    else
+                        table.insert(self.lines, self.cursor.pos.y, line)
+                        self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + 1)
+                    end
+                end
+            else
+                -- Get the line at cursor
+                local cursor_line = self.lines[self.cursor.pos.y]
+                -- Get the part of the line that's behind the cursor
+                local line_start = cursor_line:sub(1, self.cursor.pos.x - 1)
+                -- Get the part of the line that's in front of the cursor
+                local line_end = cursor_line:sub(self.cursor.pos.x)
+
+
+                self.lines[self.cursor.pos.y] = line_start..text..line_end
+                self:set_cursor(self.cursor.pos.x + #text, self.cursor.pos.y)
+            end
+        end
+    },
+    Window = {
+        -- RETURNS NEW WINDOW
+        new = function (x, y, width, height, background, shadow)
+            local newWindow = {
+                draw_priority = const.HIGH_PRIORITY,
+                focussed = false,
+                hidden = false,
+                pos = math_utils.vector2(x, y),
+                size = math_utils.vector2(width, height),
+                drag_options = {
+                    enabled = true,
+                    from = math_utils.vector2(1, 1)
+                },
+                shadow = {
+                    enabled = shadow,
+                    offset = math_utils.vector2(1, 1)
+                },
+                elements = {},
+                colors = {
+                    background = background,
+                    shadow = colors.black
+                },
+                callbacks = {
+                    onDraw = function () end,
+                    onPress = function () end
+                }
+            }
+            setmetatable(newWindow, gui_elements.Window)
+            return newWindow
+        end,
+        -- DRAWS THE WINDOW
+        draw = function (self)
+            if self.hidden then return; end
+            self.callbacks.onDraw(self)
+            if self.shadow then
+                screen_buffer:rectangle(
+                    self.pos.x + self.shadow.offset.x,
+                    self.pos.y + self.shadow.offset.y,
+                    self.size.x,
+                    self.size.y,
+                    self.colors.shadow
+                )
+            end
+
+            screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background)
+
+            self:draw_elements()
+        end,
+        -- GIVES EVENT TO WINDOW
+        event = function (self, formatted_event)
+            local delete_event = false
+            if formatted_event.name == const.TOUCH then
+                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                    self.drag_options.from = math_utils.vector2(formatted_event.x, formatted_event.y)
+                    delete_event = true
+                    self.callbacks.onPress(self, formatted_event)
+                end
+            elseif formatted_event.name == const.MOUSEDRAG then
+                self:drag(formatted_event.x, formatted_event.y)
+                delete_event = true
+            end
+
+            local elements_delete_event = self:event_elements(formatted_event)
+            return delete_event or elements_delete_event
+        end,
+        -- DRAGS WINDOW TO POS BASED ON drag_options.from
+        drag = function (self, x, y)
+            if self.drag_options.enabled then
+                local delta_drag = math_utils.vector2(
+                    x - self.drag_options.from.x,
+                    y - self.drag_options.from.y
+                )
+                self.pos = math_utils.vector2(
+                    self.pos.x + delta_drag.x,
+                    self.pos.y + delta_drag.y
+                )
+                for key, element in pairs(self.elements) do
+                    if element.pos then
+                        element.pos = math_utils.vector2(
+                            element.pos.x + delta_drag.x,
+                            element.pos.y + delta_drag.y
+                        )
+                    end
+                end
+                self.drag_options.from = math_utils.vector2(x, y)
+            end
+        end,
+        -- SETS WINDOW'S ELEMENTS
+        set_elements = function (self, elements_table)
+            self.elements = {}
+            for key, value in pairs(elements_table) do
+                table.insert(self.elements, value)
+            end
+        end,
+        -- DRAWS ALL WINDOW'S ELEMENTS
+        draw_elements = function (self)
+            for key=#self.elements, 1, -1 do
+                local element = self.elements[key]
+                if element.draw then
+                    element:draw()
+                end
+            end
+        end,
+        -- GIVES EVENT TO ALL WINDOW'S ELEMENTS
+        event_elements = function (self, formatted_event)
+            local delete_event = false
+            
+            for key, element in pairs(self.elements) do
+                local this_delete_event = element:event(formatted_event)
+                delete_event = delete_event or this_delete_event
+                if this_delete_event then
+                    formatted_event = {name = const.DELETED}
+                end
+            end
+
+            return delete_event
+        end,
     }
 }
 
@@ -745,6 +1149,8 @@ gui_elements.Clock.__index = gui_elements.Clock
 gui_elements.Label.__index = gui_elements.Label
 gui_elements.Button.__index = gui_elements.Button
 gui_elements.Progressbar.__index = gui_elements.Progressbar
+gui_elements.Memo.__index = gui_elements.Memo
+gui_elements.Window.__index = gui_elements.Window
 
 -- LOOP TABLE
 local Loop = {}
@@ -764,8 +1170,24 @@ Loop = {
                 high_priority = {},
                 low_priority = {},
                 loop = {
-                    clock = gui_elements.Clock.new(1 / FPS_target)
+                    clock = gui_elements.Clock.new(1 / FPS_target),
+                    stats_clock = gui_elements.Clock.new(1),
+                    FPS_label = gui_elements.Label.new(1, 1, "1 FPS", colors.white),
+                    EPS_label = gui_elements.Label.new(1, 2, "1 EPS", colors.white)
                 }
+            },
+            stats = {
+                pos = math_utils.vector2(1, 1),
+                elements = nil,
+                enabled = true,
+                enable = function (self, state)
+                    self.enabled = state
+                    self.elements.stats_clock.enabled = state
+                    self.elements.FPS_label.hidden = not state
+                    self.elements.EPS_label.hidden = not state
+                end,
+                FPS = 0,
+                EPS = 0
             },
             callbacks = {
                 onDraw = function () end,
@@ -773,6 +1195,24 @@ Loop = {
                 onEvent = function () end
             }
         }
+        -- Set references to stats in clock
+        newLoop.elements.loop.stats_clock.stats = newLoop.stats
+        -- Set a reference to loop elements in stats table
+        newLoop.stats.elements = newLoop.elements.loop
+        -- Set stats_clock callback
+        generic_utils.set_callback(
+            newLoop.elements.loop.stats_clock,
+            const.ONCLOCK,
+            function (self, formatted_event)
+                self.stats.elements.FPS_label.pos = self.stats.pos
+                self.stats.elements.EPS_label.pos = math_utils.vector2(self.stats.pos.x, self.stats.pos.y + 1)
+                self.stats.elements.FPS_label.text = tostring(self.stats.FPS).." FPS"
+                self.stats.elements.EPS_label.text = tostring(self.stats.EPS).." EPS"
+                self.stats.FPS = 0
+                self.stats.EPS = 0
+            end
+        )
+        newLoop.stats:enable(false)
         setmetatable(newLoop, Loop)
         return newLoop
     end,
@@ -809,10 +1249,17 @@ Loop = {
 
         draw_table(self.elements.low_priority)
         draw_table(self.elements.high_priority)
-        draw_table(self.elements.loop)
+        for key, element in pairs(self.elements.loop) do
+            if element.draw then
+                element:draw()
+            end
+        end
 
         screen_buffer:draw()
         screen_buffer.screens = old_screens
+        if self.stats.enabled then
+            self.stats.FPS = self.stats.FPS + 1
+        end
     end,
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
     event_elements = function (self, raw_event)
@@ -838,8 +1285,29 @@ Loop = {
         end
         
         event_table(self.elements.loop)
-        event_table(self.elements.high_priority)
+
+        local high_focussed = {}
+        for key, element in pairs(self.elements.high_priority) do
+            local focus = element:event(formatted_event)
+            if focus then
+                formatted_event = {name = const.DELETED}
+                if self.elements.high_priority ~= element then
+                    table.insert(high_focussed, {element = element, key = key})
+                end
+            end
+        end
+        if #high_focussed > 0 then
+            for key, value in pairs(high_focussed) do
+                table.insert(self.elements.high_priority, 1, value.element)
+                table.remove(self.elements.high_priority, value.key + #high_focussed)
+            end
+        end
+
         event_table(self.elements.low_priority)
+
+        if self.stats.enabled then
+            self.stats.EPS = self.stats.EPS + 1
+        end
     end,
     -- STARTS THE LOOP
     start = function (self)
@@ -850,6 +1318,7 @@ Loop = {
             function (CLOCK, formatted_event)
                 self.callbacks.onClock(self, formatted_event)
                 self:draw_elements()
+                CLOCK.interval = 1 / self.options.FPS_target
             end
         )
         while self.enabled do
