@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "1.2",
+    ver = "1.3",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -52,7 +52,7 @@ local const = {
     MOUSE_MIDDLE = 3
 }
 
--- GENERIC UTILS TABLE
+-- GENERIC UTILS MODULE
 local generic_utils = {
     -- SETS A CALLBACK TO THE SPECIFIED OBJECT
     set_callback = function (gui_element, event, callback)
@@ -70,9 +70,10 @@ local generic_utils = {
     end
 }
 
--- STRING UTILS TABLE
+-- STRING UTILS MODULE
 local string_utils = {}
 string_utils = {
+    magic_characters = {"(", ")", ".", "%", "+", "-", "*", "?", "[", "]", "^", "$"},
     -- JOINS A TABLE OF STRINGS INTO A STRING THAT HAS STRINGS SEPARATED BY THE SPECIFIED SEPARATOR
     join = function (tbl, sep)
         if not sep then sep = ""; end
@@ -104,7 +105,7 @@ string_utils = {
     -- v1 = "0.2"; v2 = "0.1" -> returns 1
     -- v1 = "0.1"; v2 = "0.1" -> returns 0
     -- v1 = "0.1"; v2 = "0.2" -> returns -1
-    compare_versions = function(v1, v2)
+    compare_versions = function (v1, v2)
         local v1s = string_utils.split(v1, ".")
         local v2s = string_utils.split(v2, ".")
         local v1l = #v1s
@@ -122,16 +123,47 @@ string_utils = {
             return -1
         end
         return 0
+    end,
+    -- ESCAPES ALL MAGIC CHARACTERS IN A STRING
+    escape_magic_characters = function (str)
+        for key, character in pairs(string_utils.magic_characters) do
+            str = str:gsub("[%"..character.."]", '%%%'..character)
+        end
+        return str
     end
 }
 
--- MATH UTILS TABLE
+-- MATH UTILS MODULE
 local math_utils = {}
 math_utils = {
     -- JUST RETURNS A TABLE WITH X AS X AND Y AS Y (for now)
-    vector2 = function (x, y)
-        return {x = x, y = y}
-    end,
+    Vector2 = {
+        -- RETURNS NEW VECTOR2
+        new = function (x, y)
+            local newVector2 = {
+                x = x,
+                y = y
+            }
+            setmetatable(newVector2, math_utils.Vector2)
+            return newVector2
+        end,
+        -- ADD METAMETHOD, handles Vector1 + Vector2
+        __add = function (self, other)
+            return math_utils.Vector2.new(self.x + other.x, self.y + other.y)
+        end,
+        -- SUB METAMETHOD, handles Vector1 - Vector2
+        __sub = function (self, other)
+            return math_utils.Vector2.new(self.x - other.x, self.y - other.y)
+        end,
+        -- MUL METAMETHOD, handles Vector1 * number
+        __mul = function (self, number)
+            return math_utils.Vector2.new(self.x * number, self.y * number)
+        end,
+        -- DIV METAMETHOD, handles Vector1 / number
+        __div = function (self, number)
+            return math_utils.Vector2.new(self.x / number, self.y / number)
+        end
+    },
     -- MAPS A NUMBER FROM A RANGE TO ANOTHER ONE
     map = function (value, value_start, value_stop, return_start, return_stop, constrained)
         local mapped_value = (value - value_start) / (value_stop - value_start) * (return_stop - return_start) + return_start
@@ -144,7 +176,27 @@ math_utils = {
     end
 }
 
--- EVENT UTILS TABLE
+math_utils.Vector2.__index = math_utils.Vector2
+
+-- TABLE UTILS MODULE
+local table_utils = {
+    -- CHECKS IF THERE'S THE SPECIFIED VALUE IN THE TABLE, IF VALUE WAS FOUND
+    --  IT RETURNS TRUE AND THE KEY OF THE TABLE WHERE THE VALUE IS
+    has_value = function (tbl, value)
+        for tbl_key, tbl_value in pairs(tbl) do
+            if tbl_value == value then return true, tbl_key; end
+        end
+        return false, nil
+    end,
+    -- CHECKS IF THERE'S THE SPECIFIED KEY IN THE TABLE, IF KEY WAS FOUND
+    --  IT RETURNS TRUE AND THE VALUE AT KEY IN THE TABLE
+    has_key = function (tbl, key)
+        if tbl.key ~= nil then return true, tbl.key; end
+        return false, nil
+    end
+}
+
+-- EVENT UTILS MODULE
 local event_utils = {
     -- USED TO CHECK IF AN AREA OF THE SCREEN WAS PRESSED
     is_area_pressed = function (press_x, press_y, x, y, width, height)
@@ -195,7 +247,7 @@ local event_utils = {
     end
 }
 
--- SETTING UTILS TABLE
+-- SETTING UTILS MODULE
 local setting_utils = {
     -- PATH WHERE SETTINGS WILL BE SAVED (shouldn't be changed)
     _path = "/.settings",
@@ -215,7 +267,7 @@ local setting_utils = {
     end
 }
 
--- MONITOR UTILS TABLE
+-- MONITOR UTILS MODULE
 local monitor_utils = {
     -- RETURNS A TABLE WHICH CONTAINS ALL VALID MONITORS FROM monitor_names
     get_monitors = function (monitor_names)
@@ -247,7 +299,7 @@ local monitor_utils = {
     end
 }
 
--- SCREEN BUFFER TABLE
+-- SCREEN BUFFER MODULE
 local screen_buffer = {
     -- CONTAINS THE LAST DRAWN FRAME
     frame = {
@@ -466,7 +518,7 @@ local screen_buffer = {
     end
 }
 
--- SCREEN BUFFER TABLE
+-- WSS MODULE
 -- NOTE THAT NO VARIABLE FROM THIS TABLE SHOULD BE CHANGED MANUALLY
 -- YOU CAN ONLY USE FUNCTIONS FROM THIS TABLE OR GET VARIABLES,
 -- DON'T CHANGE THEM IF YOU WANT IT TO WORK
@@ -574,7 +626,7 @@ WSS = {
 WSS.server.root = WSS
 WSS.client.root = WSS
 
--- GUI ELEMENTS
+-- GUI ELEMENTS MODULE
 local gui_elements = {}
 gui_elements = {
     Clock = {
@@ -623,7 +675,7 @@ gui_elements = {
                 focussed = false,
                 hidden = false,
                 text = text,
-                pos = math_utils.vector2(x, y),
+                pos = math_utils.Vector2.new(x, y),
                 colors = {
                     foreground = foreground,
                     background = background
@@ -660,8 +712,8 @@ gui_elements = {
                 hidden = false,
                 active = false,
                 text = text,
-                pos = math_utils.vector2(x, y),
-                size = math_utils.vector2(width, height),
+                pos = math_utils.Vector2.new(x, y),
+                size = math_utils.Vector2.new(width, height),
                 timed = {
                     enabled = false,
                     clock = gui_elements.Clock.new(0.5)
@@ -739,8 +791,8 @@ gui_elements = {
                 focussed = false,
                 hidden = false,
                 active = false,
-                pos = math_utils.vector2(x, y),
-                size = math_utils.vector2(width, height),
+                pos = math_utils.Vector2.new(x, y),
+                size = math_utils.Vector2.new(width, height),
                 value = {
                     max = max_value,
                     min = min_value,
@@ -798,8 +850,9 @@ gui_elements = {
                 draw_priority = const.LOW_PRIORITY,
                 focussed = false,
                 hidden = false,
-                pos = math_utils.vector2(x, y),
-                size = math_utils.vector2(width, height),
+                pos = math_utils.Vector2.new(x, y),
+                size = math_utils.Vector2.new(width, height),
+                editable = true,
                 lines = {},
                 first_visible_line = 1,
                 first_visible_char = 1,
@@ -807,12 +860,16 @@ gui_elements = {
                     visible = false,
                     text = " ",
                     blink = gui_elements.Clock.new(0.5),
-                    pos = math_utils.vector2(1, 1)
+                    pos = math_utils.Vector2.new(1, 1)
                 },
+                limits = math_utils.Vector2.new(0, 0),
+                whitelist = {},
+                blacklist = {},
                 colors = {
                     foreground = foreground,
                     background = background,
-                    cursor = colors.white
+                    cursor = colors.white,
+                    cursor_text = colors.black,
                 },
                 callbacks = {
                     onDraw = function () end,
@@ -861,18 +918,23 @@ gui_elements = {
             end
 
             if self.cursor.visible then
-                screen_buffer:point(
+                screen_buffer:write(
                     rel_cursor_x + self.pos.x,
                     rel_cursor_y + self.pos.y,
-                    self.colors.cursor
+                    self.cursor.text,
+                    self.colors.cursor_text, self.colors.cursor
                 )
             end
         end,
         -- GIVES EVENT TO MEMO
         event = function (self, formatted_event)
+            if not self.editable then return false; end
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self.focussed = true
+                    local x = formatted_event.x - self.pos.x
+                    local y = formatted_event.y - self.pos.y
+                    self:set_cursor(x + self.first_visible_char, y + self.first_visible_line)
                     self.callbacks.onFocus(self, formatted_event)
                     return true -- RETURNING TRUE DELETES THE EVENT
                 else
@@ -971,6 +1033,8 @@ gui_elements = {
         --  (if create_lines is true, it will create all the lines that
         --   are missing between cursor_y and the last line)
         set_cursor = function (self, cursor_x, cursor_y, create_lines)
+            if not self.lines[1] then self.lines[1] = ""; end
+            if self.limits.y > 0 then cursor_y = math_utils.constrain(cursor_y, 1, self.limits.y); end
             if create_lines then
                 for y=#self.lines + 1, cursor_y do
                     if not self.lines[y] then
@@ -982,13 +1046,32 @@ gui_elements = {
             end
 
             cursor_x = math_utils.constrain(cursor_x, 1, #self.lines[cursor_y] + 1)
-            self.cursor.pos = math_utils.vector2(cursor_x, cursor_y)
+            self.cursor.pos = math_utils.Vector2.new(cursor_x, cursor_y)
         end,
         -- WRITES TEXT WHERE THE CURSOR IS
         write = function (self, ...)
             local text = string_utils.join({...}, "")
             local lines = string_utils.split(text, "\n")
             self:set_cursor(self.cursor.pos.x, self.cursor.pos.y, true)
+
+            if #self.whitelist > 0 then
+                local pattern = "[^"..string_utils.escape_magic_characters(string_utils.join(self.whitelist, "")).."]"
+                for key, line in pairs(lines) do
+                    lines[key] = line:gsub(pattern, "")
+                end
+            elseif #self.blacklist > 0 then
+                local pattern = "["..string_utils.escape_magic_characters(string_utils.join(self.blacklist, "")).."]"
+                for key, line in pairs(lines) do
+                    lines[key] = line:gsub(pattern, "")
+                end
+            end
+
+            if self.limits.y > 0 then
+                for y=1, #self.lines + (#lines - 1) - self.limits.y do
+                    table.remove(lines)
+                end
+                if #lines <= 0 then return; end
+            end
 
             if #lines > 1 then
                 for line_key, line in pairs(lines) do
@@ -998,15 +1081,21 @@ gui_elements = {
                         local line_end = cursor_line:sub(self.cursor.pos.x)
 
                         local last_line = lines[#lines]
-
+                        if self.limits.x > 0 then
+                            line = line:sub(1, self.limits.x - #line_start)
+                            last_line = last_line:sub(1, self.limits.x - #line_end)
+                        end
 
                         self.lines[self.cursor.pos.y] = line_start..line
+
                         self:set_cursor(1, self.cursor.pos.y + 1, true)
                         table.insert(self.lines, self.cursor.pos.y, last_line..line_end)
+
                         self:set_cursor(#last_line + 1, self.cursor.pos.y)
                     elseif line_key >= #lines then
                         break
                     else
+                        if self.limits.x > 0 then line = line:sub(1, self.limits.x); end
                         table.insert(self.lines, self.cursor.pos.y, line)
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + 1)
                     end
@@ -1019,9 +1108,11 @@ gui_elements = {
                 -- Get the part of the line that's in front of the cursor
                 local line_end = cursor_line:sub(self.cursor.pos.x)
 
-
-                self.lines[self.cursor.pos.y] = line_start..text..line_end
-                self:set_cursor(self.cursor.pos.x + #text, self.cursor.pos.y)
+                if self.limits.x > 0 then
+                    lines[1] = lines[1]:sub(1, self.limits.x - (#line_start + #line_end))
+                end
+                self.lines[self.cursor.pos.y] = line_start..lines[1]..line_end
+                self:set_cursor(self.cursor.pos.x + #lines[1], self.cursor.pos.y)
             end
         end
     },
@@ -1032,15 +1123,16 @@ gui_elements = {
                 draw_priority = const.HIGH_PRIORITY,
                 focussed = false,
                 hidden = false,
-                pos = math_utils.vector2(x, y),
-                size = math_utils.vector2(width, height),
+                pos = math_utils.Vector2.new(x, y),
+                size = math_utils.Vector2.new(width, height),
                 drag_options = {
                     enabled = true,
-                    from = math_utils.vector2(1, 1)
+                    draggable = false, -- THIS IS SET TO TRUE WHEN THE EVENT FUNCTION SEES THAT THE CONDITIOND FOR THE WINDOW TO BE DRAGGED ARE TRUE
+                    from = math_utils.Vector2.new(1, 1)
                 },
                 shadow = {
                     enabled = shadow,
-                    offset = math_utils.vector2(1, 1)
+                    offset = math_utils.Vector2.new(1, 1)
                 },
                 elements = {},
                 colors = {
@@ -1075,41 +1167,42 @@ gui_elements = {
         end,
         -- GIVES EVENT TO WINDOW
         event = function (self, formatted_event)
-            local delete_event = false
-            if formatted_event.name == const.TOUCH then
-                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
-                    self.drag_options.from = math_utils.vector2(formatted_event.x, formatted_event.y)
-                    delete_event = true
-                    self.callbacks.onPress(self, formatted_event)
+            local delete_event = self:event_elements(formatted_event)
+            if not delete_event then
+                if formatted_event.name == const.TOUCH then
+                    if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                        self.drag_options.from = math_utils.Vector2.new(formatted_event.x, formatted_event.y)
+                        self.drag_options.draggable = true
+                        self.callbacks.onPress(self, formatted_event)
+                        return true
+                    else
+                        self.drag_options.draggable = false
+                    end
+                elseif formatted_event.name == const.MOUSEDRAG and self.drag_options.draggable then
+                    self:drag(formatted_event.x, formatted_event.y)
+                    return true
+                elseif formatted_event.name == const.DELETED then
+                    self.drag_options.draggable = false
                 end
-            elseif formatted_event.name == const.MOUSEDRAG then
-                self:drag(formatted_event.x, formatted_event.y)
-                delete_event = true
+            else
+                self.drag_options.draggable = false
             end
-
-            local elements_delete_event = self:event_elements(formatted_event)
-            return delete_event or elements_delete_event
+            return delete_event
         end,
         -- DRAGS WINDOW TO POS BASED ON drag_options.from
         drag = function (self, x, y)
             if self.drag_options.enabled then
-                local delta_drag = math_utils.vector2(
+                local delta_drag = math_utils.Vector2.new(
                     x - self.drag_options.from.x,
                     y - self.drag_options.from.y
                 )
-                self.pos = math_utils.vector2(
-                    self.pos.x + delta_drag.x,
-                    self.pos.y + delta_drag.y
-                )
+                self.pos = self.pos + delta_drag
                 for key, element in pairs(self.elements) do
                     if element.pos then
-                        element.pos = math_utils.vector2(
-                            element.pos.x + delta_drag.x,
-                            element.pos.y + delta_drag.y
-                        )
+                        element.pos = element.pos + delta_drag
                     end
                 end
-                self.drag_options.from = math_utils.vector2(x, y)
+                self.drag_options.from = math_utils.Vector2.new(x, y)
             end
         end,
         -- SETS WINDOW'S ELEMENTS
@@ -1152,7 +1245,7 @@ gui_elements.Progressbar.__index = gui_elements.Progressbar
 gui_elements.Memo.__index = gui_elements.Memo
 gui_elements.Window.__index = gui_elements.Window
 
--- LOOP TABLE
+-- LOOP MODULE
 local Loop = {}
 Loop = {
     -- CREATES A NEW LOOP
@@ -1177,7 +1270,7 @@ Loop = {
                 }
             },
             stats = {
-                pos = math_utils.vector2(1, 1),
+                pos = math_utils.Vector2.new(1, 1),
                 elements = nil,
                 enabled = true,
                 enable = function (self, state)
@@ -1205,7 +1298,7 @@ Loop = {
             const.ONCLOCK,
             function (self, formatted_event)
                 self.stats.elements.FPS_label.pos = self.stats.pos
-                self.stats.elements.EPS_label.pos = math_utils.vector2(self.stats.pos.x, self.stats.pos.y + 1)
+                self.stats.elements.EPS_label.pos = self.stats.pos + math_utils.Vector2.new(0, 1)
                 self.stats.elements.FPS_label.text = tostring(self.stats.FPS).." FPS"
                 self.stats.elements.EPS_label.text = tostring(self.stats.EPS).." EPS"
                 self.stats.FPS = 0
@@ -1392,6 +1485,7 @@ local lib = {
     generic_utils = generic_utils,
     string_utils = string_utils,
     math_utils = math_utils,
+    table_utils = table_utils,
     event_utils = event_utils,
     setting_utils = setting_utils,
     monitor_utils = monitor_utils,

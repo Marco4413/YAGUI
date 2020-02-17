@@ -83,13 +83,14 @@ local wWindow = YAGUI.gui_elements.Window.new(
 wWindow:set_elements({wbDummy, wbQuit, wbIncrease, wbDecrease, wpbProgress})
 
 
--- Window 2
 -- CREATING A MEMO
 local wmMemo = YAGUI.gui_elements.Memo.new(
     28, 2,                    -- X, Y POS
     22, 7,                    -- X, Y, SIZE
     colors.white, colors.blue -- FOREGROUND, BACKGROUND
 )
+-- WRITING ON MEMO WITH ITS FUNCTION
+wmMemo:write("This was written\nBy using Memo's\nWrite function!")
 
 -- CREATING ANOTHER MEMO
 local wmMemo1 = YAGUI.gui_elements.Memo.new(
@@ -97,8 +98,8 @@ local wmMemo1 = YAGUI.gui_elements.Memo.new(
     21, 4,
     colors.white, colors.green
 )
--- WRITING ON MEMO WITH ITS FUNCTION
-wmMemo:write("This was written\nBy using Memo's\nWrite function!")
+-- SETTING MEMO LIMITS TO ITS SIZE
+wmMemo1.limits = YAGUI.math_utils.Vector2.new(21, 4)
 
 -- CREATING SECOND WINDOW
 local wWindow1 = YAGUI.gui_elements.Window.new(
