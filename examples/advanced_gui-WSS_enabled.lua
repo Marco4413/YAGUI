@@ -39,6 +39,8 @@ local wbQuit = YAGUI.gui_elements.Button.new(
     "Quit", colors.white,    -- TEXT, TEXT_COLOR
     colors.green, colors.red -- ACTIVE_COLOR, UNACTIVE_COLOR
 )
+wbQuit.timed.enabled = true
+wbQuit.timed.clock.interval = 0.25
 
 -- CREATE A BUTTON (THAT WILL BE USED TO INCREASE THE PROGRESS ON THE PROGRESSBAR)
 local wbIncrease = YAGUI.gui_elements.Button.new(
@@ -137,12 +139,9 @@ YAGUI.generic_utils.set_callback(
 -- SET THE CALLBACK FOR THE QUIT BUTTON
 YAGUI.generic_utils.set_callback(
     wbQuit,
-    YAGUI.ONPRESS,
+    YAGUI.ONTIMEOUT, -- TIMEOUT IS THE EVENT THAT IS CALLED WHEN BUTTON IS TIMED AND ITS CLOCK HAS TIMED OUT
     function (self, formatted_event)
-        if self.active then
-            -- STOP LOOP IF BUTTON IS ACTIVE
-            loop:stop()
-        end
+        loop:stop()
     end
 )
 
@@ -152,14 +151,8 @@ loop:set_monitors({"terminal", "left"})
 -- START THE LOOP
 loop:start()
 
--- WHEN THE LOOP STOPS CLEAR THE SCREEN BUFFER AND DRAW IT
--- USING THIS TO CLEAR THE SCREEN, WE CAN DO THAT BECAUSE THE BACKGROUND OF THE BUFFER IS SET TO BLACK
--- AND BLACK IS THE DEFAULT COLOR FOR THE TERMINAL, SO WE WON'T NOTICE THE DIFFERENCE
-YAGUI.screen_buffer:clear()
-YAGUI.screen_buffer:draw()
-
--- SET TERMINAL CURSOR TO ORIGIN
-term.setCursorPos(1, 1)
+-- WHEN THE LOOP STOPS CLEAR THE SCREEN AND SET CURSOR TO 1, 1
+YAGUI.monitor_utils.better_clear(term)
 
 -- CLOSES WSS SERVER
 YAGUI.WSS.server:unhost()

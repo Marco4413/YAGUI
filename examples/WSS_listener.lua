@@ -9,6 +9,11 @@ local tArgs = {...}
 
 local modem_side = tostring(tArgs[1])
 local hostname = tostring(tArgs[2])
+table.remove(tArgs, 1)
+table.remove(tArgs, 1)
+local monitors = tArgs
+-- If not monitors were specified then insert terminal
+if #monitors <= 0 then table.insert(monitors, "terminal"); end
 
 -- Check if modem_side is a valid modem peripheral
 if peripheral.getType(modem_side) ~= "modem" then
@@ -24,6 +29,9 @@ if not YAGUI.WSS.client:connect(hostname) then
     return
 end
 
+-- Add specified monitors to screen_buffer
+YAGUI.screen_buffer:set_monitors(monitors)
+
 -- Make a local variable called response
 local response
 while response ~= YAGUI.DISCONNECTED do -- If host has disconnected then break
@@ -38,3 +46,6 @@ end
 -- Disconnect and close rednet
 YAGUI.WSS.client:disconnect()
 YAGUI.WSS:close()
+
+-- Clear the screen and set cursor pos to (1, 1)
+YAGUI.monitor_utils.better_clear(term)

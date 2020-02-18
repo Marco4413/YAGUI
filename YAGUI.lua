@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO TABLE
 local info = {
-    ver = "1.3",
+    ver = "1.4",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -36,9 +36,10 @@ local const = {
     HIGH_PRIORITY = 2,
     ONDRAW = 3,
     ONPRESS = 4,
-    ONCLOCK = 5,
-    ONEVENT = 6,
-    ONFOCUS = 7,
+    ONTIMEOUT = 5,
+    ONCLOCK = 6,
+    ONEVENT = 7,
+    ONFOCUS = 8,
     KEY_UP_ARROW = 200,
     KEY_DOWN_ARROW = 208,
     KEY_RIGHT_ARROW = 205,
@@ -49,7 +50,13 @@ local const = {
     KEY_TAB = 15,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
-    MOUSE_MIDDLE = 3
+    MOUSE_MIDDLE = 3,
+    COMPUTER = "computer",
+    COMPUTER_ADVANCED = "computer_advanced",
+    TURTLE = "turtle",
+    TURTLE_ADVANCED = "turtle_advanced",
+    POCKET = "pocket",
+    POCKET_ADVANCED = "pocket_advanced",
 }
 
 -- GENERIC UTILS MODULE
@@ -60,12 +67,36 @@ local generic_utils = {
             gui_element.callbacks.onDraw = callback
         elseif event == const.ONPRESS then
             gui_element.callbacks.onPress = callback
+        elseif event == const.ONTIMEOUT then
+            gui_element.callbacks.onTimeout = callback
         elseif event == const.ONCLOCK then
             gui_element.callbacks.onClock = callback
         elseif event == const.ONEVENT then
             gui_element.callbacks.onEvent = callback
         elseif event == const.ONFOCUS then
             gui_element.callbacks.onFocus = callback
+        end
+    end,
+    -- RETURNS THE TYPE OF COMPUTER (computer, turtle, pocket) THAT IS BEING USED
+    get_computer_type = function ()
+        if turtle then
+            if term.isColor() then
+                return const.TURTLE_ADVANCED
+            else
+                return const.TURTLE
+            end
+        elseif pocket then
+            if term.isColor() then
+                return const.POCKET_ADVANCED
+            else
+                return const.POCKET
+            end
+        else
+            if term.isColor() then
+                return const.COMPUTER_ADVANCED
+            else
+                return const.COMPUTER
+            end
         end
     end
 }
@@ -196,6 +227,37 @@ local table_utils = {
     end
 }
 
+-- COLOR UTILS MODULE
+local color_utils = {}
+color_utils = {
+    colors = {},
+    -- TAKES A DECIMAL VALUE FROM COLORS API AND RETURNS ITS PAINT VALUE
+    color_to_paint = function (color)
+        return color_utils.colors[tostring(color)]
+    end,
+    -- TAKES A PAINT AND RETURNS ITS DECIMAL VALUE FROM COLORS API
+    paint_to_color = function (paint)
+        local has, color = table_utils.has_value(color_utils.colors, paint)
+        if has then return color; end
+    end
+}
+color_utils.colors["1"] = "0"
+color_utils.colors["2"] = "1"
+color_utils.colors["4"] = "2"
+color_utils.colors["8"] = "3"
+color_utils.colors["16"] = "4"
+color_utils.colors["32"] = "5"
+color_utils.colors["64"] = "6"
+color_utils.colors["128"] = "7"
+color_utils.colors["256"] = "8"
+color_utils.colors["512"] = "9"
+color_utils.colors["1024"] = "a"
+color_utils.colors["2048"] = "b"
+color_utils.colors["4096"] = "c"
+color_utils.colors["8192"] = "d"
+color_utils.colors["16384"] = "e"
+color_utils.colors["32768"] = "f"
+
 -- EVENT UTILS MODULE
 local event_utils = {
     -- USED TO CHECK IF AN AREA OF THE SCREEN WAS PRESSED
@@ -296,7 +358,13 @@ local monitor_utils = {
 
         monitor.setTextColor(old_foreground)
         monitor.setBackgroundColor(old_background)
+    end,
+    -- CLEARS SPECIFIED MONITOR AND SETS CURSOR TO 1, 1
+    better_clear = function (monitor)
+        monitor.clear()
+        monitor.setCursorPos(1, 1)
     end
+
 }
 
 -- SCREEN BUFFER MODULE
@@ -358,8 +426,13 @@ local screen_buffer = {
             self.pixels = {}
         end
     },
+    -- SETS ALL SCREENS IN screen_names AS SCREENS WHERE THE BUFFER IS GOING TO DRAW TO
     set_screens = function (self, screen_names)
         self.screens = monitor_utils.get_monitors(screen_names)
+    end,
+    -- DUPLICATE OF set_screens
+    set_monitors = function (self, monitor_names)
+        self:set_screens(monitor_names)
     end,
     -- CLEARS BUFFER'S PIXELS TABLE
     clear = function (self)
@@ -371,23 +444,20 @@ local screen_buffer = {
         local buffer = self.buffer
         
         for screen_name, screen in pairs(screens) do
-            local old_bg = screen.getBackgroundColor()
-            local old_fg = screen.getTextColor()
             local old_x, old_y = screen.getCursorPos()
             
             local width, height = screen.getSize()
-            for x=1, width do
-                for y=1, height do
-                    screen.setCursorPos(x, y)
+            for y=1, height do
+                local row = {text = "", background = "", foreground = ""}
+                for x=1, width do
                     local pixel = buffer:get_pixel(x, y)
-                    screen.setBackgroundColor(pixel.background)
-                    screen.setTextColor(pixel.foreground)
-                    screen.write(pixel.char)
+                    row.text = row.text..pixel.char
+                    row.background = row.background..color_utils.colors[tostring(pixel.background)]
+                    row.foreground = row.foreground..color_utils.colors[tostring(pixel.foreground)]
                 end
+                screen.setCursorPos(1, y)
+                screen.blit(row.text, row.foreground, row.background)
             end
-            
-            screen.setBackgroundColor(old_bg)
-            screen.setTextColor(old_fg)
             screen.setCursorPos(old_x, old_y)
         end
 
@@ -725,17 +795,20 @@ gui_elements = {
                 },
                 callbacks = {
                     onDraw = function () end,
-                    onPress = function () end
+                    onPress = function () end,
+                    onTimeout = function () end
                 }
             }
             newButton.timed.clock.binded_button = newButton
             newButton.timed.clock.oneshot = true
+            newButton.timed.clock:stop()
             generic_utils.set_callback(
                 newButton.timed.clock,
                 const.ONCLOCK,
                 function (self, formatted_event)
                     self.binded_button.active = false
                     self.binded_button.callbacks.onPress(self.binded_button, formatted_event)
+                    self.binded_button.callbacks.onTimeout(self.binded_button, formatted_event)
                 end
             )
             setmetatable(newButton, gui_elements.Button)
@@ -771,14 +844,14 @@ gui_elements = {
                             self.callbacks.onPress(self, formatted_event)
                         end
                     else
-                        self:press()
+                        self:press(formatted_event)
                     end
                     return true -- RETURNING TRUE DELETES THE EVENT
                 end
             end
             if self.timed.enabled then self.timed.clock:event(formatted_event); end
         end,
-        press = function (self)
+        press = function (self, formatted_event)
             self.active = not self.active
             self.callbacks.onPress(self, formatted_event)
         end
@@ -1127,7 +1200,6 @@ gui_elements = {
                 size = math_utils.Vector2.new(width, height),
                 drag_options = {
                     enabled = true,
-                    draggable = false, -- THIS IS SET TO TRUE WHEN THE EVENT FUNCTION SEES THAT THE CONDITIOND FOR THE WINDOW TO BE DRAGGED ARE TRUE
                     from = math_utils.Vector2.new(1, 1)
                 },
                 shadow = {
@@ -1141,7 +1213,8 @@ gui_elements = {
                 },
                 callbacks = {
                     onDraw = function () end,
-                    onPress = function () end
+                    onPress = function () end,
+                    onFocus = function () end
                 }
             }
             setmetatable(newWindow, gui_elements.Window)
@@ -1172,20 +1245,23 @@ gui_elements = {
                 if formatted_event.name == const.TOUCH then
                     if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                         self.drag_options.from = math_utils.Vector2.new(formatted_event.x, formatted_event.y)
-                        self.drag_options.draggable = true
+                        self.focussed = true
                         self.callbacks.onPress(self, formatted_event)
+                        self.callbacks.onFocus(self, formatted_event)
                         return true
                     else
-                        self.drag_options.draggable = false
+                        self.focussed = false
                     end
-                elseif formatted_event.name == const.MOUSEDRAG and self.drag_options.draggable then
+                elseif formatted_event.name == const.MOUSEDRAG and self.focussed then
                     self:drag(formatted_event.x, formatted_event.y)
                     return true
                 elseif formatted_event.name == const.DELETED then
-                    self.drag_options.draggable = false
+                    self.focussed = false
+                    self.callbacks.onFocus(self, formatted_event)
                 end
             else
-                self.drag_options.draggable = false
+                self.focussed = false
+                self.callbacks.onFocus(self, formatted_event)
             end
             return delete_event
         end,
@@ -1363,7 +1439,10 @@ Loop = {
             end
         end
         
-        self.callbacks.onEvent(self, formatted_event)
+        if self.callbacks.onEvent(self, formatted_event) then
+            formatted_event = {name = const.DELETED}
+        end
+
         if formatted_event.name == const.TOUCH then
             local is_monitor_whitelisted = false
             for monitor_name, monitor in pairs(self.monitors) do
@@ -1486,6 +1565,7 @@ local lib = {
     string_utils = string_utils,
     math_utils = math_utils,
     table_utils = table_utils,
+    color_utils = color_utils,
     event_utils = event_utils,
     setting_utils = setting_utils,
     monitor_utils = monitor_utils,
