@@ -14,15 +14,15 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 --]]
 
--- INFO TABLE
+-- INFO MODULE
 local info = {
-    ver = "1.4",
+    ver = "1.5",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
 }
 
--- CONSTANTS TABLE
+-- CONSTANTS MODULE
 -- THESE WILL BE TRANSFORMED IN GLOBAL VARIABLES WHEN LIBRARY IS RETURNED
 local const = {
     TOUCH = "screen_touch",
@@ -34,20 +34,31 @@ local const = {
     DISCONNECTED = "DISCONNECTED",
     LOW_PRIORITY = 1,
     HIGH_PRIORITY = 2,
+    ONSTART = 1,
+    ONSTOP = 2,
     ONDRAW = 3,
     ONPRESS = 4,
-    ONTIMEOUT = 5,
-    ONCLOCK = 6,
-    ONEVENT = 7,
-    ONFOCUS = 8,
-    KEY_UP_ARROW = 200,
-    KEY_DOWN_ARROW = 208,
-    KEY_RIGHT_ARROW = 205,
-    KEY_LEFT_ARROW = 203,
-    KEY_ENTER = 28,
+    ONFAILEDPRESS = 5,
+    ONTIMEOUT = 6,
+    ONCLOCK = 7,
+    ONEVENT = 8,
+    ONFOCUS = 9,
+    ONKEY = 10,
+    ONCHAR = 11,
     KEY_BACKSPACE = 14,
-    KEY_DELETE = 211,
     KEY_TAB = 15,
+    KEY_ENTER = 28,
+    KEY_LCONTROL = 29,
+    KEY_LSHIFT = 42,
+    KEY_RSHIFT = 54,
+    KEY_ALT = 56,
+    KEY_CAPSLOCK = 58,
+    KEY_RCONTROL = 157,
+    KEY_UP_ARROW = 200,
+    KEY_LEFT_ARROW = 203,
+    KEY_RIGHT_ARROW = 205,
+    KEY_DOWN_ARROW = 208,
+    KEY_DELETE = 211,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -63,10 +74,16 @@ local const = {
 local generic_utils = {
     -- SETS A CALLBACK TO THE SPECIFIED OBJECT
     set_callback = function (gui_element, event, callback)
-        if event == const.ONDRAW then
+        if event == const.ONSTART then
+            gui_element.callbacks.onStart = callback
+        elseif event == const.ONSTOP then
+            gui_element.callbacks.onStop = callback
+        elseif event == const.ONDRAW then
             gui_element.callbacks.onDraw = callback
         elseif event == const.ONPRESS then
             gui_element.callbacks.onPress = callback
+        elseif event == const.ONFAILEDPRESS then
+            gui_element.callbacks.onFailedPress = callback
         elseif event == const.ONTIMEOUT then
             gui_element.callbacks.onTimeout = callback
         elseif event == const.ONCLOCK then
@@ -75,24 +92,29 @@ local generic_utils = {
             gui_element.callbacks.onEvent = callback
         elseif event == const.ONFOCUS then
             gui_element.callbacks.onFocus = callback
+        elseif event == const.ONKEY then
+            gui_element.callbacks.onKey = callback
+        elseif event == const.ONCHAR then
+            gui_element.callbacks.onChar = callback
         end
     end,
     -- RETURNS THE TYPE OF COMPUTER (computer, turtle, pocket) THAT IS BEING USED
-    get_computer_type = function ()
+    --  IF ADVANCED IS SET TO TRUE IT WILL RETURN IF IT'S ADVANCED OR NOT
+    get_computer_type = function (advanced)
         if turtle then
-            if term.isColor() then
+            if advanced and term.isColor() then
                 return const.TURTLE_ADVANCED
             else
                 return const.TURTLE
             end
         elseif pocket then
-            if term.isColor() then
+            if advanced and term.isColor() then
                 return const.POCKET_ADVANCED
             else
                 return const.POCKET
             end
         else
-            if term.isColor() then
+            if advanced and term.isColor() then
                 return const.COMPUTER_ADVANCED
             else
                 return const.COMPUTER
@@ -222,7 +244,7 @@ local table_utils = {
     -- CHECKS IF THERE'S THE SPECIFIED KEY IN THE TABLE, IF KEY WAS FOUND
     --  IT RETURNS TRUE AND THE VALUE AT KEY IN THE TABLE
     has_key = function (tbl, key)
-        if tbl.key ~= nil then return true, tbl.key; end
+        if tbl[key] ~= nil then return true, tbl[key]; end
         return false, nil
     end
 }
@@ -230,10 +252,27 @@ local table_utils = {
 -- COLOR UTILS MODULE
 local color_utils = {}
 color_utils = {
-    colors = {},
+    colors = {
+        [ 1 ] = "0",
+        [ 2 ] = "1",
+        [ 4 ] = "2",
+        [ 8 ] = "3",
+        [ 16 ] = "4",
+        [ 32 ] = "5",
+        [ 64 ] = "6",
+        [ 128 ] = "7",
+        [ 256 ] = "8",
+        [ 512 ] = "9",
+        [ 1024 ] = "a",
+        [ 2048 ] = "b",
+        [ 4096 ] = "c",
+        [ 8192 ] = "d",
+        [ 16384 ] = "e",
+        [ 32768 ] = "f"
+    },
     -- TAKES A DECIMAL VALUE FROM COLORS API AND RETURNS ITS PAINT VALUE
     color_to_paint = function (color)
-        return color_utils.colors[tostring(color)]
+        return color_utils.colors[color]
     end,
     -- TAKES A PAINT AND RETURNS ITS DECIMAL VALUE FROM COLORS API
     paint_to_color = function (paint)
@@ -241,22 +280,6 @@ color_utils = {
         if has then return color; end
     end
 }
-color_utils.colors["1"] = "0"
-color_utils.colors["2"] = "1"
-color_utils.colors["4"] = "2"
-color_utils.colors["8"] = "3"
-color_utils.colors["16"] = "4"
-color_utils.colors["32"] = "5"
-color_utils.colors["64"] = "6"
-color_utils.colors["128"] = "7"
-color_utils.colors["256"] = "8"
-color_utils.colors["512"] = "9"
-color_utils.colors["1024"] = "a"
-color_utils.colors["2048"] = "b"
-color_utils.colors["4096"] = "c"
-color_utils.colors["8192"] = "d"
-color_utils.colors["16384"] = "e"
-color_utils.colors["32768"] = "f"
 
 -- EVENT UTILS MODULE
 local event_utils = {
@@ -452,8 +475,8 @@ local screen_buffer = {
                 for x=1, width do
                     local pixel = buffer:get_pixel(x, y)
                     row.text = row.text..pixel.char
-                    row.background = row.background..color_utils.colors[tostring(pixel.background)]
-                    row.foreground = row.foreground..color_utils.colors[tostring(pixel.foreground)]
+                    row.background = row.background..color_utils.colors[pixel.background]
+                    row.foreground = row.foreground..color_utils.colors[pixel.foreground]
                 end
                 screen.setCursorPos(1, y)
                 screen.blit(row.text, row.foreground, row.background)
@@ -626,12 +649,12 @@ WSS = {
             hostname = tostring(hostname)
             local servername = self.root.protocol..self.root.host_prefix..hostname
             
-            if rednet.lookup(servername, hostname) then return false; end
+            if rednet.lookup(servername, hostname) then return false, hostname; end
 
             rednet.host(servername, hostname)
             self.servername = servername
             self.hostname = hostname
-            return true
+            return true, hostname
         end,
         -- UNHOSTS CURRENTLY RUNNING SERVER
         unhost = function (self)
@@ -665,12 +688,12 @@ WSS = {
             local servername = self.root.protocol..self.root.host_prefix..hostname
 
             local ID = rednet.lookup(servername, hostname)
-            if not ID then return false; end
+            if not ID then return false, hostname; end
 
             self.servername = servername
             self.host_id = ID
 
-            return true
+            return true, hostname
         end,
         -- DISCONNECTS FROM SERVER
         disconnect = function (self)
@@ -751,8 +774,7 @@ gui_elements = {
                     background = background
                 },
                 callbacks = {
-                    onDraw = function () end,
-                    onPress = function () end
+                    onDraw = function () end
                 }
             }
             setmetatable(newLabel, gui_elements.Label)
@@ -762,15 +784,26 @@ gui_elements = {
         draw = function (self)
             if self.hidden then return; end
             self.callbacks.onDraw(self)
-            screen_buffer:write(self.pos.x, self.pos.y, self.text, self.colors.foreground, self.colors.background)
+
+            
+            local lines = string_utils.split(self.text, "\n")
+            local x_center_offset = 0
+
+            for key, line in pairs(lines) do
+                if key == 1 then
+                    x_center_offset = math.floor(#line / 2)
+                    screen_buffer:write(self.pos.x, self.pos.y, line, self.colors.foreground, self.colors.background)
+                else
+                    screen_buffer:write(self.pos.x + x_center_offset - math.floor(#line / 2), self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
+                end
+            end
+
+
         end,
         -- GIVES EVENT TO LABEL
         event = function (self, formatted_event)
-            if formatted_event.name == const.TOUCH then
-                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, #self.text, 1) then
-                    self.callbacks.onPress(self, formatted_event)
-                end
-            end
+            if self.hidden then return false; end
+            return false
         end
     },
     Button = {
@@ -796,6 +829,7 @@ gui_elements = {
                 callbacks = {
                     onDraw = function () end,
                     onPress = function () end,
+                    onFailedPress = function () end,
                     onTimeout = function () end
                 }
             }
@@ -835,6 +869,7 @@ gui_elements = {
         end,
         -- GIVES EVENT TO BUTTON
         event = function (self, formatted_event)
+            if self.hidden then return false; end
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     if self.timed.enabled then
@@ -847,6 +882,8 @@ gui_elements = {
                         self:press(formatted_event)
                     end
                     return true -- RETURNING TRUE DELETES THE EVENT
+                else
+                    self.callbacks.onFailedPress(self, formatted_event)
                 end
             end
             if self.timed.enabled then self.timed.clock:event(formatted_event); end
@@ -879,7 +916,8 @@ gui_elements = {
                 },
                 callbacks = {
                     onDraw = function () end,
-                    onPress = function () end
+                    onPress = function () end,
+                    onFailedPress = function () end
                 }
             }
             setmetatable(newProgressbar, gui_elements.Progressbar)
@@ -904,6 +942,7 @@ gui_elements = {
         end,
         -- GIVES EVENT TO PROGRESSBAR
         event = function (self, formatted_event)
+            if self.hidden then return false; end
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self.callbacks.onPress(self, formatted_event)
@@ -946,7 +985,11 @@ gui_elements = {
                 },
                 callbacks = {
                     onDraw = function () end,
-                    onFocus = function () end
+                    onPress = function () end,
+                    onFailedPress = function () end,
+                    onFocus = function () end,
+                    onKey = function () end,
+                    onChar = function () end
                 }
             }
             newMemo.cursor.blink.binded_cursor = newMemo.cursor
@@ -1001,41 +1044,42 @@ gui_elements = {
         end,
         -- GIVES EVENT TO MEMO
         event = function (self, formatted_event)
+            if self.hidden then return false; end
             if not self.editable then return false; end
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
-                    self.focussed = true
                     local x = formatted_event.x - self.pos.x
                     local y = formatted_event.y - self.pos.y
                     self:set_cursor(x + self.first_visible_char, y + self.first_visible_line)
-                    self.callbacks.onFocus(self, formatted_event)
+                    self:focus(true, formatted_event)
+                    self.callbacks.onPress(self, formatted_event)
+                    
                     return true -- RETURNING TRUE DELETES THE EVENT
                 else
-                    self.focussed = false
-                    self.cursor.visible = false
-                    self.callbacks.onFocus(self, formatted_event)
+                    self:focus(false, formatted_event)
+                    self.callbacks.onFailedPress(self, formatted_event)
                     return false
                 end
             elseif formatted_event.name == const.DELETED then
-                self.focussed = false
-                self.cursor.visible = false
-                self.callbacks.onFocus(self, formatted_event)
+                self:focus(false, formatted_event)
                 return false
             end
             if self.focussed then
                 self.cursor.blink:event(self.cursor.blink, formatted_event)
                 if formatted_event.name == const.CHAR then
+                    if self.callbacks.onChar(self, formatted_event) then return true; end
                     self:write(formatted_event.char)
                     return true
                 elseif formatted_event.name == const.KEY then
+                    if self.callbacks.onKey(self, formatted_event) then return true; end
                     if formatted_event.key == const.KEY_UP_ARROW then
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y - 1)
-
-
+                        
+                        
                     elseif formatted_event.key == const.KEY_DOWN_ARROW then
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + 1)
-
-
+                        
+                        
                     elseif formatted_event.key == const.KEY_RIGHT_ARROW then
                         local line = self.lines[self.cursor.pos.y]
                         if self.lines[self.cursor.pos.y + 1] and self.cursor.pos.x >= #line + 1 then
@@ -1102,6 +1146,16 @@ gui_elements = {
                 end
             end
         end,
+        focus = function (self, active, formatted_event)
+            if active then
+                self.focussed = true
+                self.callbacks.onFocus(self, formatted_event)
+            else
+                self.focussed = false
+                self.cursor.visible = false
+                self.callbacks.onFocus(self, formatted_event)
+            end
+        end,
         -- SETS THE CURSOR TO A POSITION
         --  (if create_lines is true, it will create all the lines that
         --   are missing between cursor_y and the last line)
@@ -1143,12 +1197,12 @@ gui_elements = {
                 for y=1, #self.lines + (#lines - 1) - self.limits.y do
                     table.remove(lines)
                 end
-                if #lines <= 0 then return; end
+                if #lines == 0 then return; end
             end
 
             if #lines > 1 then
                 for line_key, line in pairs(lines) do
-                    if line_key <= 1 then
+                    if line_key == 1 then
                         local cursor_line = self.lines[self.cursor.pos.y]
                         local line_start = cursor_line:sub(1, self.cursor.pos.x - 1)
                         local line_end = cursor_line:sub(self.cursor.pos.x)
@@ -1165,7 +1219,7 @@ gui_elements = {
                         table.insert(self.lines, self.cursor.pos.y, last_line..line_end)
 
                         self:set_cursor(#last_line + 1, self.cursor.pos.y)
-                    elseif line_key >= #lines then
+                    elseif line_key == #lines then
                         break
                     else
                         if self.limits.x > 0 then line = line:sub(1, self.limits.x); end
@@ -1187,6 +1241,14 @@ gui_elements = {
                 self.lines[self.cursor.pos.y] = line_start..lines[1]..line_end
                 self:set_cursor(self.cursor.pos.x + #lines[1], self.cursor.pos.y)
             end
+        end,
+        print = function (self, ...)
+            local text = string_utils.join({...}, "\n").."\n"
+            self:write(text)
+        end,
+        clear = function (self)
+            self.lines = {""}
+            self:set_cursor(1, 1)
         end
     },
     Window = {
@@ -1214,6 +1276,7 @@ gui_elements = {
                 callbacks = {
                     onDraw = function () end,
                     onPress = function () end,
+                    onFailedPress = function () end,
                     onFocus = function () end
                 }
             }
@@ -1224,7 +1287,7 @@ gui_elements = {
         draw = function (self)
             if self.hidden then return; end
             self.callbacks.onDraw(self)
-            if self.shadow then
+            if self.shadow.enabled then
                 screen_buffer:rectangle(
                     self.pos.x + self.shadow.offset.x,
                     self.pos.y + self.shadow.offset.y,
@@ -1240,6 +1303,7 @@ gui_elements = {
         end,
         -- GIVES EVENT TO WINDOW
         event = function (self, formatted_event)
+            if self.hidden then return false; end
             local delete_event = self:event_elements(formatted_event)
             if not delete_event then
                 if formatted_event.name == const.TOUCH then
@@ -1251,6 +1315,8 @@ gui_elements = {
                         return true
                     else
                         self.focussed = false
+                        self.callbacks.onFailedPress(self, formatted_event)
+                        self.callbacks.onFocus(self, formatted_event)
                     end
                 elseif formatted_event.name == const.MOUSEDRAG and self.focussed then
                     self:drag(formatted_event.x, formatted_event.y)
@@ -1355,10 +1421,16 @@ Loop = {
                     self.elements.FPS_label.hidden = not state
                     self.elements.EPS_label.hidden = not state
                 end,
+                update_pos = function (self)
+                    self.elements.FPS_label.pos = self.pos
+                    self.elements.EPS_label.pos = self.pos + math_utils.Vector2.new(0, 1)
+                end,
                 FPS = 0,
                 EPS = 0
             },
             callbacks = {
+                onStart = function () end,
+                onStop = function () end,
                 onDraw = function () end,
                 onClock = function () end,
                 onEvent = function () end
@@ -1373,8 +1445,7 @@ Loop = {
             newLoop.elements.loop.stats_clock,
             const.ONCLOCK,
             function (self, formatted_event)
-                self.stats.elements.FPS_label.pos = self.stats.pos
-                self.stats.elements.EPS_label.pos = self.stats.pos + math_utils.Vector2.new(0, 1)
+                self.stats:update_pos()
                 self.stats.elements.FPS_label.text = tostring(self.stats.FPS).." FPS"
                 self.stats.elements.EPS_label.text = tostring(self.stats.EPS).." EPS"
                 self.stats.FPS = 0
@@ -1493,6 +1564,8 @@ Loop = {
                 CLOCK.interval = 1 / self.options.FPS_target
             end
         )
+        self.stats:update_pos()
+        self.callbacks.onStart(self)
         while self.enabled do
             local timer = os.startTimer(1 / self.options.EPS_target)
             local raw_event = {os.pullEvent()}
@@ -1501,6 +1574,7 @@ Loop = {
 
             os.cancelTimer(timer)
         end
+        self.callbacks.onStop(self)
     end,
     -- STOPS THE LOOP
     stop = function (self)
