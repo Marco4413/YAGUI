@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.5",
+    ver = "1.5.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -141,17 +141,12 @@ string_utils = {
     -- SPLITS STRING EVERY TIME SEPARATOR CHARSET IS FOUND
     split = function (str, sep)
         local tbl = {}
-        while true do
-            local pos = str:find(sep)
-            if pos then
-                table.insert(tbl, str:sub(1, pos - 1))
-                str = str:sub(pos + 1)
-            else
-                table.insert(tbl, str)
-                break
-            end
+        for text in str:gmatch("[^"..string_utils.escape_magic_characters(sep).."]+") do
+            table.insert(tbl, text)
         end
-
+        if not (#tbl > 0) then
+            table.insert(tbl, str)
+        end
         return tbl
     end,
     -- COMPARES V1 AND V2 AND IF V1 IS NEWER THAN V2 THEN IT RETURNS 1, IF THEY'RE THE SAME IT RETURNS 0 ELSE IT RETURNS -1
