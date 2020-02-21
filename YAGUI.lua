@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.5.1",
+    ver = "1.6",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -28,6 +28,7 @@ local const = {
     TOUCH = "screen_touch",
     MOUSEUP = "mouse_up",
     MOUSEDRAG = "mouse_drag",
+    MOUSESCROLL = "mouse_scroll",
     CHAR = "char",
     KEY = "key",
     DELETED = "DELETED",
@@ -62,12 +63,14 @@ local const = {
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
+    SCROLL_UP = -1,
+    SCROLL_DOWN = 1,
     COMPUTER = "computer",
     COMPUTER_ADVANCED = "computer_advanced",
     TURTLE = "turtle",
     TURTLE_ADVANCED = "turtle_advanced",
     POCKET = "pocket",
-    POCKET_ADVANCED = "pocket_advanced",
+    POCKET_ADVANCED = "pocket_advanced"
 }
 
 -- GENERIC UTILS MODULE
@@ -138,14 +141,18 @@ string_utils = {
         end
         return str
     end,
-    -- SPLITS STRING EVERY TIME SEPARATOR CHARSET IS FOUND
+    -- SPLITS STRING EVERY TIME SEPARATOR IS FOUND
     split = function (str, sep)
         local tbl = {}
-        for text in str:gmatch("[^"..string_utils.escape_magic_characters(sep).."]+") do
-            table.insert(tbl, text)
-        end
-        if not (#tbl > 0) then
-            table.insert(tbl, str)
+        while true do
+            local pos = str:find(sep)
+            if pos then
+                table.insert(tbl, str:sub(1, pos - 1))
+                str = str:sub(pos + 1)
+            else
+                table.insert(tbl, str)
+                break
+            end
         end
         return tbl
     end,
@@ -225,6 +232,12 @@ math_utils = {
 }
 
 math_utils.Vector2.__index = math_utils.Vector2
+
+math_utils.Vector2.ONE   = math_utils.Vector2.new( 1,  1)
+math_utils.Vector2.UP    = math_utils.Vector2.new( 0, -1)
+math_utils.Vector2.DOWN  = math_utils.Vector2.new( 0,  1)
+math_utils.Vector2.LEFT  = math_utils.Vector2.new(-1,  0)
+math_utils.Vector2.RIGHT = math_utils.Vector2.new( 1,  0)
 
 -- TABLE UTILS MODULE
 local table_utils = {
@@ -306,6 +319,18 @@ local event_utils = {
             event.x = event_table[3]
             event.y = event_table[4]
             return event
+        elseif event.name == "mouse_drag" then
+            event.name = const.MOUSEDRAG
+            event.button = event_table[2]
+            event.x = event_table[3]
+            event.y = event_table[4]
+            return event
+        elseif event.name == "mouse_scroll" then
+            event.name = const.MOUSESCROLL
+            event.direction = event_table[2]
+            event.x = event_table[3]
+            event.y = event_table[4]
+            return event
         elseif event.name == "char" then
             event.name = const.CHAR
             event.char = event_table[2]
@@ -313,12 +338,6 @@ local event_utils = {
         elseif event.name == "key" then
             event.name = const.KEY
             event.key = event_table[2]
-            return event
-        elseif event.name == "mouse_drag" then
-            event.name = const.MOUSEDRAG
-            event.button = event_table[2]
-            event.x = event_table[3]
-            event.y = event_table[4]
             return event
         end
         table.remove(event_table, 1)
@@ -1138,6 +1157,8 @@ gui_elements = {
 
                     end
                     return true
+                elseif formatted_event.name == const.MOUSESCROLL then
+                    self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + formatted_event.direction)
                 end
             end
         end,
@@ -1343,10 +1364,13 @@ gui_elements = {
             end
         end,
         -- SETS WINDOW'S ELEMENTS
-        set_elements = function (self, elements_table)
+        set_elements = function (self, elements_table, relative)
             self.elements = {}
-            for key, value in pairs(elements_table) do
-                table.insert(self.elements, value)
+            for key, element in pairs(elements_table) do
+                if relative then
+                    element.pos = self.pos + element.pos - math_utils.Vector2.ONE
+                end
+                table.insert(self.elements, element)
             end
         end,
         -- DRAWS ALL WINDOW'S ELEMENTS
@@ -1418,7 +1442,7 @@ Loop = {
                 end,
                 update_pos = function (self)
                     self.elements.FPS_label.pos = self.pos
-                    self.elements.EPS_label.pos = self.pos + math_utils.Vector2.new(0, 1)
+                    self.elements.EPS_label.pos = self.pos + math_utils.Vector2.DOWN
                 end,
                 FPS = 0,
                 EPS = 0

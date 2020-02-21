@@ -63,39 +63,38 @@ local LAYOUT = {
 
         bFile     = function () return 1, 1, 4, 1; end,
         wFileMenu = function () return 1, 2, 10, 7; end,
-        bNewOpen  = function () return 1, 2, 10, 1; end,
-        bSave     = function () return 1, 3, 10, 1; end,
-        bSaveAs   = function () return 1, 4, 10, 1; end,
-        bDelete   = function () return 1, 5, 10, 1; end,
-        bGoto     = function () return 1, 6, 10, 1; end,
-        bRun      = function () return 1, 7, 10, 1; end,
-        bQuit     = function () return 1, 8, 10, 1; end,
+        bNewOpen  = function () return 1, 1, 10, 1; end,
+        bSave     = function () return 1, 2, 10, 1; end,
+        bSaveAs   = function () return 1, 3, 10, 1; end,
+        bDelete   = function () return 1, 4, 10, 1; end,
+        bGoto     = function () return 1, 5, 10, 1; end,
+        bRun      = function () return 1, 6, 10, 1; end,
+        bQuit     = function () return 1, 7, 10, 1; end,
 
         lInputTitle = function () return 2, 9; end,
         mInput      = function () return 2, 10, 49, 1; end,
+        lInputTip   = function () return 3, 12, "You can press CONTROL to cancel."; end,
 
         wOverWrite = function () return 18, 7, 15, 6; end,
-        lOW        = function () return 20, 8; end,
-        bOWAccept  = function () return 19, 11, 3, 1; end,
-        bOWReject  = function () return 30, 11, 2, 1; end,
+        lOW        = function () return 3, 2; end,
+        bOWAccept  = function () return 2, 5, 3, 1; end,
+        bOWReject  = function () return 13, 5, 2, 1; end,
 
         stats = function () return 45, 18; end
     },
     [ YAGUI.COMPUTER ] = {},
     [ YAGUI.TURTLE ] = {
         bCompact = function () return 39, 1, 1, 1; end,
-        mEditor  = function () return 5, 2, 47, 11; end,
+        mEditor  = function () return 5, 2, 35, 11; end,
         lPath    = function () return 1, 13; end,
         
-        lInputTitle = function () return 2, 7; end,
-        mInput      = function () return 2, 8, 37, 1; end,
+        lInputTitle = function () return 2, 5; end,
+        mInput      = function () return 2, 6, 37, 1; end,
+        lInputTip   = function () return 3, 8, "You can press CONTROL to cancel."; end,
 
         wOverWrite = function () return 12, 4, 15, 6; end,
-        lOW        = function () return 14, 5; end,
-        bOWAccept  = function () return 13, 8, 3, 1; end,
-        bOWReject  = function () return 24, 8, 2, 1; end,
 
-        stats = function () return 34, 12; end
+        stats = function () return 33, 12; end
     },
     [ YAGUI.POCKET ] = {
         lCursor  = function () return 1, 19; end,
@@ -104,11 +103,9 @@ local LAYOUT = {
         lPath    = function () return 1, 20; end,
 
         mInput   = function () return 2, 10, 24, 1; end,
+        lInputTip   = function () return 8, 12, "You can press\nCONTROL to cancel."; end,
 
         wOverWrite = function () return 6, 7, 15, 6; end,
-        lOW        = function () return 8, 8; end,
-        bOWAccept  = function () return 7, 11, 3, 1; end,
-        bOWReject  = function () return 18, 11, 2, 1; end,
 
         stats = function () return 21, 19; end
     },
@@ -186,7 +183,7 @@ bQuit.pos.x    , bQuit.pos.y    , bQuit.size.x    , bQuit.size.y     = LAYOUT.th
 
 wFileMenu.draw_priority = YAGUI.LOW_PRIORITY
 wFileMenu.hidden = true
-wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bQuit})
+wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bQuit}, true)
 
 bSave.timed.enabled = true
 bSave.timed.clock.interval = button_timeout
@@ -200,10 +197,12 @@ bQuit.timed.clock.interval = button_timeout
 -- Creating elements for loop lInput
 local lInputTitle = YAGUI.gui_elements.Label.new(2, 9, "", text_color)
 local mInput      = YAGUI.gui_elements.Memo.new(2, 10, 49, 1, text_color, lighter_background_color)
+local lInputTip   = YAGUI.gui_elements.Label.new(3, 12, "You can press CONTROL to cancel.", text_color)
 
 -- Applying layout
-lInputTitle.pos.x, lInputTitle.pos.y = LAYOUT.this_layout.lInputTitle()
+lInputTitle.pos.x, lInputTitle.pos.y                 = LAYOUT.this_layout.lInputTitle()
 mInput.pos.x     , mInput.pos.y, mInput.size.x, mInput.size.y = LAYOUT.this_layout.mInput()
+lInputTip.pos.x  , lInputTip.pos.y  , lInputTip.text = LAYOUT.this_layout.lInputTip()
 
 mInput.limits = YAGUI.math_utils.Vector2.new(0, 1)
 mInput.cursor.blink.interval = cursor_blinking_speed
@@ -221,7 +220,7 @@ lOW.pos.x       , lOW.pos.y = LAYOUT.this_layout.lOW()
 bOWAccept.pos.x , bOWAccept.pos.y , bOWAccept.size.x , bOWAccept.size.y  = LAYOUT.this_layout.bOWAccept()
 bOWReject.pos.x , bOWReject.pos.y , bOWReject.size.x , bOWReject.size.y  = LAYOUT.this_layout.bOWReject()
 
-wOverWrite:set_elements({lOW, bOWAccept, bOWReject})
+wOverWrite:set_elements({lOW, bOWAccept, bOWReject}, true)
 
 bOWAccept.timed.enabled = true
 bOWAccept.timed.clock.interval = button_timeout
@@ -337,15 +336,14 @@ YAGUI.generic_utils.set_callback(
     end
 )
 bSaveAs.callbacks.onActionComplete = function (path)
-    if path then
-        path = shell.resolve(path)
-        if fs.exists(path) then
-            bOWAccept.bound = bSaveAs
-            bSaveAs.path = path
-            lOverWrite:start()
-        else
-            save_notes(path)
-        end
+    if not path then path = current_file_path; end
+    path = shell.resolve(path)
+    if fs.exists(path) then
+        bOWAccept.bound = bSaveAs
+        bSaveAs.path = path
+        lOverWrite:start()
+    else
+        save_notes(path)
     end
 end
 bSaveAs.callbacks.onOverWrite = function ()
@@ -564,7 +562,7 @@ lMain:set_elements({cWSS, bFile, wFileMenu, lLines, lCursor, bCompact, mEditor, 
 
 lInput.stats.pos = YAGUI.math_utils.Vector2.new(LAYOUT.this_layout.stats())
 lInput.stats:enable(loop_stats)
-lInput:set_elements({cWSS, lInputTitle, mInput})
+lInput:set_elements({cWSS, lInputTitle, mInput, lInputTip})
 
 lOverWrite.stats.pos = YAGUI.math_utils.Vector2.new(LAYOUT.this_layout.stats())
 lOverWrite.stats:enable(loop_stats)
