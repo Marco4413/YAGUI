@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.6",
+    ver = "1.7",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -185,6 +185,14 @@ string_utils = {
             str = str:gsub("[%"..character.."]", '%%%'..character)
         end
         return str
+    end,
+    -- GETS THE EXTENSION OF PATH
+    get_extension = function (path)
+        local extension, found = path:gsub(".*%.", "")
+        if found > 0 then
+            return extension
+        end
+        return ""
     end
 }
 
@@ -196,11 +204,23 @@ math_utils = {
         -- RETURNS NEW VECTOR2
         new = function (x, y)
             local newVector2 = {
-                x = x,
-                y = y
+                x = x or 0,
+                y = y or 0
             }
             setmetatable(newVector2, math_utils.Vector2)
             return newVector2
+        end,
+        -- RETURNS VECTOR LENGTH SQUARED
+        length_sq = function (self)
+            return math.pow(self.x, 2) + math.pow(self.y, 2)
+        end,
+        -- RETURNS VECTOR LENGTH
+        length = function (self)
+            return math.sqrt(self:length_sq())
+        end,
+        -- TOSTRING METAMETHOD, handles tostring(Vector1)
+        __tostring = function (self)
+            return string.format("(%d; %d)", self.x, self.y)
         end,
         -- ADD METAMETHOD, handles Vector1 + Vector2
         __add = function (self, other)
@@ -217,6 +237,18 @@ math_utils = {
         -- DIV METAMETHOD, handles Vector1 / number
         __div = function (self, number)
             return math_utils.Vector2.new(self.x / number, self.y / number)
+        end,
+        -- EQUAL METAMETHOD, handles Vector1 == Vector2
+        __eq = function (self, other)
+            return self:length_sq() == other:length_sq()
+        end,
+        -- LESS THAN METAMETHOD, handles Vector1 < Vector2; Vector1 > Vector2
+        __lt = function (self, other)
+            return self:length_sq() < other:length_sq()
+        end,
+        -- LESS OR EQUAL METAMETHOD, handles Vector1 <= Vector2; Vector1 >= Vector2
+        __le = function (self, other)
+            return self:length_sq() <= other:length_sq()
         end
     },
     -- MAPS A NUMBER FROM A RANGE TO ANOTHER ONE
@@ -238,6 +270,7 @@ math_utils.Vector2.UP    = math_utils.Vector2.new( 0, -1)
 math_utils.Vector2.DOWN  = math_utils.Vector2.new( 0,  1)
 math_utils.Vector2.LEFT  = math_utils.Vector2.new(-1,  0)
 math_utils.Vector2.RIGHT = math_utils.Vector2.new( 1,  0)
+math_utils.Vector2.ZERO  = math_utils.Vector2.new( 0,  0)
 
 -- TABLE UTILS MODULE
 local table_utils = {
@@ -811,13 +844,6 @@ gui_elements = {
                     screen_buffer:write(self.pos.x + x_center_offset - math.floor(#line / 2), self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
                 end
             end
-
-
-        end,
-        -- GIVES EVENT TO LABEL
-        event = function (self, formatted_event)
-            if self.hidden then return false; end
-            return false
         end
     },
     Button = {
@@ -1387,15 +1413,17 @@ gui_elements = {
             local delete_event = false
             
             for key, element in pairs(self.elements) do
-                local this_delete_event = element:event(formatted_event)
-                delete_event = delete_event or this_delete_event
-                if this_delete_event then
-                    formatted_event = {name = const.DELETED}
+                if element.event then
+                    local this_delete_event = element:event(formatted_event)
+                    delete_event = delete_event or this_delete_event
+                    if this_delete_event then
+                        formatted_event = {name = const.DELETED}
+                    end
                 end
             end
 
             return delete_event
-        end,
+        end
     }
 }
 
@@ -1525,7 +1553,9 @@ Loop = {
         local formatted_event = event_utils.format_event_table(raw_event)
         local function event_table(tbl)
             for key, element in pairs(tbl) do
-                if element:event(formatted_event) then formatted_event = {name = const.DELETED}; end
+                if element.event then
+                    if element:event(formatted_event) then formatted_event = {name = const.DELETED}; end
+                end
             end
         end
         
@@ -1550,11 +1580,13 @@ Loop = {
 
         local high_focussed = {}
         for key, element in pairs(self.elements.high_priority) do
-            local focus = element:event(formatted_event)
-            if focus then
-                formatted_event = {name = const.DELETED}
-                if self.elements.high_priority ~= element then
-                    table.insert(high_focussed, {element = element, key = key})
+            if element.event then
+                local focus = element:event(formatted_event)
+                if focus then
+                    formatted_event = {name = const.DELETED}
+                    if self.elements.high_priority ~= element then
+                        table.insert(high_focussed, {element = element, key = key})
+                    end
                 end
             end
         end
@@ -1612,7 +1644,8 @@ if tArgs[1] == "help" then
         { text = " - info (prints info about the lib)"              , foreground = colors.yellow, background = nil},
         { text = " - ver (prints version of the lib)"               , foreground = colors.green , background = nil},
         { text = " - copyright (prints copyright of the lib)"       , foreground = colors.blue  , background = nil},
-        { text = " - setup (adds YAGUI_PATH to computer's settings)", foreground = colors.yellow, background = nil}
+        { text = " - setup (adds YAGUI_PATH to computer's settings)", foreground = colors.yellow, background = nil},
+        { text = " - create <PATH> (creates a new YAGUI project)"   , foreground = colors.green , background = nil}
     }
 
     for key, line in pairs(lines) do
@@ -1642,9 +1675,25 @@ elseif tArgs[1] == "setup" then
         local path = "/"..shell.getRunningProgram()
         setting_utils:set(settings_entry, path)
 
-        monitor_utils.better_print(term, colors.green, nil, "Lib path was set to ", setting_utils.get(settings_entry))
+        monitor_utils.better_print(term, colors.green, nil, "Lib path was set to \"", setting_utils.get(settings_entry), "\".")
     else
-        monitor_utils.better_print(term, colors.red, nil, "SHELL API ISN'T AVAILABLE")
+        monitor_utils.better_print(term, colors.red, nil, "SHELL API ISN'T AVAILABLE!")
+    end
+elseif tArgs[1] == "create" then
+    if tArgs[2] then
+        local path = shell.resolve(tArgs[2])
+        local name = fs.getName(path):lower()
+        if string_utils.get_extension(path) ~= "lua" then path = path..".lua"; end
+        if fs.exists(path) then
+            monitor_utils.better_print(term, colors.red, nil, "PATH: \"/", path, "\" already exists, please use another path or delete it.")
+        else
+            local file = fs.open(path, "w")
+            file.write("\n-- AUTO-GENERATED with \"YAGUI create\"\nlocal YAGUI_PATH = settings.get(\"YAGUI_PATH\")\nif not (type(YAGUI_PATH) == \"string\") then printError(\"YAGUI is not installed, please install it by opening it with argument \\\"setup\\\".\"); return; end\nif not fs.exists(YAGUI_PATH) then printError(\"Couldn't find YAGUI in path: \\\"\"..YAGUI_PATH..\"\\\", Please reinstall it by opening it with argument \\\"setup\\\".\"); return; end\nlocal YAGUI = dofile(YAGUI_PATH)\n-- End of AUTO-GENERATED code\n\n")
+            file.close()
+            monitor_utils.better_print(term, colors.green, nil, "New project was created at \"/", path, "\".")
+        end
+    else
+        monitor_utils.better_print(term, colors.red, nil, "You must specify a path to create a new project.")
     end
 elseif tArgs[1] then
     monitor_utils.better_print(term, colors.red, nil, "UNKNOWN COMMAND: \"", tArgs[1], "\"")

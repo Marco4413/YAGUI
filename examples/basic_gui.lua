@@ -1,8 +1,10 @@
 
--- LOAD LIBRARY
+-- AUTO-GENERATED with "YAGUI create"
 local YAGUI_PATH = settings.get("YAGUI_PATH")
-if not YAGUI_PATH then YAGUI_PATH = "/YAGUI/YAGUI.lua"; end
+if not (type(YAGUI_PATH) == "string") then printError("YAGUI is not installed, please install it by opening it with argument \"setup\"."); return; end
+if not fs.exists(YAGUI_PATH) then printError("Couldn't find YAGUI in path: \""..YAGUI_PATH.."\", Please reinstall it by opening it with argument \"setup\"."); return; end
 local YAGUI = dofile(YAGUI_PATH)
+-- End of AUTO-GENERATED code
 
 -- This is used to make WSS Server (Wireless Screen Share Server) broadcast
 -- On YAGUI.WSS:open() there's an argument that's the computer's side

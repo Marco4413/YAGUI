@@ -1,12 +1,10 @@
 
--- LOAD LIBRARY
+-- AUTO-GENERATED with "YAGUI create"
 local YAGUI_PATH = settings.get("YAGUI_PATH")
-if not YAGUI_PATH then YAGUI_PATH = "/YAGUI/YAGUI.lua"; end
-if not fs.exists(YAGUI_PATH) then
-    error("\nPlease install YAGUI first or put it in path: \""..tostring(YAGUI_PATH).."\".\nTo install YAGUI you have to launch it with argument \"setup\".")
-    return
-end
+if not (type(YAGUI_PATH) == "string") then printError("YAGUI is not installed, please install it by opening it with argument \"setup\"."); return; end
+if not fs.exists(YAGUI_PATH) then printError("Couldn't find YAGUI in path: \""..YAGUI_PATH.."\", Please reinstall it by opening it with argument \"setup\"."); return; end
 local YAGUI = dofile(YAGUI_PATH)
+-- End of AUTO-GENERATED code
 
 -- SETTINGS
 
@@ -417,7 +415,7 @@ YAGUI.generic_utils.set_callback(
     YAGUI.ONCLOCK,
     function (self)
         lLines.text = string.format("Lines: %d", #mEditor.lines)
-        lCursor.text = string.format("Cursor: (%d; %d)", mEditor.cursor.pos.x, mEditor.cursor.pos.y)
+        lCursor.text = "Cursor: "..tostring(mEditor.cursor.pos)
         lPath.text = "/"..current_file_path
     end
 )
