@@ -472,7 +472,7 @@ YAGUI.generic_utils.set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         if event.name == YAGUI.KEY then
-            if event.key == YAGUI.KEY_LCONTROL or event.key == YAGUI.KEY_RCONTROL then
+            if event.key == YAGUI.KEY_LEFTCTRL or event.key == YAGUI.KEY_RIGHTCTRL then
                 lInput:stop()
                 return true
             end
