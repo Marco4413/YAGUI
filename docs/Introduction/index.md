@@ -1,6 +1,6 @@
 # Welcome to YAGUI Documentation v0.1
 
-![](/img/logo.png)
+![](../img/logo.png)
 
 What does YAGUI stand for? **YAGUI** stands for "**Yet Another Graphical User Interface**", this library tries to make **GUIs easier to make and more powerful by having these objectives**:
 

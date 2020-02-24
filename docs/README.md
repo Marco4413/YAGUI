@@ -1,4 +1,4 @@
-![](/img/logo.png)
+![](./img/logo.png)
 
 To **download YAGUI** you can **run** `pastebin run 5qQ6t6ZX` on your computer!
 
