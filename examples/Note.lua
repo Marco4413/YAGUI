@@ -153,6 +153,7 @@ lPath.pos.x   , lPath.pos.y   = LAYOUT.this_layout.lPath()
 
 bCompact.timed.enabled = true
 bCompact.timed.clock.interval = button_timeout
+bCompact.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFTSHIFT, YAGUI.KEY_C}
 
 mEditor.cursor.blink.interval = cursor_blinking_speed
 mEditor.colors.cursor = cursor_color
@@ -192,6 +193,8 @@ bRun.timed.clock.interval = button_timeout
 bQuit.timed.enabled = true
 bQuit.timed.clock.interval = button_timeout
 
+bFile.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_TAB}
+
 -- Creating elements for loop lInput
 local lInputTitle = YAGUI.gui_elements.Label.new(2, 9, "", text_color)
 local mInput      = YAGUI.gui_elements.Memo.new(2, 10, 49, 1, text_color, lighter_background_color)
@@ -225,6 +228,9 @@ bOWAccept.timed.clock.interval = button_timeout
 bOWReject.timed.enabled = true
 bOWReject.timed.clock.interval = button_timeout
 
+bOWAccept.shortcut = {YAGUI.KEY_Y}
+bOWReject.shortcut = {YAGUI.KEY_N}
+
 -- Defining functions
 
 -- This functions opens a file from path, if file doesn't exist then it will create a new file
@@ -233,7 +239,7 @@ local function open_notes(path)
     if #path:gsub(" ", "") == 0 then
         path = default_path
     end
-    if not fs.getName(path):find("%.") then
+    if YAGUI.string_utils.get_extension(path) == "" then
         path = path..default_extension
     end
     if fs.isDir(path) then return; end
@@ -267,9 +273,7 @@ local function save_notes(path)
 
     local file = fs.open(path, "w")
 
-    for key, line in pairs(mEditor.lines) do
-        file.writeLine(line)
-    end
+    file.write(YAGUI.string_utils.join(mEditor.lines, "\n"))
 
     file.close()
 end
@@ -396,15 +400,18 @@ YAGUI.generic_utils.set_callback(
     bCompact,
     YAGUI.ONTIMEOUT,
     function (self)
-        local i = 1
-        while i <= #mEditor.lines do
+        local lines_to_remove = {}
+        for i=1, #mEditor.lines do
             local line = mEditor.lines[i]
+            if not line then break; end
             local line_no_spaces = line:gsub(" ", "")
             if #line_no_spaces == 0 then
-                table.remove(mEditor.lines, i)
-            else
-                i = i + 1
+                table.insert(lines_to_remove, 1, i)
             end
+        end
+
+        for key, line_key in pairs(lines_to_remove) do
+            table.remove(mEditor.lines, line_key)
         end
         mEditor:set_cursor(1, 1)
     end
@@ -417,6 +424,25 @@ YAGUI.generic_utils.set_callback(
         lLines.text = string.format("Lines: %d", #mEditor.lines)
         lCursor.text = "Cursor: "..tostring(mEditor.cursor.pos)
         lPath.text = "/"..current_file_path
+    end
+)
+
+YAGUI.generic_utils.set_callback(
+    lMain,
+    YAGUI.ONEVENT,
+    function (self, event)
+        if YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.LALT, YAGUI.KEY_S) then
+            bSaveAs.callbacks.onPress(bSaveAs, event)
+        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_N) then
+            bNewOpen.callbacks.onPress(bNewOpen, event)
+        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_S) then
+            bSave.callbacks.onTimeout(bSave, event)
+        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_G) then
+            bGoto.callbacks.onPress(bGoto, event)
+        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_R) then
+            YAGUI.input:reset()
+            bRun.callbacks.onTimeout(bRun, event)
+        end
     end
 )
 

@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.7",
+    ver = "1.8",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -31,6 +31,8 @@ local const = {
     MOUSESCROLL = "mouse_scroll",
     CHAR = "char",
     KEY = "key",
+    KEYUP = "key_up",
+    PASTE = "paste",
     DELETED = "DELETED",
     DISCONNECTED = "DISCONNECTED",
     LOW_PRIORITY = 1,
@@ -46,20 +48,6 @@ local const = {
     ONFOCUS = 9,
     ONKEY = 10,
     ONCHAR = 11,
-    KEY_BACKSPACE = 14,
-    KEY_TAB = 15,
-    KEY_ENTER = 28,
-    KEY_LCONTROL = 29,
-    KEY_LSHIFT = 42,
-    KEY_RSHIFT = 54,
-    KEY_ALT = 56,
-    KEY_CAPSLOCK = 58,
-    KEY_RCONTROL = 157,
-    KEY_UP_ARROW = 200,
-    KEY_LEFT_ARROW = 203,
-    KEY_RIGHT_ARROW = 205,
-    KEY_DOWN_ARROW = 208,
-    KEY_DELETE = 211,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -70,8 +58,16 @@ local const = {
     TURTLE = "turtle",
     TURTLE_ADVANCED = "turtle_advanced",
     POCKET = "pocket",
-    POCKET_ADVANCED = "pocket_advanced"
+    POCKET_ADVANCED = "pocket_advanced",
+    ALIGN_LEFT = 1,
+    ALIGN_CENTER = 2
 }
+
+for key_name, key in pairs(keys) do
+    if type(key) == "number" then
+        const["KEY_"..key_name:upper()] = key
+    end
+end
 
 -- GENERIC UTILS MODULE
 local generic_utils = {
@@ -358,6 +354,12 @@ local event_utils = {
             event.x = event_table[3]
             event.y = event_table[4]
             return event
+        elseif event.name == "mouse_up" then
+            event.name = const.MOUSEUP
+            event.button = event_table[2]
+            event.x = event_table[3]
+            event.y = event_table[4]
+            return event
         elseif event.name == "mouse_scroll" then
             event.name = const.MOUSESCROLL
             event.direction = event_table[2]
@@ -371,6 +373,14 @@ local event_utils = {
         elseif event.name == "key" then
             event.name = const.KEY
             event.key = event_table[2]
+            return event
+        elseif event.name == "key_up" then
+            event.name = const.KEYUP
+            event.key = event_table[2]
+            return event
+        elseif event.name == "paste" then
+            event.name = const.PASTE
+            event.paste = event_table[2]
             return event
         end
         table.remove(event_table, 1)
@@ -485,8 +495,8 @@ local screen_buffer = {
             local pixel = self:get_pixel(x, y)
 
             if char and #char == 1 then pixel.char = char; end
-            if foreground then pixel.foreground = foreground; end
-            if background then pixel.background = background; end
+            pixel.foreground = foreground or pixel.background
+            pixel.background = background or pixel.background
 
             if not self.pixels[x] then self.pixels[x] = {}; end
             self.pixels[x][y] = pixel
@@ -658,6 +668,47 @@ local screen_buffer = {
     end
 }
 
+-- INPUT MODULE
+-- Usually managed by loops
+local input = {
+    -- STORES ALL KEYS THAT ARE PRESSED
+    pressed_keys = {},
+    -- RESETS pressed_keys TABLE
+    reset = function (self)
+        self.pressed_keys = {}
+    end,
+    -- CHECKS IF KEY IS PRESSED
+    is_key_pressed = function (self, key)
+        if self.pressed_keys[key] then return true; end
+        return false
+    end,
+    -- CHECKS IF KEYS ARE PRESSED
+    are_keys_pressed = function (self, ...)
+        local keys = {...}
+        if not (#keys > 0) then return false; end
+        for _, key in pairs(keys) do
+            if not self:is_key_pressed(key) then return false; end
+        end
+        return true
+    end,
+    -- ADDS A KEY INTO pressed_keys
+    add_key = function (self, key)
+        self.pressed_keys[key] = true
+    end,
+    -- REMOVES A KEY FROM pressed_keys
+    remove_key = function (self, key)
+        self.pressed_keys[key] = nil
+    end,
+    -- GETS AN EVENT AND CHECKS IF ANY KEY WAS PRESSED OR RELEASED
+    manage_event = function (self, formatted_event)
+        if formatted_event.name == const.KEY then
+            self:add_key(formatted_event.key)
+        elseif formatted_event.name == const.KEYUP then
+            self:remove_key(formatted_event.key)
+        end
+    end
+}
+
 -- WSS MODULE
 -- NOTE THAT NO VARIABLE FROM THIS TABLE SHOULD BE CHANGED MANUALLY
 -- YOU CAN ONLY USE FUNCTIONS FROM THIS TABLE OR GET VARIABLES,
@@ -814,6 +865,7 @@ gui_elements = {
                 draw_priority = const.LOW_PRIORITY,
                 focussed = false,
                 hidden = false,
+                text_alignment = const.ALIGN_CENTER,
                 text = text,
                 pos = math_utils.Vector2.new(x, y),
                 colors = {
@@ -834,14 +886,21 @@ gui_elements = {
 
             
             local lines = string_utils.split(self.text, "\n")
-            local x_center_offset = 0
 
-            for key, line in pairs(lines) do
-                if key == 1 then
-                    x_center_offset = math.floor(#line / 2)
-                    screen_buffer:write(self.pos.x, self.pos.y, line, self.colors.foreground, self.colors.background)
-                else
-                    screen_buffer:write(self.pos.x + x_center_offset - math.floor(#line / 2), self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
+            if self.text_alignment == const.ALIGN_LEFT then
+                for key, line in pairs(lines) do
+                    screen_buffer:write(self.pos.x, self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
+                end
+            elseif self.text_alignment == const.ALIGN_CENTER then
+                local x_center_offset = 0
+
+                for key, line in pairs(lines) do
+                    if key == 1 then
+                        x_center_offset = math.floor(#line / 2)
+                        screen_buffer:write(self.pos.x, self.pos.y, line, self.colors.foreground, self.colors.background)
+                    else
+                        screen_buffer:write(self.pos.x + x_center_offset - math.floor(#line / 2), self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
+                    end
                 end
             end
         end
@@ -854,6 +913,8 @@ gui_elements = {
                 focussed = false,
                 hidden = false,
                 active = false,
+                shortcut = {},
+                text_alignment = const.ALIGN_CENTER,
                 text = text,
                 pos = math_utils.Vector2.new(x, y),
                 size = math_utils.Vector2.new(width, height),
@@ -898,13 +959,18 @@ gui_elements = {
                 screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.unactive_background)
             end
 
-            local text_lines = string_utils.split(self.text, "\n")
-            local text_y = math.floor((self.size.y - #text_lines) / 2) + self.pos.y
+            local lines = string_utils.split(self.text, "\n")
+            local text_y = math.floor((self.size.y - #lines) / 2) + self.pos.y
 
-            for rel_y=0, #text_lines - 1 do
-                local value = text_lines[rel_y + 1]
-                local line_x = math.floor((self.size.x - #value) / 2) + self.pos.x
-                screen_buffer:write(line_x, text_y + rel_y, value, self.colors.foreground)
+            for rel_y=0, #lines - 1 do
+                local line = lines[rel_y + 1]
+                local line_x
+                if self.text_alignment == const.ALIGN_LEFT then
+                    line_x = self.pos.x
+                elseif self.text_alignment == const.ALIGN_CENTER then
+                    line_x = math.floor((self.size.x - #line) / 2) + self.pos.x
+                end
+                screen_buffer:write(line_x, text_y + rel_y, line, self.colors.foreground)
             end
         end,
         -- GIVES EVENT TO BUTTON
@@ -912,25 +978,27 @@ gui_elements = {
             if self.hidden then return false; end
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
-                    if self.timed.enabled then
-                        self.timed.clock:start()
-                        if not self.active then
-                            self.active = true
-                            self.callbacks.onPress(self, formatted_event)
-                        end
-                    else
-                        self:press(formatted_event)
-                    end
+                    self:press(formatted_event)
                     return true -- RETURNING TRUE DELETES THE EVENT
                 else
                     self.callbacks.onFailedPress(self, formatted_event)
                 end
+            elseif input:are_keys_pressed(table.unpack(self.shortcut)) then
+                self:press(formatted_event)
             end
             if self.timed.enabled then self.timed.clock:event(formatted_event); end
         end,
         press = function (self, formatted_event)
-            self.active = not self.active
-            self.callbacks.onPress(self, formatted_event)
+            if self.timed.enabled then
+                self.timed.clock:start()
+                if not self.active then
+                    self.active = true
+                    self.callbacks.onPress(self, formatted_event)
+                end
+            else
+                self.active = not self.active
+                self.callbacks.onPress(self, formatted_event)
+            end
         end
     },
     Progressbar = {
@@ -1106,21 +1174,22 @@ gui_elements = {
             end
             if self.focussed then
                 self.cursor.blink:event(self.cursor.blink, formatted_event)
-                if formatted_event.name == const.CHAR then
+                if formatted_event.name == const.PASTE then
+                    self:write(formatted_event.paste)
+                elseif formatted_event.name == const.CHAR then
                     if self.callbacks.onChar(self, formatted_event) then return true; end
                     self:write(formatted_event.char)
-                    return true
                 elseif formatted_event.name == const.KEY then
                     if self.callbacks.onKey(self, formatted_event) then return true; end
-                    if formatted_event.key == const.KEY_UP_ARROW then
+                    if formatted_event.key == const.KEY_UP then
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y - 1)
                         
                         
-                    elseif formatted_event.key == const.KEY_DOWN_ARROW then
+                    elseif formatted_event.key == const.KEY_DOWN then
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + 1)
                         
                         
-                    elseif formatted_event.key == const.KEY_RIGHT_ARROW then
+                    elseif formatted_event.key == const.KEY_RIGHT then
                         local line = self.lines[self.cursor.pos.y]
                         if self.lines[self.cursor.pos.y + 1] and self.cursor.pos.x >= #line + 1 then
                             self:set_cursor(1, self.cursor.pos.y + 1)
@@ -1129,7 +1198,7 @@ gui_elements = {
                         end
 
 
-                    elseif formatted_event.key == const.KEY_LEFT_ARROW then
+                    elseif formatted_event.key == const.KEY_LEFT then
                         if self.cursor.pos.x <= 1 and self.cursor.pos.y > 1 then
                             local previous_line = self.lines[self.cursor.pos.y - 1]
                             self:set_cursor(#previous_line + 1, self.cursor.pos.y - 1)
@@ -1182,10 +1251,10 @@ gui_elements = {
 
 
                     end
-                    return true
                 elseif formatted_event.name == const.MOUSESCROLL then
                     self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + formatted_event.direction)
                 end
+                return true
             end
         end,
         focus = function (self, active, formatted_event)
@@ -1549,8 +1618,7 @@ Loop = {
         end
     end,
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
-    event_elements = function (self, raw_event)
-        local formatted_event = event_utils.format_event_table(raw_event)
+    event_elements = function (self, formatted_event)
         local function event_table(tbl)
             for key, element in pairs(tbl) do
                 if element.event then
@@ -1606,6 +1674,7 @@ Loop = {
     -- STARTS THE LOOP
     start = function (self)
         self.enabled = true
+        input:reset()
         generic_utils.set_callback(
             self.elements.loop.clock,
             const.ONCLOCK,
@@ -1620,11 +1689,14 @@ Loop = {
         while self.enabled do
             local timer = os.startTimer(1 / self.options.EPS_target)
             local raw_event = {os.pullEvent()}
+            local formatted_event = event_utils.format_event_table(raw_event)
 
-            self:event_elements(raw_event)
+            input:manage_event(formatted_event)
+            self:event_elements(formatted_event)
 
             os.cancelTimer(timer)
         end
+        input:reset()
         self.callbacks.onStop(self)
     end,
     -- STOPS THE LOOP
@@ -1712,6 +1784,7 @@ local lib = {
     setting_utils = setting_utils,
     monitor_utils = monitor_utils,
     screen_buffer = screen_buffer,
+    input = input,
     WSS = WSS,
     wireless_screen_share = WSS,
     gui_elements = gui_elements,

@@ -1,5 +1,7 @@
 ![](./logo.png)
 
+To **download YAGUI** you can **run** `pastebin run 5qQ6t6ZX` on your computer!
+
 To **make examples** work you should do "**LIBFILE setup**" **once** you **downloaded** the Library and **every time you move it to another location**.
 
 This is a **remake** of my other **GUI LIB**: [***APLib***](https://github.com/hds536jhmk/APLib)
