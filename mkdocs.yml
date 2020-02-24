@@ -1,0 +1,12 @@
+site_name: YAGUI docs
+repo_url: https://github.com/hds536jhmk/YAGUI/
+site_author: hds536jhmk
+copyright: Copyright (c) 2019, hds536jhmk
+nav:
+    - Introduction: Introduction/index.md
+    - About: About/LICENSE.md
+    - Modules:
+      - Introduction: Modules/index.md
+theme: readthedocs
+extra:
+  version: 0.1

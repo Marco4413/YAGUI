@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.8",
+    ver = "1.8.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
@@ -1209,15 +1209,17 @@ gui_elements = {
 
                     elseif formatted_event.key == const.KEY_BACKSPACE then
                         local line = self.lines[self.cursor.pos.y]
-                        if self.cursor.pos.x <= 1 and self.cursor.pos.y > 1 then
-                            table.remove(self.lines, self.cursor.pos.y)
+                        if self.cursor.pos.x <= 1 then
+                            if self.cursor.pos.y > 1 then
+                                table.remove(self.lines, self.cursor.pos.y)
 
-                            local cursor_x = #self.lines[self.cursor.pos.y - 1] + 1
-                            local cursor_y = self.cursor.pos.y - 1
+                                local cursor_x = #self.lines[self.cursor.pos.y - 1] + 1
+                                local cursor_y = self.cursor.pos.y - 1
 
-                            self:set_cursor(cursor_x, cursor_y)
-                            self:write(line)
-                            self:set_cursor(cursor_x, cursor_y)
+                                self:set_cursor(cursor_x, cursor_y)
+                                self:write(line)
+                                self:set_cursor(cursor_x, cursor_y)
+                            end
                         else
                             self.lines[self.cursor.pos.y] = line:sub(1, self.cursor.pos.x - 2)..line:sub(self.cursor.pos.x)
                             self:set_cursor(self.cursor.pos.x - 1, self.cursor.pos.y)
