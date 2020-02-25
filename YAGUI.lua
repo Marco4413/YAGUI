@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.9",
+    ver = "1.10",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -180,7 +180,7 @@ string_utils = {
 -- MATH UTILS MODULE
 local math_utils = {}
 math_utils = {
-    -- JUST RETURNS A TABLE WITH X AS X AND Y AS Y (for now)
+    -- A 2D VECTOR
     Vector2 = {
         -- RETURNS NEW VECTOR2
         new = function (x, y)
@@ -199,9 +199,25 @@ math_utils = {
         length = function (self)
             return math.sqrt(self:length_sq())
         end,
+        -- RETURNS UNIT VECTOR
+        unit = function (self)
+            return self / self:length()
+        end,
+        -- RETURNS THE DOT PRODUCT BETWEEN TWO VECTORS
+        dot = function (self, other)
+            return self.x * other.x + self.y * other.y
+        end,
+        -- RETURNS tostring(Vector1) WITH precision DECIMAL NUMBERS
+        string = function (self, precision)
+            if precision then
+                return string.format("(%."..tostring(precision).."f; %."..tostring(precision).."f)", self.x, self.y)
+            else
+                return string.format("(%f; %f)", self.x, self.y)
+            end
+        end,
         -- TOSTRING METAMETHOD, handles tostring(Vector1)
         __tostring = function (self)
-            return string.format("(%d; %d)", self.x, self.y)
+            return self:string(0)
         end,
         -- ADD METAMETHOD, handles Vector1 + Vector2
         __add = function (self, other)
@@ -232,6 +248,83 @@ math_utils = {
             return self:length_sq() <= other:length_sq()
         end
     },
+    -- A 3D VECTOR
+    Vector3 = {
+        -- RETURNS NEW VECTOR3
+        new = function (x, y, z)
+            local newVector3 = {
+                x = x or 0,
+                y = y or 0,
+                z = z or 0
+            }
+            setmetatable(newVector3, math_utils.Vector3)
+            return newVector3
+        end,
+        -- RETURNS VECTOR LENGTH SQUARED
+        length_sq = function (self)
+            return math.pow(self.x, 2) + math.pow(self.y, 2) + math.pow(self.z, 2)
+        end,
+        -- RETURNS VECTOR LENGTH
+        length = function (self)
+            return math.sqrt(self:length_sq())
+        end,
+        -- RETURNS UNIT VECTOR
+        unit = function (self)
+            return self / self:length()
+        end,
+        -- RETURNS THE DOT PRODUCT BETWEEN TWO VECTORS
+        dot = function (self, other)
+            return self.x * other.x + self.y * other.y + self.z * other.z
+        end,
+        -- RETURNS THE CROSS PRODUCT BETWEEN TWO VECTORS
+        cross = function (self, other)
+            return math_utils.Vector3.new(
+                self.y * other.z - self.z * other.y,
+                self.z * other.x - self.x * other.z,
+                self.x * other.y - self.y * other.x
+            )
+        end,
+        -- RETURNS tostring(Vector1) WITH precision DECIMAL NUMBERS
+        string = function (self, precision)
+            if precision then
+                return string.format("(%."..tostring(precision).."f; %."..tostring(precision).."f; %."..tostring(precision).."f)", self.x, self.y, self.z)
+            else
+                return string.format("(%f; %f; %f)", self.x, self.y, self.z)
+            end
+        end,
+        -- TOSTRING METAMETHOD, handles tostring(Vector1)
+        __tostring = function (self)
+            return self:string(0)
+        end,
+        -- ADD METAMETHOD, handles Vector1 + Vector2
+        __add = function (self, other)
+            return math_utils.Vector3.new(self.x + other.x, self.y + other.y, self.z + other.z)
+        end,
+        -- SUB METAMETHOD, handles Vector1 - Vector2
+        __sub = function (self, other)
+            return math_utils.Vector3.new(self.x - other.x, self.y - other.y, self.z - other.z)
+        end,
+        -- MUL METAMETHOD, handles Vector1 * number
+        __mul = function (self, number)
+            return math_utils.Vector3.new(self.x * number, self.y * number, self.z * number)
+        end,
+        -- DIV METAMETHOD, handles Vector1 / number
+        __div = function (self, number)
+            return math_utils.Vector3.new(self.x / number, self.y / number, self.z / number)
+        end,
+        -- EQUAL METAMETHOD, handles Vector1 == Vector2
+        __eq = function (self, other)
+            return self:length_sq() == other:length_sq()
+        end,
+        -- LESS THAN METAMETHOD, handles Vector1 < Vector2; Vector1 > Vector2
+        __lt = function (self, other)
+            return self:length_sq() < other:length_sq()
+        end,
+        -- LESS OR EQUAL METAMETHOD, handles Vector1 <= Vector2; Vector1 >= Vector2
+        __le = function (self, other)
+            return self:length_sq() <= other:length_sq()
+        end
+    },
     -- MAPS A NUMBER FROM A RANGE TO ANOTHER ONE
     map = function (value, value_start, value_stop, return_start, return_stop, constrained)
         local mapped_value = (value - value_start) / (value_stop - value_start) * (return_stop - return_start) + return_start
@@ -245,6 +338,7 @@ math_utils = {
 }
 
 math_utils.Vector2.__index = math_utils.Vector2
+math_utils.Vector3.__index = math_utils.Vector3
 
 math_utils.Vector2.ONE   = math_utils.Vector2.new( 1,  1)
 math_utils.Vector2.UP    = math_utils.Vector2.new( 0, -1)
@@ -252,6 +346,15 @@ math_utils.Vector2.DOWN  = math_utils.Vector2.new( 0,  1)
 math_utils.Vector2.LEFT  = math_utils.Vector2.new(-1,  0)
 math_utils.Vector2.RIGHT = math_utils.Vector2.new( 1,  0)
 math_utils.Vector2.ZERO  = math_utils.Vector2.new( 0,  0)
+
+math_utils.Vector3.ONE     = math_utils.Vector2.new( 1,  1,  1)
+math_utils.Vector3.UP      = math_utils.Vector2.new( 0,  1,  0)
+math_utils.Vector3.DOWN    = math_utils.Vector2.new( 0, -1,  0)
+math_utils.Vector3.LEFT    = math_utils.Vector2.new(-1,  0,  0)
+math_utils.Vector3.RIGHT   = math_utils.Vector2.new( 1,  0,  0)
+math_utils.Vector3.FORWARD = math_utils.Vector2.new( 0,  0,  1)
+math_utils.Vector3.BACK    = math_utils.Vector2.new( 0,  0, -1)
+math_utils.Vector3.ZERO    = math_utils.Vector2.new( 0,  0,  0)
 
 -- TABLE UTILS MODULE
 local table_utils = {
