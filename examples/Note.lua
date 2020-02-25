@@ -44,7 +44,7 @@ YAGUI.screen_buffer.buffer.background = background_color
 --  It has nothing to do with YAGUI
 local LAYOUT = {
     init = function (self)
-        local computer_type = YAGUI.generic_utils.get_computer_type()
+        local computer_type, advanced = YAGUI.generic_utils.get_computer_type()
 
         self.this_layout = self.all
 
@@ -431,16 +431,15 @@ YAGUI.generic_utils.set_callback(
     lMain,
     YAGUI.ONEVENT,
     function (self, event)
-        if YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.LALT, YAGUI.KEY_S) then
+        if YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFTALT, YAGUI.KEY_S) then
             bSaveAs.callbacks.onPress(bSaveAs, event)
-        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_N) then
+        elseif YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_N) then
             bNewOpen.callbacks.onPress(bNewOpen, event)
-        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_S) then
+        elseif YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_S) then
             bSave.callbacks.onTimeout(bSave, event)
-        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_G) then
+        elseif YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_G) then
             bGoto.callbacks.onPress(bGoto, event)
-        elseif YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_R) then
-            YAGUI.input:reset()
+        elseif YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTALT, YAGUI.KEY_R) then
             bRun.callbacks.onTimeout(bRun, event)
         end
     end

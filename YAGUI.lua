@@ -16,9 +16,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.8.1",
+    ver = "1.9",
     author = "hds536jhmk",
-    website = "https://github.com/hds536jhmk/YAGUI",
+    website = "https://github.com/hds536jhmk/YAGUI/",
+    documentation = "https://yagui.readthedocs.io/en/latest/",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
 }
 
@@ -54,11 +55,8 @@ local const = {
     SCROLL_UP = -1,
     SCROLL_DOWN = 1,
     COMPUTER = "computer",
-    COMPUTER_ADVANCED = "computer_advanced",
     TURTLE = "turtle",
-    TURTLE_ADVANCED = "turtle_advanced",
     POCKET = "pocket",
-    POCKET_ADVANCED = "pocket_advanced",
     ALIGN_LEFT = 1,
     ALIGN_CENTER = 2
 }
@@ -98,27 +96,14 @@ local generic_utils = {
         end
     end,
     -- RETURNS THE TYPE OF COMPUTER (computer, turtle, pocket) THAT IS BEING USED
-    --  IF ADVANCED IS SET TO TRUE IT WILL RETURN IF IT'S ADVANCED OR NOT
-    get_computer_type = function (advanced)
+    get_computer_type = function ()
+        local comp_type = const.COMPUTER
         if turtle then
-            if advanced and term.isColor() then
-                return const.TURTLE_ADVANCED
-            else
-                return const.TURTLE
-            end
+            comp_type = const.TURTLE
         elseif pocket then
-            if advanced and term.isColor() then
-                return const.POCKET_ADVANCED
-            else
-                return const.POCKET
-            end
-        else
-            if advanced and term.isColor() then
-                return const.COMPUTER_ADVANCED
-            else
-                return const.COMPUTER
-            end
+            comp_type = const.POCKET
         end
+        return comp_type, term.isColor()
     end
 }
 
@@ -678,16 +663,26 @@ local input = {
         self.pressed_keys = {}
     end,
     -- CHECKS IF KEY IS PRESSED
-    is_key_pressed = function (self, key)
-        if self.pressed_keys[key] then return true; end
+    --  if remove_key is set to true then if the key is pressed it will be removed from the pressed_keys table
+    is_key_pressed = function (self, remove_key, key)
+        if self.pressed_keys[key] then
+            if remove_key then
+                self:remove_key(key)
+            end
+            return true
+        end
         return false
     end,
     -- CHECKS IF KEYS ARE PRESSED
-    are_keys_pressed = function (self, ...)
+    --  if remove_keys is set to true then if the keys are pressed they will be removed from the pressed_keys table
+    are_keys_pressed = function (self, remove_keys, ...)
         local keys = {...}
         if not (#keys > 0) then return false; end
         for _, key in pairs(keys) do
-            if not self:is_key_pressed(key) then return false; end
+            if not self:is_key_pressed(false, key) then return false; end
+        end
+        if remove_keys then
+            self:remove_keys(table.unpack(keys))
         end
         return true
     end,
@@ -698,6 +693,13 @@ local input = {
     -- REMOVES A KEY FROM pressed_keys
     remove_key = function (self, key)
         self.pressed_keys[key] = nil
+    end,
+    -- REMOVES KEYS FROM pressed_keys
+    remove_keys = function (self, ...)
+        local keys = {...}
+        for _, key in pairs(keys) do
+            self:remove_key(key)
+        end
     end,
     -- GETS AN EVENT AND CHECKS IF ANY KEY WAS PRESSED OR RELEASED
     manage_event = function (self, formatted_event)
@@ -913,6 +915,7 @@ gui_elements = {
                 focussed = false,
                 hidden = false,
                 active = false,
+                shortcut_once = true,
                 shortcut = {},
                 text_alignment = const.ALIGN_CENTER,
                 text = text,
@@ -983,7 +986,7 @@ gui_elements = {
                 else
                     self.callbacks.onFailedPress(self, formatted_event)
                 end
-            elseif input:are_keys_pressed(table.unpack(self.shortcut)) then
+            elseif input:are_keys_pressed(self.shortcut_once, table.unpack(self.shortcut)) then
                 self:press(formatted_event)
             end
             if self.timed.enabled then self.timed.clock:event(formatted_event); end
@@ -1729,6 +1732,7 @@ elseif tArgs[1] == "info" then
     monitor_utils.better_print(term, colors.red, nil, "Library Version: ", info.ver)
     monitor_utils.better_print(term, colors.yellow, nil, "Library Author: ", info.author)
     monitor_utils.better_print(term, colors.green, nil, "Library Website: ", info.website)
+    monitor_utils.better_print(term, colors.blue, nil, "Library Documentation: ", info.documentation)
 elseif tArgs[1] == "ver" then
     monitor_utils.better_print(term, colors.red, nil, "Library Version: ", info.ver)
 elseif tArgs[1] == "copyright" then
