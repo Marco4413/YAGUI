@@ -9,4 +9,4 @@ nav:
       - Introduction: Modules/index.md
 theme: readthedocs
 extra:
-  version: 0.1
+  version: 0.2
