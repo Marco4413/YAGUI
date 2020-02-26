@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.10",
+    ver = "1.11",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -207,6 +207,19 @@ math_utils = {
         dot = function (self, other)
             return self.x * other.x + self.y * other.y
         end,
+        -- RETURNS THE CROSS PRODUCT BETWEEN TWO VECTORS
+        cross = function (self, other)
+            return self.x * other.y - self.y * other.x
+        end,
+        -- RETURNS A VECTOR THAT IS ROTATED BY angle
+        rotate = function (self, angle)
+            local angle_cos = math.cos(angle)
+            local angle_sin = math.sin(angle)
+            return math_utils.Vector2.new(
+                angle_cos * self.x - angle_sin * self.y,
+                angle_sin * self.x + angle_cos * self.y
+            )
+        end,
         -- RETURNS tostring(Vector1) WITH precision DECIMAL NUMBERS
         string = function (self, precision)
             if precision then
@@ -229,7 +242,11 @@ math_utils = {
         end,
         -- MUL METAMETHOD, handles Vector1 * number
         __mul = function (self, number)
-            return math_utils.Vector2.new(self.x * number, self.y * number)
+            if type(self) == "number" then
+                return math_utils.Vector2.new(number.x * self, number.y * self)
+            else
+                return math_utils.Vector2.new(self.x * number, self.y * number)
+            end
         end,
         -- DIV METAMETHOD, handles Vector1 / number
         __div = function (self, number)
@@ -284,6 +301,11 @@ math_utils = {
                 self.x * other.y - self.y * other.x
             )
         end,
+        -- RETURNS A VECTOR THAT IS ROTATED ON axis BY angle
+        rotate = function (self, axis, angle)
+            local angle_cos = math.cos(angle)
+            return angle_cos * self + math.sin(angle) * axis:cross(self) + (1 - angle_cos) * axis:dot(self) * axis
+        end,
         -- RETURNS tostring(Vector1) WITH precision DECIMAL NUMBERS
         string = function (self, precision)
             if precision then
@@ -306,7 +328,11 @@ math_utils = {
         end,
         -- MUL METAMETHOD, handles Vector1 * number
         __mul = function (self, number)
-            return math_utils.Vector3.new(self.x * number, self.y * number, self.z * number)
+            if type(self) == "number" then
+                return math_utils.Vector3.new(number.x * self, number.y * self, number.z * self)
+            else
+                return math_utils.Vector3.new(self.x * number, self.y * number, self.z * number)
+            end
         end,
         -- DIV METAMETHOD, handles Vector1 / number
         __div = function (self, number)
@@ -347,14 +373,14 @@ math_utils.Vector2.LEFT  = math_utils.Vector2.new(-1,  0)
 math_utils.Vector2.RIGHT = math_utils.Vector2.new( 1,  0)
 math_utils.Vector2.ZERO  = math_utils.Vector2.new( 0,  0)
 
-math_utils.Vector3.ONE     = math_utils.Vector2.new( 1,  1,  1)
-math_utils.Vector3.UP      = math_utils.Vector2.new( 0,  1,  0)
-math_utils.Vector3.DOWN    = math_utils.Vector2.new( 0, -1,  0)
-math_utils.Vector3.LEFT    = math_utils.Vector2.new(-1,  0,  0)
-math_utils.Vector3.RIGHT   = math_utils.Vector2.new( 1,  0,  0)
-math_utils.Vector3.FORWARD = math_utils.Vector2.new( 0,  0,  1)
-math_utils.Vector3.BACK    = math_utils.Vector2.new( 0,  0, -1)
-math_utils.Vector3.ZERO    = math_utils.Vector2.new( 0,  0,  0)
+math_utils.Vector3.ONE     = math_utils.Vector3.new( 1,  1,  1)
+math_utils.Vector3.UP      = math_utils.Vector3.new( 0,  1,  0)
+math_utils.Vector3.DOWN    = math_utils.Vector3.new( 0, -1,  0)
+math_utils.Vector3.LEFT    = math_utils.Vector3.new(-1,  0,  0)
+math_utils.Vector3.RIGHT   = math_utils.Vector3.new( 1,  0,  0)
+math_utils.Vector3.FORWARD = math_utils.Vector3.new( 0,  0,  1)
+math_utils.Vector3.BACK    = math_utils.Vector3.new( 0,  0, -1)
+math_utils.Vector3.ZERO    = math_utils.Vector3.new( 0,  0,  0)
 
 -- TABLE UTILS MODULE
 local table_utils = {
