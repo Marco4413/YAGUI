@@ -7,6 +7,9 @@ nav:
     - About: About/LICENSE.md
     - Modules:
       - Introduction: Modules/index.md
+      - info: Modules/info_module.md
+      - Constants: Modules/constants.md
+      - generic_utils: Modules/generic_utils_module.md
 theme: readthedocs
 extra:
-  version: 0.2
+  version: 0.3

@@ -17,9 +17,9 @@ I chose to use tables for these reasons:
 
 There are currently 16 modules available, where 1 is dumped into the library and 1 is a duplicate of another one:
 
-1. **info** : Contains **all information about the library** (version, copyright, docs, ...).
-2. **const** : This is the one that's **dumped into the library** and **contains all available constants** that you can use to make future proofing easier.
-3. **generic_utils** : This contains **functions that could be moved into another Module** if another function that's similar to one of them is made, **it has functions that haven't got their own group yet**.
+1. [**info**](./info_module.md) : Contains **all informations about the library** (version, copyright, docs, ...).
+2. [**const**](./constants.md) : This is the one that's **dumped into the library** and **contains all available constants** that you can use to make future proofing easier.
+3. [**generic_utils**](./generic_utils_module.md) : This contains **functions that could be moved into another Module** if another function that's similar to one of them is made, **it has functions that haven't got their own group yet**.
 4. **string_utils** : Contains all **functions that are helpful when dealing with strings** (e.g. `split`, `join`).
 5. **math_utils** : Contains all **functions that are helpful when dealing with numbers** (e.g. `Vector2`, `map`).
 6. **table_utils** : Contains all **function that are helpful when dealing with tables** (e.g. `has_value`, `has_key`).
