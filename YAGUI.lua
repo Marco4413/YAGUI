@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.12",
+    ver = "1.12.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -125,6 +125,7 @@ string_utils = {
     -- SPLITS STRING EVERY TIME SEPARATOR IS FOUND
     split = function (str, sep)
         local tbl = {}
+        if not (#sep > 0) then return tbl; end
         while true do
             local pos = str:find(sep)
             if pos then

@@ -1,5 +1,5 @@
 
-# info MODULE
+# info
 
 This module/table contains **all informations about the library**.
 
@@ -15,7 +15,7 @@ This module/table contains **all informations about the library**.
 
 ### ver : string
 
-This string contains the **current version of the library**. **To compare two versions you can use the `compare_versions` function that's located in `string_utils`**.
+This string contains the **current version of the library**. **To compare two versions you can use the [`compare_versions`](./string_utils_module.md#compare_versions) function that's located in [`string_utils`](./string_utils_module.md)**.
 
 ### author : string
 

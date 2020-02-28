@@ -30,6 +30,7 @@ generic_utils.set_callback(
 
 -- Loop that updates the clock
 while true do
+    sleep(0.1) -- Using sleep to not get "too long without yielding" error
     c:event()
 end
 ```

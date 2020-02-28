@@ -1,14 +1,14 @@
 
 # What are Modules?
 
-Well... Modules are basically **all the tables that make the library** (e.g. `string_utils`, `math_utils`)
+Well... Modules are basically **all the tables that make the library** (e.g. [`string_utils`](./string_utils_module.md), `math_utils`)
 
 ## Why Modules/Tables?
 
 I chose to use tables for these reasons:
 
 1. It's **easier to make** [**dofile/require**](../Introduction/index.md#library-syntax) **work on the library's end**.
-2. It's **way more intuitive** than having functions directly in the library (e.g. I want to do something with a string, oh wait there's `string_utils`, maybe that can help me).
+2. It's **way more intuitive** than having functions directly in the library (e.g. I want to do something with a string, oh wait there's [`string_utils`](./string_utils_module.md), maybe that can help me).
 3. **Better organized**.
 4. I don't think there's a fourth point...
 5. But there's for sure a fifth point: This **documentation will be much easier to organize**.
@@ -17,10 +17,10 @@ I chose to use tables for these reasons:
 
 There are currently 16 modules available, where 1 is dumped into the library and 1 is a duplicate of another one:
 
-1. [**info**](./info_module.md) : Contains **all informations about the library** (version, copyright, docs, ...).
+1. [**info**](./info_module.md) : Contains **all informations about the library** ([version](./info_module.md#ver-string), [copyright](./info_module.md#copyright-string), [docs](./info_module.md#documentation-string), ...).
 2. [**const**](./constants.md) : This is the one that's **dumped into the library** and **contains all available constants** that you can use to make future proofing easier.
 3. [**generic_utils**](./generic_utils_module.md) : This contains **functions that could be moved into another Module** if another function that's similar to one of them is made, **it has functions that haven't got their own group yet**.
-4. **string_utils** : Contains all **functions that are helpful when dealing with strings** (e.g. `split`, `join`).
+4. [**string_utils**](./string_utils_module.md) : Contains all **functions that are helpful when dealing with strings** (e.g. [`split`](./string_utils_module.md#split), [`join`](./string_utils_module.md#join)).
 5. **math_utils** : Contains all **functions that are helpful when dealing with numbers** (e.g. `Vector2`, `map`).
 6. **table_utils** : Contains all **function that are helpful when dealing with tables** (e.g. `has_value`, `has_key`).
 7. **color_utils** : You **won't probably use this when making you first program**, because this one was made to **convert a color from** [**Colors API**](http://www.computercraft.info/wiki/Colors_(API)) **into a string that can be used with** [**monitor.blit**](http://www.computercraft.info/wiki/Term.blit), so it's just used by the library to draw on the screen faster, **everything that asks you a color wants a color from the** [**Colors API**](http://www.computercraft.info/wiki/Colors_(API)).
