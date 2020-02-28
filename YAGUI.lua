@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.11",
+    ver = "1.12",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -360,6 +360,19 @@ math_utils = {
     -- CONSTRAINS A NUMBER TO A RANGE
     constrain = function (value, min_value, max_value)
         return math.min(max_value, math.max(min_value, value))
+    end,
+    -- ROUNDS A NUMBER AND RETURNS IT
+    round = function (number)
+        return math.floor(number + 0.5)
+    end,
+    -- ROUNDS ALL SPECIFIED NUMBERS AND RETURNS THEM IN THE SAME ORDER
+    round_numbers = function (...)
+        local numbers = {...}
+        local rounded = {}
+        for key, number in pairs(numbers) do
+            table.insert(rounded, math_utils.round(number))
+        end
+        return table.unpack(rounded)
     end
 }
 

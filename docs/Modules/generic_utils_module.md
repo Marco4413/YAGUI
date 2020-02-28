@@ -39,3 +39,21 @@ end
 *constant*, *boolean* : **get_computer_type**()
 
 Returns a [**computer type constant**](./constants.md#computer-type) and a boolean that's true if the **computer is advanced** and false if not.
+
+```lua
+-- Get computer type and if it's advanced
+local computer_type, advanced = generic_utils.get_computer_type()
+
+-- Check if computer_type is a COMPUTER
+if computer_type ~= COMPUTER then
+    printError("You must be using a computer to start this script.")
+    return
+end
+-- Check if computer is advanced
+if not advanced then
+    printError("This script only works on advanced computers.")
+    return
+end
+
+-- DO STUFF
+```
