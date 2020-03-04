@@ -1,3 +1,6 @@
+# VSCode folder
+.vscode
+
 # Compiled Lua sources
 luac.out
 

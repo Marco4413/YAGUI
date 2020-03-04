@@ -4,9 +4,9 @@ local master = repo..'master/'
 
 local APPS = {
     {
-        NAME = 'YAGUI-mini',
+        NAME = 'YAGUI',
         URL = 'YAGUI-mini.lua',
-        PATH = '/YAGUI-mini.lua'
+        PATH = '/YAGUI.lua'
     },
     {
         NAME = 'WSS_listener',
@@ -40,14 +40,14 @@ local function download_as(URL, PATH)
 end
 
 local function download_apps_from(repo)
-    for _, app in pairs(APPS) do
+    for _, app in next, APPS do
         download_as(repo..app.URL, app.PATH)
         better_print(app.NAME..' was downloaded!', colors.green)
     end
 end
 
 better_print('Removing APPS...', colors.orange)
-for _, app in pairs(APPS) do
+for _, app in next, APPS do
 	if fs.exists(app.PATH) then
 		fs.delete(app.PATH)
 		better_print(app.NAME..' was removed.', colors.red)

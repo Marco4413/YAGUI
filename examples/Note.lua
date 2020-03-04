@@ -48,7 +48,7 @@ local LAYOUT = {
 
         self.this_layout = self.all
 
-        for key, func in pairs(self[computer_type]) do
+        for key, func in next, self[computer_type] do
             self.this_layout[key] = func
         end
     end,
@@ -410,7 +410,7 @@ YAGUI.generic_utils.set_callback(
             end
         end
 
-        for key, line_key in pairs(lines_to_remove) do
+        for key, line_key in next, lines_to_remove do
             table.remove(mEditor.lines, line_key)
         end
         mEditor:set_cursor(1, 1)
@@ -522,7 +522,7 @@ if #tArgs > 0 then
             { text = " - wss <MODEM_SIDE> [HOSTNAME]\n   (hosts a WSS server using the modem\n   on MODEM_SIDE as HOSTNAME)", foreground = colors.blue  , background = nil}
         }
     
-        for key, line in pairs(lines) do
+        for key, line in next, lines do
             YAGUI.monitor_utils.better_print(term, line.foreground, line.background, line.text)
         end
         return
@@ -534,7 +534,7 @@ if #tArgs > 0 then
         wss = {}
     }
     local current_option
-    for key, value in pairs(tArgs) do
+    for key, value in next, tArgs do
         if current_option then
             table.insert(options[current_option], value)
         end
@@ -549,7 +549,7 @@ if #tArgs > 0 then
     end
     if #options.multi > 0 then
         table.insert(options.multi, 1, "terminal")
-        for key, loop in pairs(loops) do
+        for key, loop in next, loops do
             loop:set_monitors(options.multi)
         end
     end
@@ -595,7 +595,7 @@ lOverWrite:set_elements({cWSS, wOverWrite})
 lMain:start()
 
 -- Clearing all monitors
-for key, monitor in pairs(lMain.monitors) do
+for key, monitor in next, lMain.monitors do
     YAGUI.monitor_utils.better_clear(monitor)
 end
 

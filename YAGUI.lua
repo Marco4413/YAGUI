@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.12.1",
+    ver = "1.13",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -61,7 +61,7 @@ local const = {
     ALIGN_CENTER = 2
 }
 
-for key_name, key in pairs(keys) do
+for key_name, key in next, keys do
     if type(key) == "number" then
         const["KEY_"..key_name:upper()] = key
     end
@@ -163,7 +163,7 @@ string_utils = {
     end,
     -- ESCAPES ALL MAGIC CHARACTERS IN A STRING
     escape_magic_characters = function (str)
-        for key, character in pairs(string_utils.magic_characters) do
+        for key, character in next, string_utils.magic_characters do
             str = str:gsub("[%"..character.."]", '%%%'..character)
         end
         return str
@@ -370,10 +370,28 @@ math_utils = {
     round_numbers = function (...)
         local numbers = {...}
         local rounded = {}
-        for key, number in pairs(numbers) do
+        for key, number in next, numbers do
             table.insert(rounded, math_utils.round(number))
         end
         return table.unpack(rounded)
+    end,
+    -- FLOORS ALL SPECIFIED NUMBERS AND RETURNS THEM IN THE SAME ORDER
+    floor_numbers = function (...)
+        local numbers = {...}
+        local floored = {}
+        for key, number in next, numbers do
+            table.insert(floored, math.floor(number))
+        end
+        return table.unpack(floored)
+    end,
+    -- CEILS ALL SPECIFIED NUMBERS AND RETURNS THEM IN THE SAME ORDER
+    ceil_numbers = function (...)
+        local numbers = {...}
+        local ceiled = {}
+        for key, number in next, numbers do
+            table.insert(ceiled, math.ceil(number))
+        end
+        return table.unpack(ceiled)
     end
 }
 
@@ -401,7 +419,7 @@ local table_utils = {
     -- CHECKS IF THERE'S THE SPECIFIED VALUE IN THE TABLE, IF VALUE WAS FOUND
     --  IT RETURNS TRUE AND THE KEY OF THE TABLE WHERE THE VALUE IS
     has_value = function (tbl, value)
-        for tbl_key, tbl_value in pairs(tbl) do
+        for tbl_key, tbl_value in next, tbl do
             if tbl_value == value then return true, tbl_key; end
         end
         return false, nil
@@ -518,18 +536,19 @@ local event_utils = {
 }
 
 -- SETTING UTILS MODULE
-local setting_utils = {
+local setting_utils = {}
+setting_utils = {
     -- PATH WHERE SETTINGS WILL BE SAVED (shouldn't be changed)
     _path = "/.settings",
     -- SETS SETTING AND THEN SAVES ALL SETTINGS
-    set = function (self, name, value)
+    set = function (name, value)
         settings.set(name, value)
-        settings.save(self._path)
+        settings.save(setting_utils._path)
     end,
     -- UNSETS SETTING AND THEN SAVES ALL SETTINGS
-    unset = function (self, name)
+    unset = function (name)
         settings.unset(name)
-        settings.save(self._path)
+        settings.save(setting_utils._path)
     end,
     -- GETS SETTING AND RETURNS IT
     get = function (name)
@@ -542,7 +561,7 @@ local monitor_utils = {
     -- RETURNS A TABLE WHICH CONTAINS ALL VALID MONITORS FROM monitor_names
     get_monitors = function (monitor_names)
         local monitors = {}
-        for key, peripheral_name in pairs(monitor_names) do
+        for key, peripheral_name in next, monitor_names do
             if peripheral_name == "terminal" then
                 monitors[peripheral_name] = term
             else
@@ -651,7 +670,7 @@ local screen_buffer = {
         local screens = self.screens
         local buffer = self.buffer
         
-        for screen_name, screen in pairs(screens) do
+        for screen_name, screen in next, screens do
             local old_x, old_y = screen.getCursorPos()
             
             local width, height = screen.getSize()
@@ -821,7 +840,7 @@ local input = {
     are_keys_pressed = function (self, remove_keys, ...)
         local keys = {...}
         if not (#keys > 0) then return false; end
-        for _, key in pairs(keys) do
+        for _, key in next, keys do
             if not self:is_key_pressed(false, key) then return false; end
         end
         if remove_keys then
@@ -840,7 +859,7 @@ local input = {
     -- REMOVES KEYS FROM pressed_keys
     remove_keys = function (self, ...)
         local keys = {...}
-        for _, key in pairs(keys) do
+        for _, key in next, keys do
             self:remove_key(key)
         end
     end,
@@ -1033,13 +1052,13 @@ gui_elements = {
             local lines = string_utils.split(self.text, "\n")
 
             if self.text_alignment == const.ALIGN_LEFT then
-                for key, line in pairs(lines) do
+                for key, line in next, lines do
                     screen_buffer:write(self.pos.x, self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
                 end
             elseif self.text_alignment == const.ALIGN_CENTER then
                 local x_center_offset = 0
 
-                for key, line in pairs(lines) do
+                for key, line in next, lines do
                     if key == 1 then
                         x_center_offset = math.floor(#line / 2)
                         screen_buffer:write(self.pos.x, self.pos.y, line, self.colors.foreground, self.colors.background)
@@ -1442,12 +1461,12 @@ gui_elements = {
 
             if #self.whitelist > 0 then
                 local pattern = "[^"..string_utils.escape_magic_characters(string_utils.join(self.whitelist, "")).."]"
-                for key, line in pairs(lines) do
+                for key, line in next, lines do
                     lines[key] = line:gsub(pattern, "")
                 end
             elseif #self.blacklist > 0 then
                 local pattern = "["..string_utils.escape_magic_characters(string_utils.join(self.blacklist, "")).."]"
-                for key, line in pairs(lines) do
+                for key, line in next, lines do
                     lines[key] = line:gsub(pattern, "")
                 end
             end
@@ -1460,7 +1479,7 @@ gui_elements = {
             end
 
             if #lines > 1 then
-                for line_key, line in pairs(lines) do
+                for line_key, line in next, lines do
                     if line_key == 1 then
                         local cursor_line = self.lines[self.cursor.pos.y]
                         local line_start = cursor_line:sub(1, self.cursor.pos.x - 1)
@@ -1598,7 +1617,7 @@ gui_elements = {
                     y - self.drag_options.from.y
                 )
                 self.pos = self.pos + delta_drag
-                for key, element in pairs(self.elements) do
+                for key, element in next, self.elements do
                     if element.pos then
                         element.pos = element.pos + delta_drag
                     end
@@ -1609,7 +1628,7 @@ gui_elements = {
         -- SETS WINDOW'S ELEMENTS
         set_elements = function (self, elements_table, relative)
             self.elements = {}
-            for key, element in pairs(elements_table) do
+            for key, element in next, elements_table do
                 if relative then
                     element.pos = self.pos + element.pos - math_utils.Vector2.ONE
                 end
@@ -1629,7 +1648,7 @@ gui_elements = {
         event_elements = function (self, formatted_event)
             local delete_event = false
             
-            for key, element in pairs(self.elements) do
+            for key, element in next, self.elements do
                 if element.event then
                     local this_delete_event = element:event(formatted_event)
                     delete_event = delete_event or this_delete_event
@@ -1728,7 +1747,7 @@ Loop = {
     set_elements = function (self, elements_table)
         self.elements.high_priority = {}
         self.elements.low_priority = {}
-        for key, value in pairs(elements_table) do
+        for key, value in next, elements_table do
             if value.draw_priority == const.HIGH_PRIORITY then
                 table.insert(self.elements.high_priority, value)
             else
@@ -1753,7 +1772,7 @@ Loop = {
 
         draw_table(self.elements.low_priority)
         draw_table(self.elements.high_priority)
-        for key, element in pairs(self.elements.loop) do
+        for key, element in next, self.elements.loop do
             if element.draw then
                 element:draw()
             end
@@ -1768,7 +1787,7 @@ Loop = {
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
     event_elements = function (self, formatted_event)
         local function event_table(tbl)
-            for key, element in pairs(tbl) do
+            for key, element in next, tbl do
                 if element.event then
                     if element:event(formatted_event) then formatted_event = {name = const.DELETED}; end
                 end
@@ -1781,7 +1800,7 @@ Loop = {
 
         if formatted_event.name == const.TOUCH then
             local is_monitor_whitelisted = false
-            for monitor_name, monitor in pairs(self.monitors) do
+            for monitor_name, monitor in next, self.monitors do
                 if formatted_event.from == monitor_name then
                     is_monitor_whitelisted = true
                     break
@@ -1795,7 +1814,7 @@ Loop = {
         event_table(self.elements.loop)
 
         local high_focussed = {}
-        for key, element in pairs(self.elements.high_priority) do
+        for key, element in next, self.elements.high_priority do
             if element.event then
                 local focus = element:event(formatted_event)
                 if focus then
@@ -1807,7 +1826,7 @@ Loop = {
             end
         end
         if #high_focussed > 0 then
-            for key, value in pairs(high_focussed) do
+            for key, value in next, high_focussed do
                 table.insert(self.elements.high_priority, 1, value.element)
                 table.remove(self.elements.high_priority, value.key + #high_focussed)
             end
@@ -1868,7 +1887,7 @@ if tArgs[1] == "help" then
         { text = " - create <PATH> (creates a new YAGUI project)"   , foreground = colors.green , background = nil}
     }
 
-    for key, line in pairs(lines) do
+    for key, line in next, lines do
         monitor_utils.better_print(term, line.foreground, line.background, line.text)
     end
 elseif tArgs[1] == "info" then
@@ -1886,7 +1905,7 @@ elseif tArgs[1] == "copyright" then
     }
     local paragraphs = string_utils.split(info.copyright, "\n\n")
 
-    for key, paragraph in pairs(paragraphs) do
+    for key, paragraph in next, paragraphs do
         monitor_utils.better_print(term, paragraph_colors[key], nil, paragraph)
         if key < #paragraphs then read(""); end
     end
@@ -1894,7 +1913,7 @@ elseif tArgs[1] == "setup" then
     if shell then
         local settings_entry = "YAGUI_PATH"
         local path = "/"..shell.getRunningProgram()
-        setting_utils:set(settings_entry, path)
+        setting_utils.set(settings_entry, path)
 
         monitor_utils.better_print(term, colors.green, nil, "Lib path was set to \"", setting_utils.get(settings_entry), "\".")
     else
@@ -1941,7 +1960,7 @@ local lib = {
 }
 
 -- MAKE CONSTANTS BE GLOBAL VARIABLES OF THE LIBRARY
-for key, value in pairs(const) do
+for key, value in next, const do
     lib[key] = value
 end
 
