@@ -20,7 +20,12 @@ theme:
   highlightjs: true
   hljs_languages:
       - lua
+  include_homepage_in_sidebar: true
+  prev_next_buttons_location: bottom
+  navigation_depth: 4
   collapse_navigation: false
+  titles_only: false
+  sticky_navigation: true
 extra:
   version: 0.5
 extra_css: [style.css]
