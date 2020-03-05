@@ -12,6 +12,11 @@ nav:
       - Constants: Modules/constants.md
       - generic_utils: Modules/generic_utils_module.md
       - string_utils: Modules/string_utils_module.md
+      - math_utils:
+        - General: Modules/math_utils_module.md
+        - Vectors: Modules/Vectors.md
 theme: readthedocs
 extra:
-  version: 0.4
+  version: 0.5
+extra_css: [style.css]
+navigation_depth: 7
