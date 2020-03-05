@@ -2,20 +2,20 @@
 local repo = 'https://raw.githubusercontent.com/hds536jhmk/YAGUI/'
 local master = repo..'master/'
 
-local APPS = {
+local PROGRAMS = {
     {
-        NAME = 'YAGUI',
-        URL = 'YAGUI-mini.lua',
-        PATH = '/YAGUI.lua'
+        NAME = 'YAGUI',                 -- Name to be displayed
+        URL = master..'YAGUI-mini.lua', -- URL to the file
+        PATH = '/YAGUI.lua'             -- Path where to save the file
     },
     {
         NAME = 'WSS_listener',
-        URL = 'examples/WSS_listener.lua',
+        URL = master..'examples/WSS_listener.lua',
         PATH = '/WSS_listener.lua'
     },
     {
         NAME = 'Note',
-        URL = 'examples/Note.lua',
+        URL = master..'examples/Note.lua',
         PATH = '/Note.lua'
     }
 }
@@ -39,20 +39,23 @@ local function download_as(URL, PATH)
     file.close()
 end
 
-local function download_apps_from(repo)
-    for _, app in next, APPS do
-        download_as(repo..app.URL, app.PATH)
-        better_print(app.NAME..' was downloaded!', colors.green)
+local function download_programs()
+    for _, program in next, PROGRAMS do
+        download_as(program.URL, program.PATH)
+        better_print(program.NAME..' was downloaded!', colors.green)
     end
 end
 
-better_print('Removing APPS...', colors.orange)
-for _, app in next, APPS do
-	if fs.exists(app.PATH) then
-		fs.delete(app.PATH)
-		better_print(app.NAME..' was removed.', colors.red)
-	end
+local function remove_programs()
+    for _, program in next, PROGRAMS do
+        if fs.exists(program.PATH) then
+            fs.delete(program.PATH)
+            better_print(program.NAME..' was removed.', colors.red)
+        end
+    end
 end
 
-better_print('Downloading master...', colors.orange)
-download_apps_from(master)
+better_print('Removing old Programs...', colors.orange)
+remove_programs()
+better_print('Downloading Programs...', colors.orange)
+download_programs()
