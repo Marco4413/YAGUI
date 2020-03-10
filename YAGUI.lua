@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.13",
+    ver = "1.14",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -192,6 +192,10 @@ math_utils = {
             setmetatable(newVector2, math_utils.Vector2)
             return newVector2
         end,
+        -- RETURNS DUPLICATE OF THE VECTOR
+        duplicate = function (self)
+            return math_utils.Vector2.new(self.x, self.y)
+        end,
         -- RETURNS VECTOR LENGTH SQUARED
         length_sq = function (self)
             return math.pow(self.x, 2) + math.pow(self.y, 2)
@@ -277,6 +281,10 @@ math_utils = {
             }
             setmetatable(newVector3, math_utils.Vector3)
             return newVector3
+        end,
+        -- RETURNS DUPLICATE OF THE VECTOR
+        duplicate = function (self)
+            return math_utils.Vector3.new(self.x, self.y, self.z)
         end,
         -- RETURNS VECTOR LENGTH SQUARED
         length_sq = function (self)

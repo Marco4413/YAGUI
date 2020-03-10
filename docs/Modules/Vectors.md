@@ -35,6 +35,31 @@ local v1 = math_utils.Vector2.new(10, 2)
 print(v1)
 ```
 
+*Vector2* : **duplicate**()
+
+**Returns a new Vector2 that has the same x, y as the original Vector2**.
+
+```lua
+-- Creating a new Vector
+local v1 = math_utils.Vector2.new(10, 2)
+-- Creating a reference to v1
+local v2 = v1
+-- Making a duplicate of v1
+local v3 = v1:duplicate()
+
+-- Changing the x value on
+--  The reference to v1
+v2.x = 5
+--  The duplicate of v1
+v3.x = 2
+
+-- Printing all 3 vectors to show the difference between
+--  A referenced vector and a duplicate one
+print(v1)
+print(v2)
+print(v3)
+```
+
 *number* : **length_sq**()
 
 **Returns the squared length of the vector** (It's much faster than doing length if you need to compare lengths).
@@ -279,6 +304,31 @@ local v1 = math_utils.Vector3.new(10, 2, 5)
 -- Printing the vector (Note: tostring(v1) will return v1:string(0),
 --  if you want more precision you should use v1:string(decimal_digits))
 print(v1)
+```
+
+*Vector3* : **duplicate**()
+
+**Returns a new Vector3 that has the same x, y, z as the original Vector3**.
+
+```lua
+-- Creating a new Vector
+local v1 = math_utils.Vector3.new(10, 2, 5)
+-- Creating a reference to v1
+local v2 = v1
+-- Making a duplicate of v1
+local v3 = v1:duplicate()
+
+-- Changing the x value on
+--  The reference to v1
+v2.x = 5
+--  The duplicate of v1
+v3.x = 2
+
+-- Printing all 3 vectors to show the difference between
+--  A referenced vector and a duplicate one
+print(v1)
+print(v2)
+print(v3)
 ```
 
 *number* : **length_sq**()
