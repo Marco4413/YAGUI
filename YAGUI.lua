@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.14",
+    ver = "1.15",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -423,7 +423,8 @@ math_utils.Vector3.BACK    = math_utils.Vector3.new( 0,  0, -1)
 math_utils.Vector3.ZERO    = math_utils.Vector3.new( 0,  0,  0)
 
 -- TABLE UTILS MODULE
-local table_utils = {
+local table_utils = {}
+table_utils = {
     -- CHECKS IF THERE'S THE SPECIFIED VALUE IN THE TABLE, IF VALUE WAS FOUND
     --  IT RETURNS TRUE AND THE KEY OF THE TABLE WHERE THE VALUE IS
     has_value = function (tbl, value)
@@ -437,8 +438,66 @@ local table_utils = {
     has_key = function (tbl, key)
         if tbl[key] ~= nil then return true, tbl[key]; end
         return false, nil
-    end
+    end,
+    -- A more advanced table serializer than textutils.serialise
+    --  - Doesn't error with functions, it just turns them into tostring(function) (they can't be unserialized correctly).
+    --  - Has a depth field which can be used to serialize recursive tables without getting an error.
+    serialise = function (tbl, depth, pretty, indent, new_line, space)
+        local depth = depth or 0
+        local indent = indent or "  "
+        local current_depth = 0
+        
+        local new_line = new_line or "\n"
+        local space = space or " "
+        
+        if not pretty then indent, new_line, space = "", "", ""; end
+        
+        local function i_tbl_serialize(tbl)
+            local this_indent = indent:rep(current_depth + 1)
+            local str_tbl = "{"..new_line
+            for key, value in next, tbl do
+                local value_type = type(value)
+                local value_string = tostring(value)
+                local key_type = type(key)
+                local key_string
+                if key_type == "string" then
+                    key_string = ("\"%s\""):format(key)
+                else
+                    key_string = tostring(key)
+                end
+                
+                str_tbl = str_tbl..("%s[%s]%s=%s"):format(this_indent, key_string, space, space)
+                if value_type == "table" then
+                    if current_depth < depth then
+                        current_depth = current_depth + 1
+                        str_tbl = str_tbl..i_tbl_serialize(value)
+                        current_depth = current_depth - 1
+                    else
+                        str_tbl = str_tbl.."{}"
+                    end
+                elseif (value_type == "string") or (value_type == "function") then
+                    str_tbl = str_tbl..("%q"):format(value_string)
+                else
+                    str_tbl = str_tbl..("%s"):format(value_string)
+                end
+                if next(tbl, key) then
+                    str_tbl = str_tbl..","..new_line
+                else
+                    str_tbl = str_tbl..new_line
+                end
+            end
+            str_tbl = str_tbl..indent:rep(current_depth).."}"
+            return str_tbl
+        end
+        
+        return i_tbl_serialize(tbl)
+    end,
+    -- Just copies of unserialise functions in textutils
+    unserialise = textutils.unserialise,
+    unserialize = textutils.unserialize
 }
+
+table_utils.serialize = table_utils.serialise
 
 -- COLOR UTILS MODULE
 local color_utils = {}
