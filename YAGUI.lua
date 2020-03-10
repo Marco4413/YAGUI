@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.15",
+    ver = "1.16",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -442,7 +442,7 @@ table_utils = {
     -- A more advanced table serializer than textutils.serialise
     --  - Doesn't error with functions, it just turns them into tostring(function) (they can't be unserialized correctly).
     --  - Has a depth field which can be used to serialize recursive tables without getting an error.
-    serialise = function (tbl, depth, pretty, indent, new_line, space)
+    serialise = function (tbl, depth, pretty, serialise_metatables, serialise_index, indent, new_line, space)
         local depth = depth or 0
         local indent = indent or "  "
         local current_depth = 0
@@ -455,37 +455,48 @@ table_utils = {
         local function i_tbl_serialize(tbl)
             local this_indent = indent:rep(current_depth + 1)
             local str_tbl = "{"..new_line
-            for key, value in next, tbl do
-                local value_type = type(value)
-                local value_string = tostring(value)
-                local key_type = type(key)
-                local key_string
-                if key_type == "string" then
-                    key_string = ("\"%s\""):format(key)
-                else
-                    key_string = tostring(key)
-                end
-                
-                str_tbl = str_tbl..("%s[%s]%s=%s"):format(this_indent, key_string, space, space)
-                if value_type == "table" then
-                    if current_depth < depth then
-                        current_depth = current_depth + 1
-                        str_tbl = str_tbl..i_tbl_serialize(value)
-                        current_depth = current_depth - 1
+
+            local function add_tbl(tbl)
+                for key, value in next, tbl do
+                    local key_type = type(key)
+                    local key_string
+                    if key_type == "string" then
+                        key_string = ("\"%s\""):format(key)
                     else
-                        str_tbl = str_tbl.."{}"
+                        key_string = tostring(key)
                     end
-                elseif (value_type == "string") or (value_type == "function") then
-                    str_tbl = str_tbl..("%q"):format(value_string)
-                else
-                    str_tbl = str_tbl..("%s"):format(value_string)
-                end
-                if next(tbl, key) then
-                    str_tbl = str_tbl..","..new_line
-                else
-                    str_tbl = str_tbl..new_line
+
+                    if not serialise_index and (key == "__index") then value = {}; end
+
+                    local value_type = type(value)
+                    local value_string = tostring(value)
+                    
+                    str_tbl = str_tbl..("%s[%s]%s=%s"):format(this_indent, key_string, space, space)
+                    if value_type == "table" then
+                        if current_depth < depth then
+                            current_depth = current_depth + 1
+                            str_tbl = str_tbl..i_tbl_serialize(value)
+                            current_depth = current_depth - 1
+                        else
+                            str_tbl = str_tbl.."{}"
+                        end
+                    elseif (value_type == "string") or (value_type == "function") then
+                        str_tbl = str_tbl..("%q"):format(value_string)
+                    else
+                        str_tbl = str_tbl..("%s"):format(value_string)
+                    end
+                    if next(tbl, key) then
+                        str_tbl = str_tbl..","..new_line
+                    else
+                        str_tbl = str_tbl..new_line
+                    end
                 end
             end
+            local metatable = getmetatable(tbl)
+            if serialise_metatables and metatable then
+                add_tbl(metatable)
+            end
+            add_tbl(tbl)
             str_tbl = str_tbl..indent:rep(current_depth).."}"
             return str_tbl
         end
