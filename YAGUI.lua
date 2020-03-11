@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.16.1",
+    ver = "1.16.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -461,7 +461,7 @@ table_utils = {
                     local key_type = type(key)
                     local key_string
                     if key_type == "string" then
-                        key_string = ("\"%s\""):format(key)
+                        key_string = ("%q"):format(key)
                     else
                         key_string = tostring(key)
                     end
