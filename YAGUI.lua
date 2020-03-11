@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.16",
+    ver = "1.16.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -495,7 +495,11 @@ table_utils = {
             local metatable = getmetatable(tbl)
             if serialise_metatables and metatable then
                 add_tbl(metatable)
+                if next(tbl) then
+                    str_tbl = str_tbl:sub(1, #str_tbl - #new_line)..","..str_tbl:sub(#str_tbl - #new_line + 1)
+                end
             end
+            
             add_tbl(tbl)
             str_tbl = str_tbl..indent:rep(current_depth).."}"
             return str_tbl
