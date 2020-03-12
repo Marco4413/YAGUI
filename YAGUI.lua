@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.16.2",
+    ver = "1.16.3",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -461,7 +461,7 @@ table_utils = {
                     local key_type = type(key)
                     local key_string
                     if key_type == "string" then
-                        key_string = ("%q"):format(key)
+                        key_string = string.format("%q", key)
                     else
                         key_string = tostring(key)
                     end
@@ -471,7 +471,7 @@ table_utils = {
                     local value_type = type(value)
                     local value_string = tostring(value)
                     
-                    str_tbl = str_tbl..("%s[%s]%s=%s"):format(this_indent, key_string, space, space)
+                    str_tbl = str_tbl..string.format("%s[%s]%s=%s", this_indent, key_string, space, space)
                     if value_type == "table" then
                         if current_depth < depth then
                             current_depth = current_depth + 1
@@ -481,9 +481,9 @@ table_utils = {
                             str_tbl = str_tbl.."{}"
                         end
                     elseif (value_type == "string") or (value_type == "function") then
-                        str_tbl = str_tbl..("%q"):format(value_string)
+                        str_tbl = str_tbl..string.format("%q", value_string)
                     else
-                        str_tbl = str_tbl..("%s"):format(value_string)
+                        str_tbl = str_tbl..string.format("%s", value_string)
                     end
                     if next(tbl, key) then
                         str_tbl = str_tbl..","..new_line
