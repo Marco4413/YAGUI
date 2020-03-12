@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.16.3",
+    ver = "1.16.4",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://yagui.readthedocs.io/en/latest/",
@@ -1289,7 +1289,7 @@ gui_elements = {
             screen_buffer:rectangle(self.pos.x + filled_progress_width, self.pos.y, self.size.x - filled_progress_width, self.size.y, self.colors.unfilled_background)
 
             if self.value.draw_percentage then
-                local percentage_text = tostring(value_percentage * 100).."%"
+                local percentage_text = string.format("%d%%", value_percentage * 100)
                 local text_x = math.floor((self.size.x - #percentage_text) / 2) + self.pos.x
                 local text_y = math.floor((self.size.y - 1) / 2) + self.pos.y
                 screen_buffer:write(text_x, text_y, percentage_text, self.colors.foreground)
