@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="hds536jhmk">
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>string_utils - YAGUI docs</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../../style.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "string_utils";
+    var mkdocs_page_input_path = "Modules\\string_utils_module.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> YAGUI docs</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../Introduction/">Introduction</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../Introduction/#terminal-arguments">Terminal Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../Introduction/#download-installation">Download &amp; Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../Introduction/#library-syntax">Library Syntax</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../About/LICENSE/">About</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Modules</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../#why-modulestables">Why Modules/Tables?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#all-the-modules-that-are-available">All the modules that are available</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../info_module/">info</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../info_module/#keys-and-values">Keys and Values</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#ver-string">ver : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#author-string">author : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#website-string">website : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#documentation-string">documentation : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#copyright-string">copyright : string</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../constants/">Constants</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../constants/#categories">Categories</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../constants/#events">Events</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../constants/#names">Names</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../constants/#inputs">Inputs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../constants/#callbacks">Callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../constants/#objects">Objects</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../constants/#priority">Priority</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../constants/#text-alignment">Text Alignment</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../constants/#computer-type">Computer Type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../constants/#wss-response">WSS Response</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../generic_utils_module/">generic_utils</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../generic_utils_module/#set_callback">set_callback</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../generic_utils_module/#get_computer_type">get_computer_type</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">string_utils</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#join">join</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#split">split</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#compare_versions">compare_versions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#escape_magic_characters">escape_magic_characters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#get_extension">get_extension</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="#">math_utils</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../math_utils_module/">General</a>
+    <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#vectors">Vectors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#map">map</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#constrain">constrain</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#round">round</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#round_numbers">round_numbers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#floor_numbers">floor_numbers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#ceil_numbers">ceil_numbers</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../Vectors/">Vectors</a>
+    <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../Vectors/#vector2">Vector2</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector2-constants">Vector2 Constants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector2-methods">Vector2 Methods</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector2-metamethods">Vector2 Metamethods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Vectors/#vector3">Vector3</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector3-constants">Vector3 Constants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector3-methods">Vector3 Methods</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector3-metamethods">Vector3 Metamethods</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">YAGUI docs</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Modules &raquo;</li>
+        
+      
+    
+    <li>string_utils</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/hds536jhmk/YAGUI/edit/master/docs/Modules/string_utils_module.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="string_utils">string_utils</h1>
+<p>Contains all <strong>functions that are helpful when dealing with strings</strong>.</p>
+<p>This module has a <strong>table that's called <code>magic_characters</code></strong> which is <strong>used by the <a href="#escape_magic_characters"><code>escape_magic_characters</code></a> function</strong> to know what characters to escape, <strong>you shouldn't change it unless other magic_characters are added and the library isn't updated yet</strong>.</p>
+<h2 id="join">join</h2>
+<p><em>string</em> : <strong>join</strong>( <em>table</em> : <strong>tbl</strong>, <em>string</em> : <strong>sep</strong> )</p>
+<p>It <strong>returns a string</strong> which is <strong>all the values of <code>tbl</code> concatenated and separated by <code>sep</code></strong>.</p>
+<p><strong>tbl</strong> is the <strong>table which contains all the values you want to concatenate</strong>.</p>
+<p><strong>sep</strong> is the <strong>string that is going to be put between all concatenated values</strong>.</p>
+<pre><code class="lua">-- Create a table that has values in it (join does tostring() on every value before concatenating)
+local tbl = {&quot;f&quot;, &quot;o&quot;, &quot;o&quot;, &quot;b&quot;, &quot;a&quot;, &quot;r&quot;}
+
+-- Join tbl with two different separators
+local s1 = string_utils.join(tbl, &quot;&quot;)
+local s2 = string_utils.join(tbl, &quot;, &quot;)
+
+-- Print joined table
+print(s1) -- Prints &quot;foobar&quot;
+print(s2) -- Prints &quot;f, o, o, b, a, r&quot;
+</code></pre>
+
+<h2 id="split">split</h2>
+<p><em>table</em> : <strong>split</strong>( <em>string</em> : <strong>str</strong>, <em>string</em> : <strong>sep</strong> )</p>
+<p>It <strong>returns a table</strong> which <strong>contains all characters in <code>str</code> separated by <code>sep</code> except for <code>sep</code></strong>.</p>
+<p><strong>str</strong> is the <strong>string that is going to be split</strong>.</p>
+<p><strong>sep</strong> is the <strong>string that determines where <code>str</code> is split</strong> (this must have more than 0 characters or it will return an empty table).</p>
+<pre><code class="lua">-- Create a string that has some sort of text in it
+local s = &quot;f o o b a r&quot;
+
+-- Split s on every empty space
+local t1 = string_utils.split(s, &quot; &quot;)
+-- Join t1 and put a space between every value of it
+local s1 = string_utils.join(s, &quot; &quot;)
+
+-- Prints the splitted string
+print(textutils.serialise(t1))
+-- Prints the joined table (it should be equal to s)
+print(s1)
+</code></pre>
+
+<h2 id="compare_versions">compare_versions</h2>
+<p>This can be <strong>used to see if the library is a newer <a href="../info_module/#ver-string">version</a> than the one supported by the program</strong>.</p>
+<p><em>number</em> : <strong>compare_versions</strong>( <em>string</em> : <strong>v1</strong>, <em>string</em> : <strong>v2</strong> )</p>
+<p>It <strong>returns a number</strong> that can be -1, 0 or 1, if it returns <strong>-1</strong> then <strong>v1 is lower than v2</strong>, if it's <strong>0</strong> they're the <strong>same version</strong> and if <strong>v1 is newer than v2 it returns 1</strong>.</p>
+<pre><code class="lua">-- Store the first compatible version of the library
+local first_compatible_version = &quot;1.12.1&quot;
+
+-- Check if compatible (basically info.ver &lt; first_compatible_version)
+if string_utils.compare_versions(info.ver, first_compatible_version) == -1 then
+    printError(&quot;This version of YAGUI isn't compatible with this program.&quot;)
+    return
+end
+
+-- WRITE YOUR PROGRAM
+</code></pre>
+
+<h2 id="escape_magic_characters">escape_magic_characters</h2>
+<p><em>string</em> : <strong>escape_magic_characters</strong>( <em>string</em> : <strong>str</strong> )</p>
+<p><strong>Returns a <a href="https://www.lua.org/pil/20.2.html">magic character</a> free version of <code>str</code></strong>.</p>
+<p><strong>str</strong> is the <strong>string that contains lua's <a href="https://www.lua.org/pil/20.2.html">magic characters</a></strong>.</p>
+<pre><code class="lua">-- Create a lua pattern
+local pattern = &quot;[^fobar]&quot;
+-- Create a string from pattern that hasn't got any magic character
+local magic_free_pattern = string_utils.escape_magic_characters(pattern)
+
+-- Replace pattern with &quot;&quot;
+local str1 = &quot;If you don't bait me I'll reply&quot;
+local s1 = str1:gsub(pattern, &quot;&quot;)
+
+-- Replace magic_free_pattern with &quot;&quot;
+local str2 = &quot;foo[^fobar]bar&quot;
+local s2 = str2:gsub(magic_free_pattern, &quot;&quot;)
+
+-- On str1 the characters that are chosen by the pattern are replaced with &quot;&quot;
+print(s1)
+-- On str2 pattern is replaced with &quot;&quot;
+print(s2)
+</code></pre>
+
+<h2 id="get_extension">get_extension</h2>
+<p><em>string</em> : <strong>get_extension</strong>( <em>string</em> : <strong>path</strong> )</p>
+<p><strong>Returns a string that is the extension of the file in path</strong>.</p>
+<p><strong>path</strong> is the <strong>path of the file</strong> that you want to know its extension.</p>
+<pre><code class="lua">-- First file path
+local f1 = &quot;./foobar.txt&quot;
+-- Get extension of f1
+local ext1 = string_utils.get_extension(f1)
+
+-- Second file path
+local f2 = &quot;./foobar&quot;
+-- Get extension of f2
+local ext2 = string_utils.get_extension(f2)
+
+-- Should print &quot;txt&quot;
+print(ext1)
+-- Should print &quot;&quot; because f2 doesn't have any extension
+print(ext2)
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../math_utils_module/" class="btn btn-neutral float-right" title="General">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../generic_utils_module/" class="btn btn-neutral" title="generic_utils"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright (c) 2019, hds536jhmk</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/hds536jhmk/YAGUI/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../generic_utils_module/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../math_utils_module/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+
+:root {
+    --p-margin-bottom: 12px;
+}
+
+.wy-nav-content {
+    max-width: 100%;
+}
+
+.wy-nav-content table {
+    width: 100%;
+    font-family: sans-serif;
+    margin-bottom: 19.92px;
+}
+
+.wy-nav-content th, td {
+    padding: 5px;
+    text-align: center;
+}
+
+.wy-nav-content p {
+    margin-bottom: var(--p-margin-bottom);
+}
+
+.wy-nav-content ul, ol {
+    margin-top: calc(var(--p-margin-bottom) * -1);
+}
