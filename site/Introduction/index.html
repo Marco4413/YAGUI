@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="hds536jhmk">
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Introduction - YAGUI docs</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../style.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Introduction";
+    var mkdocs_page_input_path = "Introduction\\index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> YAGUI docs</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Introduction</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#terminal-arguments">Terminal Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#download-installation">Download &amp; Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#library-syntax">Library Syntax</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../About/LICENSE/">About</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Modules</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Modules/">Introduction</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/#why-modulestables">Why Modules/Tables?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/#all-the-modules-that-are-available">All the modules that are available</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../Modules/info_module/">info</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/info_module/#keys-and-values">Keys and Values</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/info_module/#ver-string">ver : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/info_module/#author-string">author : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/info_module/#website-string">website : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/info_module/#documentation-string">documentation : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/info_module/#copyright-string">copyright : string</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../Modules/constants/">Constants</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/constants/#categories">Categories</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/constants/#events">Events</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/constants/#names">Names</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/constants/#inputs">Inputs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/constants/#callbacks">Callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/constants/#objects">Objects</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/constants/#priority">Priority</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/constants/#text-alignment">Text Alignment</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/constants/#computer-type">Computer Type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/constants/#wss-response">WSS Response</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../Modules/generic_utils_module/">generic_utils</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/generic_utils_module/#set_callback">set_callback</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/generic_utils_module/#get_computer_type">get_computer_type</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../Modules/string_utils_module/">string_utils</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/string_utils_module/#join">join</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/string_utils_module/#split">split</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/string_utils_module/#compare_versions">compare_versions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/string_utils_module/#escape_magic_characters">escape_magic_characters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../Modules/string_utils_module/#get_extension">get_extension</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="#">math_utils</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../Modules/math_utils_module/">General</a>
+    <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/math_utils_module/#vectors">Vectors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/math_utils_module/#map">map</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/math_utils_module/#constrain">constrain</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/math_utils_module/#round">round</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/math_utils_module/#round_numbers">round_numbers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/math_utils_module/#floor_numbers">floor_numbers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/math_utils_module/#ceil_numbers">ceil_numbers</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../Modules/Vectors/">Vectors</a>
+    <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/Vectors/#vector2">Vector2</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/Vectors/#vector2-constants">Vector2 Constants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/Vectors/#vector2-methods">Vector2 Methods</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/Vectors/#vector2-metamethods">Vector2 Metamethods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Modules/Vectors/#vector3">Vector3</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/Vectors/#vector3-constants">Vector3 Constants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/Vectors/#vector3-methods">Vector3 Methods</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Modules/Vectors/#vector3-metamethods">Vector3 Metamethods</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">YAGUI docs</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Introduction</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/hds536jhmk/YAGUI/edit/master/docs/Introduction/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="welcome-to-yagui-documentation-v05">Welcome to YAGUI Documentation v0.5</h1>
+<p><img alt="" src="../img/logo.png" /></p>
+<p>What does YAGUI stand for? <strong>YAGUI</strong> stands for "<strong>Yet Another Graphical User Interface</strong>", this library tries to make <strong>GUIs easier to make and more powerful by having these objectives</strong>:</p>
+<ul>
+<li>Has a Loop that makes <strong>easier event management</strong>;</li>
+<li>Can <strong>draw and get events from multiple monitors</strong>;</li>
+<li>Has a <strong>screen buffer</strong> which makes possible to simulate <strong>transparency</strong> when drawing;</li>
+<li>Has a <strong>rednet based wireless screen sharing</strong> system (Wireless Screen Share, WSS).</li>
+</ul>
+<h2 id="terminal-arguments">Terminal Arguments</h2>
+<p>Terminal arguments are <strong>options with which you can launch the library</strong> to get information or make a new project easily.</p>
+<ul>
+<li><code>help</code> Prints a <strong>list of available Terminal Arguments</strong>.</li>
+<li><code>info</code> Prints <strong>informations about the library</strong>.</li>
+<li><code>ver</code> Prints the <strong>version of the library</strong>.</li>
+<li><code>copyright</code> Prints <strong>library's copyright</strong>.</li>
+<li><code>setup</code> <strong>Sets up the library by creating a new CraftOS's setting</strong> which <strong>stores the path to the library</strong>, should be used every time you <strong>move the library</strong> and the <strong>first time you download it</strong>.</li>
+<li><code>create &lt;PATH&gt;</code> Creates a <strong>new YAGUI project</strong> at <code>PATH</code>, a new project <strong>contains the code needed to load the library</strong>.</li>
+</ul>
+<h2 id="download-installation">Download &amp; Installation</h2>
+<p>There are <strong>two main ways of downloading the library</strong>:</p>
+<ol>
+<li>Downloading it from <a href="https://raw.githubusercontent.com/hds536jhmk/YAGUI/master/YAGUI-mini.lua"><strong>Raw GitHub</strong></a> using <code>wget</code>.</li>
+<li>Running <code>pastebin run 5qQ6t6ZX</code> on the terminal.</li>
+</ol>
+<p>By doing it with <strong>the first method you just download the library</strong>, by doing it with <strong>the second one you also get some examples to try</strong> as soon as you've set up the library.</p>
+<p><strong>After you've downloaded it you should run it with</strong> <a href="#terminal-arguments">setup argument</a> <strong>to install it</strong>.</p>
+<h2 id="library-syntax">Library Syntax</h2>
+<p>You should probably know how to <strong>load the library</strong>, you can use either <a href="http://luatut.com/dofile.html"><strong>dofile</strong></a> or <a href="https://www.lua.org/pil/8.1.html"><strong>require</strong></a>, so you should put the name of the variable where you've stored the library in front of everything that you need to access from it separated with a <code>.</code> (e.g. <code>YAGUI.KEY_UP</code>).</p>
+<p>Everything in the library is <strong>snake_cased</strong> (e.g. <code>string_utils</code>), except for <strong>"classes"</strong> that are <strong>CamelCased</strong> (e.g. <code>Loop</code>), <strong>callbacks</strong> that are <strong>lowerCamelCased</strong> (e.g. <code>Loop.callbacks.onClock</code>) and <strong>constants</strong> that are <strong>UPPERCASED</strong> (e.g. <code>ONCLOCK</code>) or <strong>SCREAMING_SNAKE_CASED</strong> (e.g. <code>KEY_UP</code>).</p>
+<p>Most of the functions of the library <strong>need to be called like this <code>table:function()</code> or <code>table.function(table)</code></strong>, <strong>except for functions that are in tables that have "_utils"</strong> at the end of their name.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../About/LICENSE/" class="btn btn-neutral float-right" title="About">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright (c) 2019, hds536jhmk</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/hds536jhmk/YAGUI/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="../About/LICENSE/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

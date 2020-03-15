@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="hds536jhmk">
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Constants - YAGUI docs</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../../style.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Constants";
+    var mkdocs_page_input_path = "Modules\\constants.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> YAGUI docs</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../Introduction/">Introduction</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../Introduction/#terminal-arguments">Terminal Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../Introduction/#download-installation">Download &amp; Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../Introduction/#library-syntax">Library Syntax</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../About/LICENSE/">About</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Modules</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../#why-modulestables">Why Modules/Tables?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#all-the-modules-that-are-available">All the modules that are available</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../info_module/">info</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../info_module/#keys-and-values">Keys and Values</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#ver-string">ver : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#author-string">author : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#website-string">website : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#documentation-string">documentation : string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../info_module/#copyright-string">copyright : string</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Constants</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#categories">Categories</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#events">Events</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#names">Names</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#inputs">Inputs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#callbacks">Callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#objects">Objects</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#priority">Priority</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#text-alignment">Text Alignment</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#computer-type">Computer Type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#wss-response">WSS Response</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../generic_utils_module/">generic_utils</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../generic_utils_module/#set_callback">set_callback</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../generic_utils_module/#get_computer_type">get_computer_type</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../string_utils_module/">string_utils</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../string_utils_module/#join">join</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../string_utils_module/#split">split</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../string_utils_module/#compare_versions">compare_versions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../string_utils_module/#escape_magic_characters">escape_magic_characters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../string_utils_module/#get_extension">get_extension</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="#">math_utils</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../math_utils_module/">General</a>
+    <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#vectors">Vectors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#map">map</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#constrain">constrain</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#round">round</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#round_numbers">round_numbers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#floor_numbers">floor_numbers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../math_utils_module/#ceil_numbers">ceil_numbers</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../Vectors/">Vectors</a>
+    <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../Vectors/#vector2">Vector2</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector2-constants">Vector2 Constants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector2-methods">Vector2 Methods</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector2-metamethods">Vector2 Metamethods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../Vectors/#vector3">Vector3</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector3-constants">Vector3 Constants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector3-methods">Vector3 Methods</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../Vectors/#vector3-metamethods">Vector3 Metamethods</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">YAGUI docs</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Modules &raquo;</li>
+        
+      
+    
+    <li>Constants</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/hds536jhmk/YAGUI/edit/master/docs/Modules/constants.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="constants">Constants</h1>
+<p>Constants <strong>can help you future proofing your application</strong>. If you use them you're almost certain that if one of them changes value you're safe because you're just using a variable, and your application will automatically use the changed value when the library is updated.</p>
+<h2 id="categories">Categories</h2>
+<p>Constants <strong>can be separated in categories based on what they are used for</strong>.</p>
+<h3 id="events">Events</h3>
+<p>These constants are <strong>useful when you're doing something with a <code>formatted_event</code></strong>, like checking what's the name of the event (e.g. <code>if formatted_event.name == TOUCH then --[[do stuff]] end</code>) or what mouse button was pressed (e.g. <code>if formatted_event.name == MOUSEUP and formatted_event.button == MOUSE_LEFT then --[[do stuff]] end</code>).</p>
+<p>These can also be <strong>separated in two main categories</strong>.</p>
+<h4 id="names">Names</h4>
+<p>All event <strong>constants that have to do with the name of an event</strong>:</p>
+<ul>
+<li><strong>TOUCH</strong></li>
+<li><strong>MOUSEUP</strong></li>
+<li><strong>MOUSEDRAG</strong></li>
+<li><strong>MOUSESCROLL</strong></li>
+<li><strong>CHAR</strong></li>
+<li><strong>KEY</strong></li>
+<li><strong>KEYUP</strong></li>
+<li><strong>PASTE</strong></li>
+<li><strong>DELETED</strong></li>
+</ul>
+<h4 id="inputs">Inputs</h4>
+<p>All event <strong>constants that will help you when you need to check what key or button was pressed</strong>:</p>
+<ul>
+<li><strong>MOUSE_LEFT</strong></li>
+<li><strong>MOUSE_RIGHT</strong></li>
+<li><strong>MOUSE_MIDDLE</strong></li>
+<li><strong>SCROLL_UP</strong></li>
+<li><strong>SCROLL_DOWN</strong></li>
+<li>All <strong>keys from</strong> <a href="http://www.computercraft.info/wiki/Keys_(API)"><strong>Keys API</strong></a> except that they're written in UPPERCASE and have the prefix "KEY_".</li>
+</ul>
+<h3 id="callbacks">Callbacks</h3>
+<p>All <strong>constants that will help you to set objects' callbacks</strong> through <a href="../generic_utils_module/#set_callback"><code>generic_utils.set_callback</code></a>:</p>
+<ul>
+<li><strong>ONSTART</strong></li>
+<li><strong>ONSTOP</strong></li>
+<li><strong>ONDRAW</strong></li>
+<li><strong>ONPRESS</strong></li>
+<li><strong>ONFAILEDPRESS</strong></li>
+<li><strong>ONTIMEOUT</strong></li>
+<li><strong>ONCLOCK</strong></li>
+<li><strong>ONEVENT</strong></li>
+<li><strong>ONFOCUS</strong></li>
+<li><strong>ONKEY</strong></li>
+<li><strong>ONCHAR</strong></li>
+</ul>
+<h3 id="objects">Objects</h3>
+<p>These constants are <strong>used to set some special properties in objects</strong>.</p>
+<p>This can be <strong>separated into two groups</strong>.</p>
+<h4 id="priority">Priority</h4>
+<p>Used to <strong>set an object's priority in a <code>Loop</code></strong> (e.g. If something is in high priority it will get moved into the first place of the table that it's in if interacted with):</p>
+<ul>
+<li><strong>LOW_PRIORITY</strong></li>
+<li><strong>HIGH_PRIORITY</strong></li>
+</ul>
+<h4 id="text-alignment">Text Alignment</h4>
+<p>Used to <strong>specify text alignment on some objects</strong>:</p>
+<ul>
+<li><strong>ALIGN_LEFT</strong></li>
+<li><strong>ALIGN_CENTER</strong></li>
+</ul>
+<h3 id="computer-type">Computer Type</h3>
+<p>Used to check <strong>what type of computer you're on depending on what <a href="../generic_utils_module/#get_computer_type"><code>generic_utils.get_computer_type</code></a> returns</strong>:</p>
+<ul>
+<li><strong>COMPUTER</strong></li>
+<li><strong>TURTLE</strong></li>
+<li><strong>POCKET</strong></li>
+</ul>
+<h3 id="wss-response">WSS Response</h3>
+<p>For now this <strong>has only the constant that is returned if the computer that hosts a WSS server has disconnected</strong>:</p>
+<ul>
+<li><strong>DISCONNECTED</strong></li>
+</ul>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../generic_utils_module/" class="btn btn-neutral float-right" title="generic_utils">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../info_module/" class="btn btn-neutral" title="info"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright (c) 2019, hds536jhmk</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/hds536jhmk/YAGUI/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../info_module/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../generic_utils_module/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

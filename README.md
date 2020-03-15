@@ -12,7 +12,10 @@ What does YAGUI stand for? **YAGUI** stands for "Yet Another Graphical User Inte
 * Has a **screen buffer** which makes possible to simulate **transparency** when drawing;
 * Has a **rednet based wireless screen sharing** system (Wireless Screen Share, WSS).
 
-***Documentation:*** [![Documentation Status](https://readthedocs.org/projects/yagui/badge/?version=latest)](https://yagui.readthedocs.io/en/latest/?badge=latest)
+***Documentation:***
+
+* **Readthedocs**: [![Documentation Status](https://readthedocs.org/projects/yagui/badge/?version=latest)](https://yagui.readthedocs.io/en/latest/?badge=latest)
+* **Github** Pages: https://hds536jhmk.github.io/YAGUI/
 
 [***Trello Board***](https://trello.com/b/neTyIWej/yagui), where you can find all the things that are planned for the Library!
 
