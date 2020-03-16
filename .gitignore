@@ -1,6 +1,9 @@
 # VSCode folder
 .vscode
 
+## MKDocs build folder
+site/
+
 # Compiled Lua sources
 luac.out
 
