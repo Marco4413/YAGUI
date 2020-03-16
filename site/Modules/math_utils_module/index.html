@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <meta name="author" content="hds536jhmk">
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>General - YAGUI docs</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css">
+        <link href="../../style.css" rel="stylesheet">
+
+        <script src="../../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">YAGUI docs</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href="../.." class="nav-link">Introduction</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../../About/LICENSE/" class="nav-link">About</a>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Modules <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../" class="dropdown-item">Introduction</a>
+</li>
+                                    
+<li>
+    <a href="../info_module/" class="dropdown-item">info</a>
+</li>
+                                    
+<li>
+    <a href="../constants/" class="dropdown-item">Constants</a>
+</li>
+                                    
+<li>
+    <a href="../generic_utils_module/" class="dropdown-item">generic_utils</a>
+</li>
+                                    
+<li>
+    <a href="../string_utils_module/" class="dropdown-item">string_utils</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">math_utils</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="./" class="dropdown-item active">General</a>
+</li>
+            
+<li>
+    <a href="../Vectors/" class="dropdown-item">Vectors</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../string_utils_module/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../Vectors/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://github.com/hds536jhmk/YAGUI/edit/master/docs/Modules/math_utils_module.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#math_utils" class="nav-link">math_utils</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#vectors" class="nav-link">Vectors</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#map" class="nav-link">map</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#constrain" class="nav-link">constrain</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#round" class="nav-link">round</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#round_numbers" class="nav-link">round_numbers</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#floor_numbers" class="nav-link">floor_numbers</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#ceil_numbers" class="nav-link">ceil_numbers</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="math_utils">math_utils</h1>
+<p>Contains all <strong>functions that are helpful when dealing with numbers</strong>.</p>
+<h2 id="vectors">Vectors</h2>
+<p><strong>Vectors are going to be explained in <a href="../Vectors/">this document</a></strong>.</p>
+<h2 id="map">map</h2>
+<p><em>number</em> : <strong>map</strong>( <em>number</em> : <strong>value</strong>, <em>number</em> : <strong>value_start</strong>, <em>number</em> : <strong>value_stop</strong>, <em>number</em> : <strong>return_start</strong>, <em>number</em> : <strong>return_stop</strong>, <em>boolean</em> : <strong>constrained</strong>)</p>
+<p><strong>Returns a number from a number that is in the range [<code>value_start</code>; <code>value_stop</code>] mapped in the range [<code>return_start</code>; <code>return_stop</code>]</strong> and <strong>constrained</strong> in the <strong>return range if <code>constrained</code> is set to true</strong>.</p>
+<p><strong>value</strong> is the <strong>number that is going to be mapped</strong>.</p>
+<p><strong>value_start</strong> is the <strong>lowest number that <code>value</code> can be</strong>.</p>
+<p><strong>value_stop</strong> is the <strong>biggest number that <code>value</code> can be</strong>.</p>
+<p><strong>return_start</strong> is the <strong>lowest number that the returned number can be</strong>.</p>
+<p><strong>return_start</strong> is the <strong>biggest number that the returned number can be</strong>.</p>
+<p><em>constrained</em> <strong>if set to true</strong> the <strong>returned value</strong> is going to be <strong>constrained to its range of numbers</strong>.</p>
+<pre><code class="lua">-- Define the range of value
+local value_min = 0
+local value_max = 10
+
+-- Map value in range without constrain
+local mapped_value = math_utils.map(2, value_min, value_max, 0, 100, false)
+-- Map value in range with constrain
+local mapped_constrained_value = math_utils.map(2, value_min, value_max, 0, 100, true)
+
+-- Map value out of range without constrain
+local mapped_outofrange_value = math_utils.map(11, value_min, value_max, 0, 100, false)
+-- Map value out of range with constrain
+local mapped_constrained_outofrange_value = math_utils.map(11, value_min, value_max, 0, 100, true)
+
+-- Print mapped values
+print(
+string.format(
+[[
+Mapped value: %.2f;
+Mapped constrained value: %.2f;
+Mapped out of range value: %.2f;
+Mapped constrained out of range value: %.2f.
+]],
+mapped_value,
+mapped_constrained_value,
+mapped_outofrange_value,
+mapped_constrained_outofrange_value
+)
+)
+</code></pre>
+
+<h2 id="constrain">constrain</h2>
+<p><em>number</em> : <strong>constrain</strong>( <em>number</em> : <strong>value</strong>, <em>number</em> : <strong>min_value</strong>, <em>number</em> : <strong>max_value</strong>)</p>
+<p>It <strong>returns a number</strong> that is <strong><code>value</code> constrained in the range [<code>min_value</code>; <code>max_value</code>]</strong>.</p>
+<p><strong>value</strong> is the <strong>number to be constrained</strong>.</p>
+<p><strong>min_value</strong> is the <strong>lowest number that value can be</strong>.</p>
+<p><strong>max_value</strong> is the <strong>biggest number that value can be</strong>.</p>
+<pre><code class="lua">-- Define the range of value
+local value_min = 0
+local value_max = 10
+
+-- Constrain value in range
+local constrained_value = math_utils.constrain(2, 0, 10)
+-- Constrain out of range value in range
+local constrained_outofrange_value = math_utils.constrain(11, 0, 10)
+
+-- Print constrained values
+print(
+string.format(
+[[
+Constrained value: %.2f;
+Constrained out of range value: %.2f.
+]],
+constrained_value,
+constrained_outofrange_value
+)
+)
+</code></pre>
+
+<h2 id="round">round</h2>
+<p><em>number</em> : <strong>round</strong>( <em>number</em> : <strong>number</strong> )</p>
+<p><strong>Returns a number</strong> that is <strong><code>number rounded</code> to the closest unit</strong>.</p>
+<pre><code class="lua">print(
+    math_utils.round(0.1),
+    math_utils.round(0.6)
+)
+</code></pre>
+
+<h2 id="round_numbers">round_numbers</h2>
+<p><em>numbers</em> : <strong>round_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
+<p><strong>Returns all specified numbers rounded to their closest unit</strong>.</p>
+<pre><code class="lua">print(
+    math_utils.round_numbers(0.1, 0.6)
+)
+</code></pre>
+
+<h2 id="floor_numbers">floor_numbers</h2>
+<p><em>numbers</em> : <strong>floor_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
+<p><strong>Returns all specified numbers floored</strong>.</p>
+<pre><code class="lua">print(
+    math_utils.floor_numbers(0.1, 0.6)
+)
+</code></pre>
+
+<h2 id="ceil_numbers">ceil_numbers</h2>
+<p><em>numbers</em> : <strong>ceil_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
+<p><strong>Returns all specified numbers ceiled</strong>.</p>
+<pre><code class="lua">print(
+    math_utils.ceil_numbers(0.1, 0.6)
+)
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright (c) 2019, hds536jhmk</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js" defer></script>
+        <script src="../../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

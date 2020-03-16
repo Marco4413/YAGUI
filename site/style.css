@@ -1,0 +1,17 @@
+
+:root {
+    --p-margin-bottom: 12px;
+}
+
+.col-md-9 th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+.col-md-9 p {
+    margin-bottom: var(--p-margin-bottom);
+}
+
+.col-md-9 ul, ol {
+    margin-top: calc(var(--p-margin-bottom) * -1);
+}

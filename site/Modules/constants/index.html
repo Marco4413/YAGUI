@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <meta name="author" content="hds536jhmk">
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Constants - YAGUI docs</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css">
+        <link href="../../style.css" rel="stylesheet">
+
+        <script src="../../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">YAGUI docs</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href="../.." class="nav-link">Introduction</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../../About/LICENSE/" class="nav-link">About</a>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Modules <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../" class="dropdown-item">Introduction</a>
+</li>
+                                    
+<li>
+    <a href="../info_module/" class="dropdown-item">info</a>
+</li>
+                                    
+<li>
+    <a href="./" class="dropdown-item active">Constants</a>
+</li>
+                                    
+<li>
+    <a href="../generic_utils_module/" class="dropdown-item">generic_utils</a>
+</li>
+                                    
+<li>
+    <a href="../string_utils_module/" class="dropdown-item">string_utils</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">math_utils</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../math_utils_module/" class="dropdown-item">General</a>
+</li>
+            
+<li>
+    <a href="../Vectors/" class="dropdown-item">Vectors</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../info_module/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../generic_utils_module/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://github.com/hds536jhmk/YAGUI/edit/master/docs/Modules/constants.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#constants" class="nav-link">Constants</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#categories" class="nav-link">Categories</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="3"><a href="#events" class="nav-link">Events</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="4"><a href="#names" class="nav-link">Names</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="4"><a href="#inputs" class="nav-link">Inputs</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#callbacks" class="nav-link">Callbacks</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#objects" class="nav-link">Objects</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="4"><a href="#priority" class="nav-link">Priority</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="4"><a href="#text-alignment" class="nav-link">Text Alignment</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#computer-type" class="nav-link">Computer Type</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#wss-response" class="nav-link">WSS Response</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="constants">Constants</h1>
+<p>Constants <strong>can help you future proofing your application</strong>. If you use them you're almost certain that if one of them changes value you're safe because you're just using a variable, and your application will automatically use the changed value when the library is updated.</p>
+<h2 id="categories">Categories</h2>
+<p>Constants <strong>can be separated in categories based on what they are used for</strong>.</p>
+<h3 id="events">Events</h3>
+<p>These constants are <strong>useful when you're doing something with a <code>formatted_event</code></strong>, like checking what's the name of the event (e.g. <code>if formatted_event.name == TOUCH then --[[do stuff]] end</code>) or what mouse button was pressed (e.g. <code>if formatted_event.name == MOUSEUP and formatted_event.button == MOUSE_LEFT then --[[do stuff]] end</code>).</p>
+<p>These can also be <strong>separated in two main categories</strong>.</p>
+<h4 id="names">Names</h4>
+<p>All event <strong>constants that have to do with the name of an event</strong>:</p>
+<ul>
+<li><strong>TOUCH</strong></li>
+<li><strong>MOUSEUP</strong></li>
+<li><strong>MOUSEDRAG</strong></li>
+<li><strong>MOUSESCROLL</strong></li>
+<li><strong>CHAR</strong></li>
+<li><strong>KEY</strong></li>
+<li><strong>KEYUP</strong></li>
+<li><strong>PASTE</strong></li>
+<li><strong>DELETED</strong></li>
+</ul>
+<h4 id="inputs">Inputs</h4>
+<p>All event <strong>constants that will help you when you need to check what key or button was pressed</strong>:</p>
+<ul>
+<li><strong>MOUSE_LEFT</strong></li>
+<li><strong>MOUSE_RIGHT</strong></li>
+<li><strong>MOUSE_MIDDLE</strong></li>
+<li><strong>SCROLL_UP</strong></li>
+<li><strong>SCROLL_DOWN</strong></li>
+<li>All <strong>keys from</strong> <a href="http://www.computercraft.info/wiki/Keys_(API)"><strong>Keys API</strong></a> except that they're written in UPPERCASE and have the prefix "KEY_".</li>
+</ul>
+<h3 id="callbacks">Callbacks</h3>
+<p>All <strong>constants that will help you to set objects' callbacks</strong> through <a href="../generic_utils_module/#set_callback"><code>generic_utils.set_callback</code></a>:</p>
+<ul>
+<li><strong>ONSTART</strong></li>
+<li><strong>ONSTOP</strong></li>
+<li><strong>ONDRAW</strong></li>
+<li><strong>ONPRESS</strong></li>
+<li><strong>ONFAILEDPRESS</strong></li>
+<li><strong>ONTIMEOUT</strong></li>
+<li><strong>ONCLOCK</strong></li>
+<li><strong>ONEVENT</strong></li>
+<li><strong>ONFOCUS</strong></li>
+<li><strong>ONKEY</strong></li>
+<li><strong>ONCHAR</strong></li>
+</ul>
+<h3 id="objects">Objects</h3>
+<p>These constants are <strong>used to set some special properties in objects</strong>.</p>
+<p>This can be <strong>separated into two groups</strong>.</p>
+<h4 id="priority">Priority</h4>
+<p>Used to <strong>set an object's priority in a <code>Loop</code></strong> (e.g. If something is in high priority it will get moved into the first place of the table that it's in if interacted with):</p>
+<ul>
+<li><strong>LOW_PRIORITY</strong></li>
+<li><strong>HIGH_PRIORITY</strong></li>
+</ul>
+<h4 id="text-alignment">Text Alignment</h4>
+<p>Used to <strong>specify text alignment on some objects</strong>:</p>
+<ul>
+<li><strong>ALIGN_LEFT</strong></li>
+<li><strong>ALIGN_CENTER</strong></li>
+</ul>
+<h3 id="computer-type">Computer Type</h3>
+<p>Used to check <strong>what type of computer you're on depending on what <a href="../generic_utils_module/#get_computer_type"><code>generic_utils.get_computer_type</code></a> returns</strong>:</p>
+<ul>
+<li><strong>COMPUTER</strong></li>
+<li><strong>TURTLE</strong></li>
+<li><strong>POCKET</strong></li>
+</ul>
+<h3 id="wss-response">WSS Response</h3>
+<p>For now this <strong>has only the constant that is returned if the computer that hosts a WSS server has disconnected</strong>:</p>
+<ul>
+<li><strong>DISCONNECTED</strong></li>
+</ul></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright (c) 2019, hds536jhmk</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js" defer></script>
+        <script src="../../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
