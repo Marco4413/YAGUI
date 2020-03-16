@@ -14,8 +14,8 @@ What does YAGUI stand for? **YAGUI** stands for "Yet Another Graphical User Inte
 
 ***Documentation:***
 
+* **Github Pages**: https://hds536jhmk.github.io/YAGUI/
 * **Readthedocs**: [![Documentation Status](https://readthedocs.org/projects/yagui/badge/?version=latest)](https://yagui.readthedocs.io/en/latest/?badge=latest)
-* **Github** Pages: https://hds536jhmk.github.io/YAGUI/
 
 [***Trello Board***](https://trello.com/b/neTyIWej/yagui), where you can find all the things that are planned for the Library!
 

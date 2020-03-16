@@ -3,25 +3,15 @@
     --p-margin-bottom: 12px;
 }
 
-.wy-nav-content {
-    max-width: 100%;
-}
-
-.wy-nav-content table {
-    width: 100%;
-    font-family: sans-serif;
-    margin-bottom: 19.92px;
-}
-
-.wy-nav-content th, td {
-    padding: 5px;
+.col-md-9 th, td {
+    padding: 10px;
     text-align: center;
 }
 
-.wy-nav-content p {
+.col-md-9 p {
     margin-bottom: var(--p-margin-bottom);
 }
 
-.wy-nav-content ul, ol {
+.col-md-9 ul, ol {
     margin-top: calc(var(--p-margin-bottom) * -1);
 }
