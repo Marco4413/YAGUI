@@ -126,3 +126,31 @@ print(ext1)
 -- Should print "" because f2 doesn't have any extension
 print(ext2)
 ```
+
+## format_number
+
+*string* : **format_number**( *number* : **number**, *number* : **precision** )
+
+**Returns a string that is `number` with `precision` decimal digits and truncated to the last significant digit**.
+
+**number** is the **number to be formatted**.
+
+**precision** is how many **decimal digits the returned string of `number` should have** (if not specified it's 0).
+
+```lua
+-- A number
+local num = 1405.14008
+
+-- Printing num formatted with 0 decimal digits
+print(
+    string_utils.format_number(num)
+)
+-- Printing num formatted with 4 decimal digits
+print(
+    string_utils.format_number(num, 4)
+)
+-- Printing num formatted with 5 decimal digits
+print(
+    string_utils.format_number(num, 5)
+)
+```

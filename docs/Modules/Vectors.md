@@ -222,9 +222,9 @@ local v1 = math_utils.Vector2.new(10, 2)
 print(v1 / 2)
 ```
 
-#### Checking if two Vector2 have the same length
+#### Checking if two Vector2 are equal
 
-**Probably this will be changed to check if the two vectors are the same vector, it's more useful than checking their length**.
+**NOTE: To check if two vectors have the same length do `v1:length_sq() == v2:length_sq()`**.
 
 Vector2 **implements the `__eq` metamethod**, which means that `Vector2 == Vector2` works.
 
@@ -232,9 +232,9 @@ Vector2 **implements the `__eq` metamethod**, which means that `Vector2 == Vecto
 -- Creating a new Vector
 local v1 = math_utils.Vector2.new(10, 2)
 -- Creating a second Vector
-local v2 = math_utils.Vector2.new(2, 10)
+local v2 = math_utils.Vector2.new(10, 2)
 
--- Printing if the lengths of the two vectors are equal
+-- Printing if the two vectors are equal
 print(v1 == v2)
 ```
 
@@ -493,9 +493,9 @@ local v1 = math_utils.Vector3.new(10, 2, 5)
 print(v1 / 2)
 ```
 
-#### Checking if two Vector3 have the same length
+#### Checking if two Vector3 are equal
 
-**Probably this will be changed to check if the two vectors are the same vector, it's more useful than checking their length**.
+**NOTE: To check if two vectors have the same length do `v1:length_sq() == v2:length_sq()`**.
 
 Vector3 **implements the `__eq` metamethod**, which means that `Vector3 == Vector3` works.
 
@@ -503,9 +503,9 @@ Vector3 **implements the `__eq` metamethod**, which means that `Vector3 == Vecto
 -- Creating a new Vector
 local v1 = math_utils.Vector3.new(10, 2, 5)
 -- Creating a second Vector
-local v2 = math_utils.Vector3.new(2, 10, 5)
+local v2 = math_utils.Vector3.new(10, 2, 5)
 
--- Printing if the lengths of the two vectors are equal
+-- Printing if the two vectors are equal
 print(v1 == v2)
 ```
 

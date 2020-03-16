@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.16.5",
+    ver = "1.17",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -175,6 +175,26 @@ string_utils = {
             return extension
         end
         return ""
+    end,
+    -- FORMATS A NUMBER SO THAT IT HAS precision DECIMAL DIGITS AND TRUNCATES IT AT THE LAST SIGNIFICANT DIGIT
+    format_number = function (number, precision)
+        number = tostring(number)
+        precision = precision or 0
+
+        local unit = number:gsub("(.*)%..*", "%1")
+        if precision <= 0 then
+            return unit
+        end
+
+        local on_dot = #unit + 1
+        local decimal_digits = number:sub(on_dot + 1, on_dot + precision)
+        decimal_digits = decimal_digits:reverse():gsub("0*(.*)", "%1"):reverse()
+
+        if #decimal_digits > 0 then
+            return unit.."."..decimal_digits
+        end
+
+        return unit
     end
 }
 
@@ -259,7 +279,7 @@ math_utils = {
         end,
         -- EQUAL METAMETHOD, handles Vector1 == Vector2
         __eq = function (self, other)
-            return self:length_sq() == other:length_sq()
+            return self.x == other.x and self.y == other.y
         end,
         -- LESS THAN METAMETHOD, handles Vector1 < Vector2; Vector1 > Vector2
         __lt = function (self, other)
@@ -349,7 +369,7 @@ math_utils = {
         end,
         -- EQUAL METAMETHOD, handles Vector1 == Vector2
         __eq = function (self, other)
-            return self:length_sq() == other:length_sq()
+            return self.x == other.x and self.y == other.y and self.z == other.z
         end,
         -- LESS THAN METAMETHOD, handles Vector1 < Vector2; Vector1 > Vector2
         __lt = function (self, other)
@@ -1262,7 +1282,8 @@ gui_elements = {
                     max = max_value,
                     min = min_value,
                     current = current_value,
-                    draw_percentage = true
+                    draw_percentage = true,
+                    percentage_precision = 2
                 },
                 colors = {
                     foreground = foreground,
@@ -1289,7 +1310,7 @@ gui_elements = {
             screen_buffer:rectangle(self.pos.x + filled_progress_width, self.pos.y, self.size.x - filled_progress_width, self.size.y, self.colors.unfilled_background)
 
             if self.value.draw_percentage then
-                local percentage_text = string.format("%d%%", value_percentage * 100)
+                local percentage_text = string_utils.format_number(value_percentage * 100, self.value.percentage_precision).."%"
                 local text_x = math.floor((self.size.x - #percentage_text) / 2) + self.pos.x
                 local text_y = math.floor((self.size.y - 1) / 2) + self.pos.y
                 screen_buffer:write(text_x, text_y, percentage_text, self.colors.foreground)
