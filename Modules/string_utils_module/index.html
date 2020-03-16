@@ -141,6 +141,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#format_number" class="nav-link">format_number</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -244,6 +248,28 @@ local ext2 = string_utils.get_extension(f2)
 print(ext1)
 -- Should print &quot;&quot; because f2 doesn't have any extension
 print(ext2)
+</code></pre>
+
+<h2 id="format_number">format_number</h2>
+<p><em>string</em> : <strong>format_number</strong>( <em>number</em> : <strong>number</strong>, <em>number</em> : <strong>precision</strong> )</p>
+<p><strong>Returns a string that is <code>number</code> with <code>precision</code> decimal digits and truncated to the last significant digit</strong>.</p>
+<p><strong>number</strong> is the <strong>number to be formatted</strong>.</p>
+<p><strong>precision</strong> is how many <strong>decimal digits the returned string of <code>number</code> should have</strong> (if not specified it's 0).</p>
+<pre><code class="lua">-- A number
+local num = 1405.14008
+
+-- Printing num formatted with 0 decimal digits
+print(
+    string_utils.format_number(num)
+)
+-- Printing num formatted with 4 decimal digits
+print(
+    string_utils.format_number(num, 4)
+)
+-- Printing num formatted with 5 decimal digits
+print(
+    string_utils.format_number(num, 5)
+)
 </code></pre></div>
             </div>
         </div>

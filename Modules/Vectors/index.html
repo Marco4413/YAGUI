@@ -153,7 +153,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="4"><a href="#checking-if-two-vector2-have-the-same-length" class="nav-link">Checking if two Vector2 have the same length</a>
+            <li class="nav-item" data-level="4"><a href="#checking-if-two-vector2-are-equal" class="nav-link">Checking if two Vector2 are equal</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -201,7 +201,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="4"><a href="#checking-if-two-vector3-have-the-same-length" class="nav-link">Checking if two Vector3 have the same length</a>
+            <li class="nav-item" data-level="4"><a href="#checking-if-two-vector3-are-equal" class="nav-link">Checking if two Vector3 are equal</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -428,15 +428,15 @@ local v1 = math_utils.Vector2.new(10, 2)
 print(v1 / 2)
 </code></pre>
 
-<h4 id="checking-if-two-vector2-have-the-same-length">Checking if two Vector2 have the same length</h4>
-<p><strong>Probably this will be changed to check if the two vectors are the same vector, it's more useful than checking their length</strong>.</p>
+<h4 id="checking-if-two-vector2-are-equal">Checking if two Vector2 are equal</h4>
+<p><strong>NOTE: To check if two vectors have the same length do <code>v1:length_sq() == v2:length_sq()</code></strong>.</p>
 <p>Vector2 <strong>implements the <code>__eq</code> metamethod</strong>, which means that <code>Vector2 == Vector2</code> works.</p>
 <pre><code class="lua">-- Creating a new Vector
 local v1 = math_utils.Vector2.new(10, 2)
 -- Creating a second Vector
-local v2 = math_utils.Vector2.new(2, 10)
+local v2 = math_utils.Vector2.new(10, 2)
 
--- Printing if the lengths of the two vectors are equal
+-- Printing if the two vectors are equal
 print(v1 == v2)
 </code></pre>
 
@@ -689,15 +689,15 @@ local v1 = math_utils.Vector3.new(10, 2, 5)
 print(v1 / 2)
 </code></pre>
 
-<h4 id="checking-if-two-vector3-have-the-same-length">Checking if two Vector3 have the same length</h4>
-<p><strong>Probably this will be changed to check if the two vectors are the same vector, it's more useful than checking their length</strong>.</p>
+<h4 id="checking-if-two-vector3-are-equal">Checking if two Vector3 are equal</h4>
+<p><strong>NOTE: To check if two vectors have the same length do <code>v1:length_sq() == v2:length_sq()</code></strong>.</p>
 <p>Vector3 <strong>implements the <code>__eq</code> metamethod</strong>, which means that <code>Vector3 == Vector3</code> works.</p>
 <pre><code class="lua">-- Creating a new Vector
 local v1 = math_utils.Vector3.new(10, 2, 5)
 -- Creating a second Vector
-local v2 = math_utils.Vector3.new(2, 10, 5)
+local v2 = math_utils.Vector3.new(10, 2, 5)
 
--- Printing if the lengths of the two vectors are equal
+-- Printing if the two vectors are equal
 print(v1 == v2)
 </code></pre>
 
