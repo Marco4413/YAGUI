@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.17",
+    ver = "1.18",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -67,8 +67,18 @@ for key_name, key in next, keys do
     end
 end
 
+-- DEFINING ALL UTILITIES HERE TO BE ABLE TO ACCESS THEM EVERYWHERE
+local generic_utils = {}
+local string_utils = {}
+local math_utils = {}
+local table_utils = {}
+local color_utils = {}
+local event_utils = {}
+local setting_utils = {}
+local monitor_utils = {}
+
 -- GENERIC UTILS MODULE
-local generic_utils = {
+generic_utils = {
     -- SETS A CALLBACK TO THE SPECIFIED OBJECT
     set_callback = function (gui_element, event, callback)
         if event == const.ONSTART then
@@ -104,11 +114,46 @@ local generic_utils = {
             comp_type = const.POCKET
         end
         return comp_type, term.isColor()
+    end,
+    -- ERRORS IF EVEN ... ARGUMENTS AREN'T OF SPECIFIED TYPE IN PREVIOUS STRING ARGUMENT
+    expect = function (context, ...)
+        local t = {...}
+        local type_separators = "[/%.,]"
+
+        context = context or "unknown"
+        context = tostring(context)
+
+        for i=1, #t, 2 do
+            local types_string = tostring(t[i])
+            local types_error = types_string:gsub(type_separators, ", ")
+
+            local should_error = true
+            local err_str = "If this shows up something went wrong with YAGUI.generic_utils.expect"
+
+            for k, required_type in next, string_utils.split(types_string, type_separators) do
+                local this_value = t[i + 1]
+
+                if type(this_value) ~= required_type then
+                    err_str = string.format(
+                        "\"%s\": Bad argument #%d (expected %s, got %s)",
+                        context, math.ceil(i / 2), types_error, type(this_value)
+                    )
+                else
+                    should_error = false
+                    break
+                end
+            end
+
+            if should_error then
+                error(err_str, 2)
+            end
+        end
+
+        return true
     end
 }
 
 -- STRING UTILS MODULE
-local string_utils = {}
 string_utils = {
     magic_characters = {"(", ")", ".", "%", "+", "-", "*", "?", "[", "]", "^", "$"},
     -- JOINS A TABLE OF STRINGS INTO A STRING THAT HAS STRINGS SEPARATED BY THE SPECIFIED SEPARATOR
@@ -124,19 +169,18 @@ string_utils = {
     end,
     -- SPLITS STRING EVERY TIME SEPARATOR IS FOUND
     split = function (str, sep)
-        local tbl = {}
-        if not (#sep > 0) then return tbl; end
-        while true do
-            local pos = str:find(sep)
-            if pos then
-                table.insert(tbl, str:sub(1, pos - 1))
-                str = str:sub(pos + 1)
-            else
-                table.insert(tbl, str)
-                break
-            end
+        if not string.find(str, sep) then
+           return {str}
         end
-        return tbl
+        local return_table = {}
+        local pattern = "(.-)"..sep.."()"
+        local last_pos
+        for this_match, pos in string.gfind(str, pattern) do
+           table.insert(return_table, this_match)
+           last_pos = pos
+        end
+        table.insert(return_table, string.sub(str, last_pos))
+        return return_table
     end,
     -- COMPARES V1 AND V2 AND IF V1 IS NEWER THAN V2 THEN IT RETURNS 1, IF THEY'RE THE SAME IT RETURNS 0 ELSE IT RETURNS -1
     -- v1 = "0.2"; v2 = "0.1" -> returns 1
@@ -195,11 +239,14 @@ string_utils = {
         end
 
         return unit
+    end,
+    -- REMOVES EXTRA SPACES BEFORE AND AFTER THE SPECIFIED STRING
+    trim = function (str)
+        return (str:gsub("^%s*(.-)%s*$", "%1"))
     end
 }
 
 -- MATH UTILS MODULE
-local math_utils = {}
 math_utils = {
     -- A 2D VECTOR
     Vector2 = {
@@ -443,7 +490,6 @@ math_utils.Vector3.BACK    = math_utils.Vector3.new( 0,  0, -1)
 math_utils.Vector3.ZERO    = math_utils.Vector3.new( 0,  0,  0)
 
 -- TABLE UTILS MODULE
-local table_utils = {}
 table_utils = {
     -- CHECKS IF THERE'S THE SPECIFIED VALUE IN THE TABLE, IF VALUE WAS FOUND
     --  IT RETURNS TRUE AND THE KEY OF THE TABLE WHERE THE VALUE IS
@@ -535,7 +581,6 @@ table_utils = {
 table_utils.serialize = table_utils.serialise
 
 -- COLOR UTILS MODULE
-local color_utils = {}
 color_utils = {
     colors = {
         [ 1 ] = "0",
@@ -567,7 +612,7 @@ color_utils = {
 }
 
 -- EVENT UTILS MODULE
-local event_utils = {
+event_utils = {
     -- USED TO CHECK IF AN AREA OF THE SCREEN WAS PRESSED
     is_area_pressed = function (press_x, press_y, x, y, width, height)
         if press_x >= x and press_x < x + width then
@@ -638,7 +683,6 @@ local event_utils = {
 }
 
 -- SETTING UTILS MODULE
-local setting_utils = {}
 setting_utils = {
     -- PATH WHERE SETTINGS WILL BE SAVED (shouldn't be changed)
     _path = "/.settings",
@@ -659,7 +703,7 @@ setting_utils = {
 }
 
 -- MONITOR UTILS MODULE
-local monitor_utils = {
+monitor_utils = {
     -- RETURNS A TABLE WHICH CONTAINS ALL VALID MONITORS FROM monitor_names
     get_monitors = function (monitor_names)
         local monitors = {}

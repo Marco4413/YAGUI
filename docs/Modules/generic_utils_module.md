@@ -58,3 +58,36 @@ end
 
 -- DO STUFF
 ```
+
+## expect
+
+*boolean* : **expect**( *string* : **context**, *any* : **...** )
+
+Returns **true if it doesn't error**.
+
+It **checks if even arguments in `...` are of type specified by the previous string in `...`**, if they aren't it errors.
+
+**context** is a **string that can be specified by the code that's useful to get more information about the error** (Usually it's the function's name) **if `nil` it's `"unknown"` by default**.
+
+```lua
+-- Get user input
+print("Insert a number:")
+local var1 = read()
+print("Insert a string:")
+local var2 = read()
+
+-- Convert user input into a number if it is a valid number
+var1 = tonumber(var1) or var1
+var2 = tonumber(var2) or var2
+
+-- Check that the first user input is a number and the second one is a string
+-- Note: if you want an argument that can be of multiple types you can use a string that
+--  has multiple types separated by "/", "." or "," (e.g. "number/string" or "number,string")
+--  and be aware that types mustn't have spaces in between (They don't get trimmed) else
+--  it won't work properly
+generic_utils.expect(
+    "User Input",
+    "number", var1,
+    "string", var2
+)
+```

@@ -154,3 +154,21 @@ print(
     string_utils.format_number(num, 5)
 )
 ```
+
+## trim
+
+*string* : **trim**( *string* : **str** )
+
+**Returns `str` without extra spaces from both sides of the string.**
+
+**str** is the **string to be trimmed**.
+
+```lua
+-- A string
+local str = "    I don't know how to write   , and I want this string to be trimmed !     "
+
+-- Printing the trimmed string concatenated by another one to prove that there is no space between the two
+print(
+    string_utils.trim(str).." There should only be a space here."
+)
+```
