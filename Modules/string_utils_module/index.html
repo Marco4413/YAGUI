@@ -145,6 +145,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#trim" class="nav-link">trim</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -269,6 +273,19 @@ print(
 -- Printing num formatted with 5 decimal digits
 print(
     string_utils.format_number(num, 5)
+)
+</code></pre>
+
+<h2 id="trim">trim</h2>
+<p><em>string</em> : <strong>trim</strong>( <em>string</em> : <strong>str</strong> )</p>
+<p><strong>Returns <code>str</code> without extra spaces from both sides of the string.</strong></p>
+<p><strong>str</strong> is the <strong>string to be trimmed</strong>.</p>
+<pre><code class="lua">-- A string
+local str = &quot;    I don't know how to write   , and I want this string to be trimmed !     &quot;
+
+-- Printing the trimmed string concatenated by another one to prove that there is no space between the two
+print(
+    string_utils.trim(str)..&quot; There should only be a space here.&quot;
 )
 </code></pre></div>
             </div>

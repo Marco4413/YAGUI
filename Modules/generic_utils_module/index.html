@@ -129,6 +129,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#expect" class="nav-link">expect</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -181,6 +185,33 @@ if not advanced then
 end
 
 -- DO STUFF
+</code></pre>
+
+<h2 id="expect">expect</h2>
+<p><em>boolean</em> : <strong>expect</strong>( <em>string</em> : <strong>context</strong>, <em>any</em> : <strong>...</strong> )</p>
+<p>Returns <strong>true if it doesn't error</strong>.</p>
+<p>It <strong>checks if even arguments in <code>...</code> are of type specified by the previous string in <code>...</code></strong>, if they aren't it errors.</p>
+<p><strong>context</strong> is a <strong>string that can be specified by the code that's useful to get more information about the error</strong> (Usually it's the function's name) <strong>if <code>nil</code> it's <code>"unknown"</code> by default</strong>.</p>
+<pre><code class="lua">-- Get user input
+print(&quot;Insert a number:&quot;)
+local var1 = read()
+print(&quot;Insert a string:&quot;)
+local var2 = read()
+
+-- Convert user input into a number if it is a valid number
+var1 = tonumber(var1) or var1
+var2 = tonumber(var2) or var2
+
+-- Check that the first user input is a number and the second one is a string
+-- Note: if you want an argument that can be of multiple types you can use a string that
+--  has multiple types separated by &quot;/&quot;, &quot;.&quot; or &quot;,&quot; (e.g. &quot;number/string&quot; or &quot;number,string&quot;)
+--  and be aware that types mustn't have spaces in between (They don't get trimmed) else
+--  it won't work properly
+generic_utils.expect(
+    &quot;User Input&quot;,
+    &quot;number&quot;, var1,
+    &quot;string&quot;, var2
+)
 </code></pre></div>
             </div>
         </div>
