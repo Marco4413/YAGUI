@@ -85,9 +85,13 @@ var2 = tonumber(var2) or var2
 --  has multiple types separated by "/", "." or "," (e.g. "number/string" or "number,string")
 --  and be aware that types mustn't have spaces in between (They don't get trimmed) else
 --  it won't work properly
-generic_utils.expect(
-    "User Input",
-    "number", var1,
-    "string", var2
-)
+local function check_user_input()
+    generic_utils.expect(
+        "User Input",
+        "number", var1,
+        "string", var2
+    )
+end
+
+check_user_input()
 ```

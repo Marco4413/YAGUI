@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.18",
+    ver = "1.18.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -145,7 +145,7 @@ generic_utils = {
             end
 
             if should_error then
-                error(err_str, 2)
+                error(err_str, 3)
             end
         end
 
