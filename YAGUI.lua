@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.18.1",
+    ver = "1.18.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -123,30 +123,41 @@ generic_utils = {
         context = context or "unknown"
         context = tostring(context)
 
+        local should_error = false
+        local error_msg
+
         for i=1, #t, 2 do
             local types_string = tostring(t[i])
-            local types_error = types_string:gsub(type_separators, ", ")
 
-            local should_error = true
-            local err_str = "If this shows up something went wrong with YAGUI.generic_utils.expect"
+            local this_should_error = true
+            local bad_type
 
             for k, required_type in next, string_utils.split(types_string, type_separators) do
                 local this_value = t[i + 1]
+                local this_value_type = type(this_value)
 
-                if type(this_value) ~= required_type then
-                    err_str = string.format(
-                        "\"%s\": Bad argument #%d (expected %s, got %s)",
-                        context, math.ceil(i / 2), types_error, type(this_value)
-                    )
+                if this_value_type ~= required_type then
+                    bad_type = this_value_type
                 else
-                    should_error = false
+                    this_should_error = false
                     break
                 end
             end
 
-            if should_error then
-                error(err_str, 3)
+            if this_should_error then
+                local error_types = types_string:gsub(type_separators, ", ")
+                error_msg = string.format(
+                    "\"%s\": Bad argument #%d (expected %s, got %s)",
+                    context, (i + 1) / 2, error_types, bad_type
+                )
+                should_error = true
+                break
             end
+        end
+
+        if should_error then
+            error(error_msg, 3)
+            return false
         end
 
         return true
@@ -2069,7 +2080,6 @@ elseif tArgs[1] == "setup" then
 elseif tArgs[1] == "create" then
     if tArgs[2] then
         local path = shell.resolve(tArgs[2])
-        local name = fs.getName(path):lower()
         if string_utils.get_extension(path) ~= "lua" then path = path..".lua"; end
         if fs.exists(path) then
             monitor_utils.better_print(term, colors.red, nil, "PATH: \"/", path, "\" already exists, please use another path or delete it.")
