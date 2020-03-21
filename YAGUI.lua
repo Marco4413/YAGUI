@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.18.2",
+    ver = "1.19",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -49,6 +49,7 @@ local const = {
     ONFOCUS = 9,
     ONKEY = 10,
     ONCHAR = 11,
+    ONMOUSESCROLL = 12,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -103,6 +104,8 @@ generic_utils = {
             gui_element.callbacks.onKey = callback
         elseif event == const.ONCHAR then
             gui_element.callbacks.onChar = callback
+        elseif event == const.ONMOUSESCROLL then
+            gui_element.callbacks.onMouseScroll = callback
         end
     end,
     -- RETURNS THE TYPE OF COMPUTER (computer, turtle, pocket) THAT IS BEING USED
@@ -1420,7 +1423,8 @@ gui_elements = {
                     onFailedPress = function () end,
                     onFocus = function () end,
                     onKey = function () end,
-                    onChar = function () end
+                    onChar = function () end,
+                    onMouseScroll = function () end
                 }
             }
             newMemo.cursor.blink.binded_cursor = newMemo.cursor
@@ -1442,29 +1446,13 @@ gui_elements = {
             local rel_cursor_x = self.cursor.pos.x - self.first_visible_char
             local rel_cursor_y = self.cursor.pos.y - self.first_visible_line
 
-            if rel_cursor_x >= self.size.x then
-                self.first_visible_char = self.first_visible_char + rel_cursor_x - self.size.x + 1
-                rel_cursor_x = self.cursor.pos.x - self.first_visible_char - 1
-            elseif rel_cursor_x < 1 then
-                self.first_visible_char = self.first_visible_char + rel_cursor_x
-                rel_cursor_x = 0
-            end
-
-            if rel_cursor_y >= self.size.y then
-                self.first_visible_line = self.first_visible_line + rel_cursor_y - self.size.y + 1
-                rel_cursor_y = self.cursor.pos.y - self.first_visible_line - 1
-            elseif rel_cursor_y < 1 then
-                self.first_visible_line = self.first_visible_line + rel_cursor_y
-                rel_cursor_y = 0
-            end
-
             for y=1, self.size.y do
                 local line = self.lines[y + self.first_visible_line - 1] or ""
                 local visible_line = line:sub(self.first_visible_char, self.first_visible_char + self.size.x - 1)
                 screen_buffer:write(self.pos.x, self.pos.y + y - 1, visible_line, self.colors.foreground)
             end
 
-            if self.cursor.visible then
+            if self.cursor.visible and (rel_cursor_x >= 0) and (rel_cursor_x < self.size.x) and (rel_cursor_y >= 0) and (rel_cursor_y < self.size.y) then
                 screen_buffer:write(
                     rel_cursor_x + self.pos.x,
                     rel_cursor_y + self.pos.y,
@@ -1577,7 +1565,8 @@ gui_elements = {
 
                     end
                 elseif formatted_event.name == const.MOUSESCROLL then
-                    self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + formatted_event.direction)
+                    if self.callbacks.onMouseScroll(self, formatted_event) then return true; end
+                    self.first_visible_line = math_utils.constrain(self.first_visible_line + formatted_event.direction, 1, #self.lines)
                 end
                 return true
             end
@@ -1610,6 +1599,21 @@ gui_elements = {
 
             cursor_x = math_utils.constrain(cursor_x, 1, #self.lines[cursor_y] + 1)
             self.cursor.pos = math_utils.Vector2.new(cursor_x, cursor_y)
+            
+            local rel_cursor_x = self.cursor.pos.x - self.first_visible_char
+            local rel_cursor_y = self.cursor.pos.y - self.first_visible_line
+
+            if rel_cursor_x >= self.size.x then
+                self.first_visible_char = self.first_visible_char + rel_cursor_x - self.size.x + 1
+            elseif rel_cursor_x < 0 then
+                self.first_visible_char = self.first_visible_char + rel_cursor_x
+            end
+
+            if rel_cursor_y >= self.size.y then
+                self.first_visible_line = self.first_visible_line + rel_cursor_y - self.size.y + 1
+            elseif rel_cursor_y < 0 then
+                self.first_visible_line = self.first_visible_line + rel_cursor_y
+            end
         end,
         -- WRITES TEXT WHERE THE CURSOR IS
         write = function (self, ...)

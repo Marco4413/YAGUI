@@ -418,6 +418,14 @@ YAGUI.generic_utils.set_callback(
 )
 
 YAGUI.generic_utils.set_callback(
+    mEditor,
+    YAGUI.ONMOUSESCROLL,
+    function (self)
+        return true
+    end
+)
+
+YAGUI.generic_utils.set_callback(
     lMain,
     YAGUI.ONCLOCK,
     function (self)
@@ -441,6 +449,21 @@ YAGUI.generic_utils.set_callback(
             bGoto.callbacks.onPress(bGoto, event)
         elseif YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTALT, YAGUI.KEY_R) then
             bRun.callbacks.onTimeout(bRun, event)
+        elseif (not mEditor.focussed) then
+            if YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFT) then
+                mEditor.first_visible_char = math.max(0, mEditor.first_visible_char - 1)
+            elseif YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_RIGHT) then
+                mEditor.first_visible_char = mEditor.first_visible_char + 1
+            end
+            if YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_UP) then
+                mEditor.first_visible_line = math.max(0, mEditor.first_visible_line - 1)
+            elseif YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_DOWN) then
+                mEditor.first_visible_line = math.min(#mEditor.lines, mEditor.first_visible_line + 1)
+            end
+        end
+
+        if event.name == YAGUI.MOUSESCROLL then
+            mEditor.first_visible_line = YAGUI.math_utils.constrain(mEditor.first_visible_line + event.direction, 1, #mEditor.lines)
         end
     end
 )
