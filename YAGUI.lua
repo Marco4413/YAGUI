@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.19",
+    ver = "1.19.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -773,8 +773,6 @@ local screen_buffer = {
         background = colors.black,
         -- CHECKS IF SPECIFIED PIXEL WAS CREATED WITH "set_pixel" FUNCTION
         is_pixel_custom = function (self, x, y)
-            x = tostring(x)
-            y = tostring(y)
             if self.pixels[x] then
                 if self.pixels[x][y] then
                     return true
@@ -785,8 +783,6 @@ local screen_buffer = {
         -- RETURNS PIXEL AT X, Y IF CUSTOM ELSE IT WILL RETURN THE DEFAULT PIXEL
         -- "DEFAULT PIXEL" IS THE BACKGROUND PIXEL
         get_pixel = function (self, x, y)
-            x = tostring(x)
-            y = tostring(y)
             if self:is_pixel_custom(x, y) then return self.pixels[x][y]; end
             return {
                 char = " ",
@@ -796,9 +792,6 @@ local screen_buffer = {
         end,
         -- SETS PROPERTIES FOR A PIXEL SO IT ISN'T A "DEFAULT PIXEL" ANYMORE
         set_pixel = function (self, x, y, char, foreground, background)
-            x = tostring(x)
-            y = tostring(y)
-
             local pixel = self:get_pixel(x, y)
 
             if char and #char == 1 then pixel.char = char; end

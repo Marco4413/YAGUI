@@ -456,7 +456,7 @@ YAGUI.generic_utils.set_callback(
                 mEditor.first_visible_char = mEditor.first_visible_char + 1
             end
             if YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_UP) then
-                mEditor.first_visible_line = math.max(0, mEditor.first_visible_line - 1)
+                mEditor.first_visible_line = math.max(1, mEditor.first_visible_line - 1)
             elseif YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_DOWN) then
                 mEditor.first_visible_line = math.min(#mEditor.lines, mEditor.first_visible_line + 1)
             end
