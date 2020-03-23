@@ -12,6 +12,11 @@ What does YAGUI stand for? **YAGUI** stands for "Yet Another Graphical User Inte
 * Has a **screen buffer** which makes possible to simulate **transparency** when drawing;
 * Has a **rednet based wireless screen sharing** system (Wireless Screen Share, WSS).
 
+**Versions** of the library **follow this format**: **M.m.b**
+* M: **Major**, you should probably **rewrite most of your program to** get it to **work** with the new version.
+* m: **Minor**, **look at the commit description** and see **if something** that was used in your program has **changed** and **check if it still works fine**.
+* b: **Bug fixes**, **your program works as well as it worked on the last update**.
+
 ***Documentation:***
 
 * **Github Pages**: https://hds536jhmk.github.io/YAGUI/

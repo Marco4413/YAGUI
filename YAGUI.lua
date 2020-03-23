@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.19.1",
+    ver = "1.19.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1549,7 +1549,9 @@ gui_elements = {
                         
 
                     elseif formatted_event.key == const.KEY_ENTER then
-                        self:write("\n")
+                        local current_line_to_cursor = self.lines[self.cursor.pos.y]:sub(0, self.cursor.pos.x - 1)
+                        local spaces = current_line_to_cursor:gsub("(%s*).*", "%1")
+                        self:write("\n"..spaces)
 
 
                     elseif formatted_event.key == const.KEY_TAB then
@@ -1648,10 +1650,9 @@ gui_elements = {
 
                         self.lines[self.cursor.pos.y] = line_start..line
 
-                        self:set_cursor(1, self.cursor.pos.y + 1, true)
-                        table.insert(self.lines, self.cursor.pos.y, last_line..line_end)
+                        table.insert(self.lines, self.cursor.pos.y + 1, last_line..line_end)
 
-                        self:set_cursor(#last_line + 1, self.cursor.pos.y)
+                        self:set_cursor(#last_line + 1, self.cursor.pos.y + 1)
                     elseif line_key == #lines then
                         break
                     else
