@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.19.2",
+    ver = "1.20",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -187,7 +187,7 @@ string_utils = {
            return {str}
         end
         local return_table = {}
-        local pattern = "(.-)"..sep.."()"
+        local pattern = "(.*)"..sep.."()"
         local last_pos
         for this_match, pos in string.gfind(str, pattern) do
            table.insert(return_table, this_match)
@@ -256,7 +256,7 @@ string_utils = {
     end,
     -- REMOVES EXTRA SPACES BEFORE AND AFTER THE SPECIFIED STRING
     trim = function (str)
-        return (str:gsub("^%s*(.-)%s*$", "%1"))
+        return (str:gsub("^%s*(.*)%s*$", "%1"))
     end
 }
 
@@ -1392,6 +1392,7 @@ gui_elements = {
                 pos = math_utils.Vector2.new(x, y),
                 size = math_utils.Vector2.new(width, height),
                 editable = true,
+                tab_spaces = "  ",
                 lines = {},
                 first_visible_line = 1,
                 first_visible_char = 1,
@@ -1485,7 +1486,39 @@ gui_elements = {
                     self:write(formatted_event.char)
                 elseif formatted_event.name == const.KEY then
                     if self.callbacks.onKey(self, formatted_event) then return true; end
-                    if formatted_event.key == const.KEY_UP then
+                    if input:are_keys_pressed(false, const.KEY_LEFTALT, const.KEY_UP) then
+                        if self.cursor.pos.y > 1 then
+                            local prev_line = self.lines[self.cursor.pos.y - 1]
+                            local this_line = self.lines[self.cursor.pos.y]
+
+                            self.lines[self.cursor.pos.y - 1] = ""
+                            table.remove(self.lines, self.cursor.pos.y)
+
+                            local old_x = self.cursor.pos.x
+
+                            self:set_cursor(1, self.cursor.pos.y - 1)
+                            self:write(this_line.."\n"..prev_line)
+                            self:set_cursor(old_x, self.cursor.pos.y - 1)
+                        end
+                    
+                    
+                    elseif input:are_keys_pressed(false, const.KEY_LEFTALT, const.KEY_DOWN) then
+                        local this_line = self.lines[self.cursor.pos.y]
+                        local next_line = self.lines[self.cursor.pos.y + 1]
+
+                        if not next_line then return false; end
+
+                        self.lines[self.cursor.pos.y] = ""
+                        table.remove(self.lines, self.cursor.pos.y + 1)
+
+                        local old_x = self.cursor.pos.x
+
+                        self:set_cursor(1, self.cursor.pos.y)
+                        self:write(next_line.."\n"..this_line)
+                        self:set_cursor(old_x, self.cursor.pos.y)
+
+
+                    elseif formatted_event.key == const.KEY_UP then
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y - 1)
                         
                         
@@ -1554,8 +1587,22 @@ gui_elements = {
                         self:write("\n"..spaces)
 
 
+                    elseif input:are_keys_pressed(false, const.KEY_LEFTSHIFT, const.KEY_TAB) then
+                        local current_line = self.lines[self.cursor.pos.y]
+                        local spaces = current_line:gsub("^(%s*).*$", "%1")
+                        local total_spaces = math.min(#self.tab_spaces, #spaces)
+                        
+                        self.lines[self.cursor.pos.y] = current_line:sub(total_spaces + 1)
+                        self:set_cursor(self.cursor.pos.x - total_spaces, self.cursor.pos.y)
+
+
                     elseif formatted_event.key == const.KEY_TAB then
-                        self:write("  ")
+                        local old_x = self.cursor.pos.x
+                        local line_len = #self.lines[self.cursor.pos.y]
+                        self:set_cursor(1, self.cursor.pos.y)
+                        self:write(self.tab_spaces)
+                        local delta_x = #self.lines[self.cursor.pos.y] - line_len
+                        self:set_cursor(old_x + delta_x, self.cursor.pos.y)
 
 
                     end
