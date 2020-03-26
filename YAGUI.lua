@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.20",
+    ver = "1.20.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -187,7 +187,7 @@ string_utils = {
            return {str}
         end
         local return_table = {}
-        local pattern = "(.*)"..sep.."()"
+        local pattern = "(.-)"..sep.."()"
         local last_pos
         for this_match, pos in string.gfind(str, pattern) do
            table.insert(return_table, this_match)
