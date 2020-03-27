@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.20.1",
+    ver = "1.20.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1435,6 +1435,8 @@ gui_elements = {
         -- DRAWS MEMO
         draw = function (self)
             if self.hidden then return; end
+            self.callbacks.onDraw(self)
+            
             screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background)
 
             local rel_cursor_x = self.cursor.pos.x - self.first_visible_char
