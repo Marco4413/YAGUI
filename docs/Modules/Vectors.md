@@ -155,6 +155,22 @@ print(v1:string(10))
 
 **If you don't know what metamethods are you can go to [this link to learn more](http://lua-users.org/wiki/MetatableEvents)**.
 
+#### Creating a new Vector2
+
+Vector2 **implements the `__call`** metamethod, which means that doing `math_utils.Vector2.new()` is the same as `math_utils.Vector2()`.
+
+It's **still better using `.new()`** because **only one function is called instead of two**, but it can be done both ways.
+
+```lua
+-- Creating a new Vector
+local v1 = math_utils.Vector2.new(10, 2)
+-- Creating a second Vector
+local v2 = math_utils.Vector2(3, 2)
+
+-- Printing the two vectors
+print(v1, v2)
+```
+
 #### tostring(Vector2)
 
 Vector2 **implements the `__tostring`** metamethod, which means that doing `tostring(Vector2)` will `return Vector2:string(0)`.
@@ -168,6 +184,20 @@ local v1_string = tostring(v1)
 
 -- Printing v1's string
 print(v1_string)
+```
+
+#### Length of Vector2
+
+**Note: This only works on ComputerCraft version 1.87+.**
+
+Vector2 **implements the `__len` metamethod**, which means that `#Vector2` works.
+
+```lua
+-- Creating a new Vector
+local v1 = math_utils.Vector2.new(10, 2)
+
+-- Printing the length of the vector
+print(#v1)
 ```
 
 #### Sum of Vector2
@@ -426,6 +456,22 @@ print(v1:string(10))
 
 **If you don't know what metamethods are you can go to [this link to learn more](http://lua-users.org/wiki/MetatableEvents)**.
 
+#### Creating a new Vector3
+
+Vector3 **implements the `__call`** metamethod, which means that doing `math_utils.Vector3.new()` is the same as `math_utils.Vector3()`.
+
+It's **still better using `.new()`** because **only one function is called instead of two**, but it can be done both ways.
+
+```lua
+-- Creating a new Vector
+local v1 = math_utils.Vector3.new(10, 2, 5)
+-- Creating a second Vector
+local v2 = math_utils.Vector3(3, 2, 10)
+
+-- Printing the two vectors
+print(v1, v2)
+```
+
 #### tostring(Vector3)
 
 Vector3 **implements the `__tostring` metamethod**, which means that doing `tostring(Vector3)` will `return Vector3:string(0)`.
@@ -439,6 +485,20 @@ local v1_string = tostring(v1)
 
 -- Printing v1's string
 print(v1_string)
+```
+
+#### Length of Vector3
+
+**Note: This only works on ComputerCraft version 1.87+.**
+
+Vector3 **implements the `__len` metamethod**, which means that `#Vector3` works.
+
+```lua
+-- Creating a new Vector
+local v1 = math_utils.Vector3.new(10, 2, 5)
+
+-- Printing the length of the vector
+print(#v1)
 ```
 
 #### Sum of Vector3

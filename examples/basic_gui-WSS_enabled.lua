@@ -13,7 +13,7 @@ local YAGUI = dofile(YAGUI_PATH)
 --   you can download YAGUI_WSS_listener.lua from https://github.com/hds536jhmk/YAGUI/tree/master/examples
 --   then you launch it with <modem_side> <Computer ID> terminal arguments,
 --   Computer ID is the ID of the computer where this example is ran from.
-local cWSS = YAGUI.gui_elements.Clock.new(3)
+local cWSS = YAGUI.gui_elements.Clock(3)
 YAGUI.WSS:open("left")
 YAGUI.WSS.server:host()
 
@@ -26,7 +26,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- CREATE A BUTTON (THAT WILL DO NOTHING)
-local bDummy = YAGUI.gui_elements.Button.new(
+local bDummy = YAGUI.gui_elements.Button(
     2, 2,
     10, 3,
     "Press Me", colors.white,
@@ -34,7 +34,7 @@ local bDummy = YAGUI.gui_elements.Button.new(
 )
 
 -- CREATE A BUTTON (THAT WILL BE USED TO QUIT THE LOOP)
-local bQuit = YAGUI.gui_elements.Button.new(
+local bQuit = YAGUI.gui_elements.Button(
     2, 6,                    -- X, Y POS
     10, 3,                   -- X, Y SIZE
     "Quit", colors.white,    -- TEXT, TEXT_COLOR
@@ -44,7 +44,7 @@ bQuit.timed.enabled = true
 bQuit.timed.clock.interval = 0.25
 
 -- CREATE A BUTTON (THAT WILL BE USED TO INCREASE THE PROGRESS ON THE PROGRESSBAR)
-local bIncrease = YAGUI.gui_elements.Button.new(
+local bIncrease = YAGUI.gui_elements.Button(
     13, 2,
     11, 3,
     "Increase", colors.white,
@@ -54,7 +54,7 @@ bIncrease.timed.enabled = true
 bIncrease.timed.clock.interval = 0.25
 
 -- CREATE A BUTTON (THAT WILL BE USED TO DECREASE THE PROGRESS ON THE PROGRESSBAR)
-local bDecrease = YAGUI.gui_elements.Button.new(
+local bDecrease = YAGUI.gui_elements.Button(
     13, 6,
     11, 3,
     "Decrease", colors.white,
@@ -64,7 +64,7 @@ bDecrease.timed.enabled = true
 bDecrease.timed.clock.interval = 0.25
 
 -- CREATE A PROGRESSBAR
-local pbProgress = YAGUI.gui_elements.Progressbar.new(
+local pbProgress = YAGUI.gui_elements.Progressbar(
     2, 10,                          -- X, Y POS
     22, 3,                          -- X, Y SIZE
     0, 0, 100,                      -- CURRENT_PROGRESS, MIN_PROGRESS, MAX_PROGRESS
@@ -72,7 +72,7 @@ local pbProgress = YAGUI.gui_elements.Progressbar.new(
 )
 
 -- CREATE THE LOOP
-local loop = YAGUI.Loop.new(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
+local loop = YAGUI.Loop(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
 
 -- SET THE CALLBACK FOR WHEN THE INCREASE PROGRESSBAR BUTTON IS PRESSED
 YAGUI.generic_utils.set_callback(

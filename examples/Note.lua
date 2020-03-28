@@ -115,9 +115,9 @@ LAYOUT:init()
 -- Creating elements
 
 -- Creating loops
-local lMain      = YAGUI.Loop.new(FPS, EPS)
-local lInput     = YAGUI.Loop.new(FPS, EPS)
-local lOverWrite = YAGUI.Loop.new(FPS, EPS)
+local lMain      = YAGUI.Loop(FPS, EPS)
+local lInput     = YAGUI.Loop(FPS, EPS)
+local lOverWrite = YAGUI.Loop(FPS, EPS)
 
 local loops = {
     [ "main" ] = lMain,
@@ -126,7 +126,7 @@ local loops = {
 }
 
 -- Creating WSS Clock
-local cWSS = YAGUI.gui_elements.Clock.new(WSS_broadcast_interval)
+local cWSS = YAGUI.gui_elements.Clock(WSS_broadcast_interval)
 
 YAGUI.generic_utils.set_callback(
     cWSS,
@@ -138,11 +138,11 @@ YAGUI.generic_utils.set_callback(
 cWSS.enabled = false
 
 -- Creating main loop elements
-local lLines    = YAGUI.gui_elements.Label.new(9, 1, "Lines: 0", text_color)
-local lCursor   = YAGUI.gui_elements.Label.new(21, 1, "Cursor: (1; 1)", text_color)
-local bCompact  = YAGUI.gui_elements.Button.new(51, 1, 1, 1, "C", text_color, special_button_active_color, special_button_not_active_color)
-local mEditor   = YAGUI.gui_elements.Memo.new(5, 2, 47, 17, text_color, editor_background)
-local lPath     = YAGUI.gui_elements.Label.new(1, 19, "/path/", text_color)
+local lLines    = YAGUI.gui_elements.Label(9, 1, "Lines: 0", text_color)
+local lCursor   = YAGUI.gui_elements.Label(21, 1, "Cursor: (1; 1)", text_color)
+local bCompact  = YAGUI.gui_elements.Button(51, 1, 1, 1, "C", text_color, special_button_active_color, special_button_not_active_color)
+local mEditor   = YAGUI.gui_elements.Memo(5, 2, 47, 17, text_color, editor_background)
+local lPath     = YAGUI.gui_elements.Label(1, 19, "/path/", text_color)
 
 -- Applying layout
 lLines.pos.x  , lLines.pos.y  = LAYOUT.this_layout.lLines()
@@ -159,15 +159,15 @@ mEditor.cursor.blink.interval = cursor_blinking_speed
 mEditor.colors.cursor = cursor_color
 
 -- Creating elements that will make File menu
-local bFile     = YAGUI.gui_elements.Button.new(1, 1, 4, 1, "File", text_color, lighter_background_color, background_color)
-local wFileMenu = YAGUI.gui_elements.Window.new(1, 2, 10, 7, background_color, shadows)
-local bNewOpen  = YAGUI.gui_elements.Button.new(1, 2, 10, 1, "New/Open", text_color, lighter_background_color, background_color)
-local bSave     = YAGUI.gui_elements.Button.new(1, 3, 10, 1, "Save"    , text_color, lighter_background_color, background_color)
-local bSaveAs   = YAGUI.gui_elements.Button.new(1, 4, 10, 1, "SaveAs"  , text_color, lighter_background_color, background_color)
-local bDelete   = YAGUI.gui_elements.Button.new(1, 5, 10, 1, "Delete"  , text_color, lighter_background_color, background_color)
-local bGoto     = YAGUI.gui_elements.Button.new(1, 6, 10, 1, "Goto"    , text_color, lighter_background_color, background_color)
-local bRun      = YAGUI.gui_elements.Button.new(1, 7, 10, 1, "Run"     , text_color, lighter_background_color, background_color)
-local bQuit     = YAGUI.gui_elements.Button.new(1, 8, 10, 1, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
+local bFile     = YAGUI.gui_elements.Button(1, 1, 4, 1, "File", text_color, lighter_background_color, background_color)
+local wFileMenu = YAGUI.gui_elements.Window(1, 2, 10, 7, background_color, shadows)
+local bNewOpen  = YAGUI.gui_elements.Button(1, 2, 10, 1, "New/Open", text_color, lighter_background_color, background_color)
+local bSave     = YAGUI.gui_elements.Button(1, 3, 10, 1, "Save"    , text_color, lighter_background_color, background_color)
+local bSaveAs   = YAGUI.gui_elements.Button(1, 4, 10, 1, "SaveAs"  , text_color, lighter_background_color, background_color)
+local bDelete   = YAGUI.gui_elements.Button(1, 5, 10, 1, "Delete"  , text_color, lighter_background_color, background_color)
+local bGoto     = YAGUI.gui_elements.Button(1, 6, 10, 1, "Goto"    , text_color, lighter_background_color, background_color)
+local bRun      = YAGUI.gui_elements.Button(1, 7, 10, 1, "Run"     , text_color, lighter_background_color, background_color)
+local bQuit     = YAGUI.gui_elements.Button(1, 8, 10, 1, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
 
 -- Applying layout
 bFile.pos.x    , bFile.pos.y    , bFile.size.x    , bFile.size.y     = LAYOUT.this_layout.bFile()
@@ -196,24 +196,24 @@ bQuit.timed.clock.interval = button_timeout
 bFile.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_TAB}
 
 -- Creating elements for loop lInput
-local lInputTitle = YAGUI.gui_elements.Label.new(2, 9, "", text_color)
-local mInput      = YAGUI.gui_elements.Memo.new(2, 10, 49, 1, text_color, lighter_background_color)
-local lInputTip   = YAGUI.gui_elements.Label.new(3, 12, "You can press CONTROL to cancel.", text_color)
+local lInputTitle = YAGUI.gui_elements.Label(2, 9, "", text_color)
+local mInput      = YAGUI.gui_elements.Memo(2, 10, 49, 1, text_color, lighter_background_color)
+local lInputTip   = YAGUI.gui_elements.Label(3, 12, "You can press CONTROL to cancel.", text_color)
 
 -- Applying layout
 lInputTitle.pos.x, lInputTitle.pos.y                 = LAYOUT.this_layout.lInputTitle()
 mInput.pos.x     , mInput.pos.y, mInput.size.x, mInput.size.y = LAYOUT.this_layout.mInput()
 lInputTip.pos.x  , lInputTip.pos.y  , lInputTip.text = LAYOUT.this_layout.lInputTip()
 
-mInput.limits = YAGUI.math_utils.Vector2.new(0, 1)
+mInput.limits = YAGUI.math_utils.Vector2(0, 1)
 mInput.cursor.blink.interval = cursor_blinking_speed
 mInput.colors.cursor = cursor_color
 
 -- Creating elements for OverWrite loop
-local wOverWrite = YAGUI.gui_elements.Window.new(18, 7, 15, 6, lighter_background_color, shadows)
-local lOW        = YAGUI.gui_elements.Label.new(20, 8, "Do you want\nto overwrite?", text_color)
-local bOWAccept  = YAGUI.gui_elements.Button.new(19, 11, 3, 1, "Yes", text_color, background_color, lighter_background_color)
-local bOWReject  = YAGUI.gui_elements.Button.new(30, 11, 2, 1, "No", text_color, background_color, lighter_background_color)
+local wOverWrite = YAGUI.gui_elements.Window(18, 7, 15, 6, lighter_background_color, shadows)
+local lOW        = YAGUI.gui_elements.Label(20, 8, "Do you want\nto overwrite?", text_color)
+local bOWAccept  = YAGUI.gui_elements.Button(19, 11, 3, 1, "Yes", text_color, background_color, lighter_background_color)
+local bOWReject  = YAGUI.gui_elements.Button(30, 11, 2, 1, "No", text_color, background_color, lighter_background_color)
 
 -- Applying layout
 wOverWrite.pos.x, wOverWrite.pos.y, wOverWrite.size.x, wOverWrite.size.y = LAYOUT.this_layout.wOverWrite()
@@ -602,15 +602,15 @@ end
 open_notes(current_file_path)
 
 -- Setting up loops
-lMain.stats.pos = YAGUI.math_utils.Vector2.new(LAYOUT.this_layout.stats())
+lMain.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
 lMain.stats:enable(loop_stats)
 lMain:set_elements({cWSS, bFile, wFileMenu, lLines, lCursor, bCompact, mEditor, lPath})
 
-lInput.stats.pos = YAGUI.math_utils.Vector2.new(LAYOUT.this_layout.stats())
+lInput.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
 lInput.stats:enable(loop_stats)
 lInput:set_elements({cWSS, lInputTitle, mInput, lInputTip})
 
-lOverWrite.stats.pos = YAGUI.math_utils.Vector2.new(LAYOUT.this_layout.stats())
+lOverWrite.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
 lOverWrite.stats:enable(loop_stats)
 lOverWrite:set_elements({cWSS, wOverWrite})
 

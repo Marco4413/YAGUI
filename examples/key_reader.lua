@@ -7,9 +7,9 @@ local YAGUI = dofile(YAGUI_PATH)
 -- End of AUTO-GENERATED code
 
 -- Creating main loop
-local lMain = YAGUI.Loop.new(60, 20)
+local lMain = YAGUI.Loop(60, 20)
 -- Creating display label
-local lEvent = YAGUI.gui_elements.Label.new(1, 1, "", colors.white, colors.black)
+local lEvent = YAGUI.gui_elements.Label(1, 1, "", colors.white, colors.black)
 -- Aligning label text to the left
 lEvent.text_alignment = YAGUI.ALIGN_LEFT
 

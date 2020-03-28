@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.20.2",
+    ver = "1.21",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -67,6 +67,14 @@ for key_name, key in next, keys do
         const["KEY_"..key_name:upper()] = key
     end
 end
+
+local new_simple = {
+    __call = function (self, ...)
+        return self.new(...)
+    end
+}
+
+new_simple.__index = new_simple
 
 -- DEFINING ALL UTILITIES HERE TO BE ABLE TO ACCESS THEM EVERYWHERE
 local generic_utils = {}
@@ -318,6 +326,10 @@ math_utils = {
         __tostring = function (self)
             return self:string(0)
         end,
+        -- LEN METAMETHOD, handles #Vector1
+        __len = function (self)
+            return self:length()
+        end,
         -- ADD METAMETHOD, handles Vector1 + Vector2
         __add = function (self, other)
             return math_utils.Vector2.new(self.x + other.x, self.y + other.y)
@@ -407,6 +419,10 @@ math_utils = {
         -- TOSTRING METAMETHOD, handles tostring(Vector1)
         __tostring = function (self)
             return self:string(0)
+        end,
+        -- LEN METAMETHOD, handles #Vector1
+        __len = function (self)
+            return self:length()
         end,
         -- ADD METAMETHOD, handles Vector1 + Vector2
         __add = function (self, other)
@@ -522,7 +538,7 @@ table_utils = {
     -- A more advanced table serializer than textutils.serialise
     --  - Doesn't error with functions, it just turns them into tostring(function) (they can't be unserialized correctly).
     --  - Has a depth field which can be used to serialize recursive tables without getting an error.
-    serialise = function (tbl, depth, pretty, serialise_metatables, serialise_index, indent, new_line, space)
+    serialise = function (tbl, depth, pretty, recursion, serialise_metatables, serialise_index, indent, new_line, space)
         local depth = depth or 0
         local indent = indent or "  "
         local current_depth = 0
@@ -532,7 +548,10 @@ table_utils = {
         
         if not pretty then indent, new_line, space = "", "", ""; end
         
-        local function i_tbl_serialize(tbl)
+        local found_tables = {}
+        local root = "root"
+
+        local function i_tbl_serialize(tbl, path)
             local this_indent = indent:rep(current_depth + 1)
             local str_tbl = "{"..new_line
 
@@ -553,10 +572,16 @@ table_utils = {
                     
                     str_tbl = str_tbl..string.format("%s[%s]%s=%s", this_indent, key_string, space, space)
                     if value_type == "table" then
-                        if current_depth < depth then
-                            current_depth = current_depth + 1
-                            str_tbl = str_tbl..i_tbl_serialize(value)
-                            current_depth = current_depth - 1
+                        if (depth <= -1) or (current_depth < depth) then
+                            if found_tables[value_string] and not recursion then
+                                str_tbl = str_tbl..string.format("%q", found_tables[value_string])
+                            else
+                                local this_path = path.."."..tostring(key)
+                                found_tables[value_string] = this_path
+                                current_depth = current_depth + 1
+                                str_tbl = str_tbl..i_tbl_serialize(value, this_path)
+                                current_depth = current_depth - 1
+                            end
                         else
                             str_tbl = str_tbl.."{}"
                         end
@@ -585,7 +610,7 @@ table_utils = {
             return str_tbl
         end
         
-        return i_tbl_serialize(tbl)
+        return i_tbl_serialize(tbl, root)
     end,
     -- Just copies of unserialise functions in textutils
     unserialise = textutils.unserialise,
@@ -1726,8 +1751,9 @@ gui_elements = {
             end
         end,
         print = function (self, ...)
-            local text = string_utils.join({...}, "\n").."\n"
-            self:write(text)
+            local text = string_utils.join({...}, "")
+            local new_line = #self.lines > 0 and "\n" or ""
+            self:write(new_line..text)
         end,
         clear = function (self)
             self.lines = {""}
@@ -2078,6 +2104,14 @@ Loop = {
 }
 
 Loop.__index = Loop
+
+
+setmetatable(math_utils.Vector2, new_simple)
+setmetatable(math_utils.Vector3, new_simple)
+for key, element in next, gui_elements do
+    setmetatable(element, new_simple)
+end
+setmetatable(Loop, new_simple)
 
 -- TARGS
 local tArgs = {...}

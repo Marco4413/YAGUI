@@ -16,7 +16,7 @@ local YAGUI = dofile(YAGUI_PATH)
 -- If You want to try it you should remove all comment blocks that
 --   start with "--[[WSS" (you can find them near the next line and the last one
 --   or you can simply download the already unlocked example).
-local cWSS = YAGUI.gui_elements.Clock.new(3)
+local cWSS = YAGUI.gui_elements.Clock(3)
 --[[WSS
 YAGUI.WSS:open("left")
 YAGUI.WSS.server:host()
@@ -32,7 +32,7 @@ YAGUI.generic_utils.set_callback(
 
 -- CREATING OBJECTS FOR THE FIRST WINDOW
 -- CREATE A BUTTON (THAT WILL DO NOTHING)
-local wbDummy = YAGUI.gui_elements.Button.new(
+local wbDummy = YAGUI.gui_elements.Button(
     2, 2,
     10, 3,
     "Press Me", colors.white,
@@ -40,7 +40,7 @@ local wbDummy = YAGUI.gui_elements.Button.new(
 )
 
 -- CREATE A BUTTON (THAT WILL BE USED TO QUIT THE LOOP)
-local wbQuit = YAGUI.gui_elements.Button.new(
+local wbQuit = YAGUI.gui_elements.Button(
     2, 6,                    -- X, Y POS
     10, 3,                   -- X, Y SIZE
     "Quit", colors.white,    -- TEXT, TEXT_COLOR
@@ -50,7 +50,7 @@ wbQuit.timed.enabled = true
 wbQuit.timed.clock.interval = 0.25
 
 -- CREATE A BUTTON (THAT WILL BE USED TO INCREASE THE PROGRESS ON THE PROGRESSBAR)
-local wbIncrease = YAGUI.gui_elements.Button.new(
+local wbIncrease = YAGUI.gui_elements.Button(
     13, 2,
     11, 3,
     "Increase", colors.white,
@@ -60,7 +60,7 @@ wbIncrease.timed.enabled = true
 wbIncrease.timed.clock.interval = 0.25
 
 -- CREATE A BUTTON (THAT WILL BE USED TO DECREASE THE PROGRESS ON THE PROGRESSBAR)
-local wbDecrease = YAGUI.gui_elements.Button.new(
+local wbDecrease = YAGUI.gui_elements.Button(
     13, 6,
     11, 3,
     "Decrease", colors.white,
@@ -70,7 +70,7 @@ wbDecrease.timed.enabled = true
 wbDecrease.timed.clock.interval = 0.25
 
 -- CREATE A PROGRESSBAR
-local wpbProgress = YAGUI.gui_elements.Progressbar.new(
+local wpbProgress = YAGUI.gui_elements.Progressbar(
     2, 10,                          -- X, Y POS
     22, 3,                          -- X, Y SIZE
     0, 0, 100,                      -- CURRENT_PROGRESS, MIN_PROGRESS, MAX_PROGRESS
@@ -78,7 +78,7 @@ local wpbProgress = YAGUI.gui_elements.Progressbar.new(
 )
 
 -- CREATING FIRST WINDOW
-local wWindow = YAGUI.gui_elements.Window.new(
+local wWindow = YAGUI.gui_elements.Window(
     1, 1,             -- X, Y POS
     24, 13,           -- X, Y SIZE
     colors.blue, true -- BACKGROUND, SHADOW
@@ -88,7 +88,7 @@ wWindow:set_elements({wbDummy, wbQuit, wbIncrease, wbDecrease, wpbProgress})
 
 
 -- CREATING A MEMO
-local wmMemo = YAGUI.gui_elements.Memo.new(
+local wmMemo = YAGUI.gui_elements.Memo(
     28, 2,                    -- X, Y POS
     22, 7,                    -- X, Y, SIZE
     colors.white, colors.blue -- FOREGROUND, BACKGROUND
@@ -97,16 +97,16 @@ local wmMemo = YAGUI.gui_elements.Memo.new(
 wmMemo:write("This was written\nBy using Memo's\nWrite function!")
 
 -- CREATING ANOTHER MEMO
-local wmMemo1 = YAGUI.gui_elements.Memo.new(
+local wmMemo1 = YAGUI.gui_elements.Memo(
     28, 10,
     21, 4,
     colors.white, colors.green
 )
 -- SETTING MEMO LIMITS TO ITS SIZE
-wmMemo1.limits = YAGUI.math_utils.Vector2.new(21, 4)
+wmMemo1.limits = YAGUI.math_utils.Vector2(21, 4)
 
 -- CREATING SECOND WINDOW
-local wWindow1 = YAGUI.gui_elements.Window.new(
+local wWindow1 = YAGUI.gui_elements.Window(
     27, 1,
     24, 14,
     colors.red, true
@@ -114,7 +114,7 @@ local wWindow1 = YAGUI.gui_elements.Window.new(
 -- ADDING OBJECTS THAT WE WANT ON THE WINDOW TO IT
 wWindow1:set_elements({wmMemo, wmMemo1})
 
-local loop = YAGUI.Loop.new(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
+local loop = YAGUI.Loop(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
 -- MOVING LOOP STATS AT THE BOTTOM OF THE SCREEN
 loop.stats.pos.y = 18
 -- ENABLING LOOP STATS
