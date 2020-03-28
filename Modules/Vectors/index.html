@@ -133,7 +133,15 @@
             </li>
             <li class="nav-item" data-level="3"><a href="#vector2-metamethods" class="nav-link">Vector2 Metamethods</a>
               <ul class="nav flex-column">
+            <li class="nav-item" data-level="4"><a href="#creating-a-new-vector2" class="nav-link">Creating a new Vector2</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="4"><a href="#tostringvector2" class="nav-link">tostring(Vector2)</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="4"><a href="#length-of-vector2" class="nav-link">Length of Vector2</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -181,7 +189,15 @@
             </li>
             <li class="nav-item" data-level="3"><a href="#vector3-metamethods" class="nav-link">Vector3 Metamethods</a>
               <ul class="nav flex-column">
+            <li class="nav-item" data-level="4"><a href="#creating-a-new-vector3" class="nav-link">Creating a new Vector3</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="4"><a href="#tostringvector3" class="nav-link">tostring(Vector3)</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="4"><a href="#length-of-vector3" class="nav-link">Length of Vector3</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -376,6 +392,18 @@ print(v1:string(10))
 
 <h3 id="vector2-metamethods">Vector2 Metamethods</h3>
 <p><strong>If you don't know what metamethods are you can go to <a href="http://lua-users.org/wiki/MetatableEvents">this link to learn more</a></strong>.</p>
+<h4 id="creating-a-new-vector2">Creating a new Vector2</h4>
+<p>Vector2 <strong>implements the <code>__call</code></strong> metamethod, which means that doing <code>math_utils.Vector2.new()</code> is the same as <code>math_utils.Vector2()</code>.</p>
+<p>It's <strong>still better using <code>.new()</code></strong> because <strong>only one function is called instead of two</strong>, but it can be done both ways.</p>
+<pre><code class="lua">-- Creating a new Vector
+local v1 = math_utils.Vector2.new(10, 2)
+-- Creating a second Vector
+local v2 = math_utils.Vector2(3, 2)
+
+-- Printing the two vectors
+print(v1, v2)
+</code></pre>
+
 <h4 id="tostringvector2">tostring(Vector2)</h4>
 <p>Vector2 <strong>implements the <code>__tostring</code></strong> metamethod, which means that doing <code>tostring(Vector2)</code> will <code>return Vector2:string(0)</code>.</p>
 <pre><code class="lua">-- Creating a new Vector
@@ -386,6 +414,16 @@ local v1_string = tostring(v1)
 
 -- Printing v1's string
 print(v1_string)
+</code></pre>
+
+<h4 id="length-of-vector2">Length of Vector2</h4>
+<p><strong>Note: This only works on ComputerCraft version 1.87+.</strong></p>
+<p>Vector2 <strong>implements the <code>__len</code> metamethod</strong>, which means that <code>#Vector2</code> works.</p>
+<pre><code class="lua">-- Creating a new Vector
+local v1 = math_utils.Vector2.new(10, 2)
+
+-- Printing the length of the vector
+print(#v1)
 </code></pre>
 
 <h4 id="sum-of-vector2">Sum of Vector2</h4>
@@ -637,6 +675,18 @@ print(v1:string(10))
 
 <h3 id="vector3-metamethods">Vector3 Metamethods</h3>
 <p><strong>If you don't know what metamethods are you can go to <a href="http://lua-users.org/wiki/MetatableEvents">this link to learn more</a></strong>.</p>
+<h4 id="creating-a-new-vector3">Creating a new Vector3</h4>
+<p>Vector3 <strong>implements the <code>__call</code></strong> metamethod, which means that doing <code>math_utils.Vector3.new()</code> is the same as <code>math_utils.Vector3()</code>.</p>
+<p>It's <strong>still better using <code>.new()</code></strong> because <strong>only one function is called instead of two</strong>, but it can be done both ways.</p>
+<pre><code class="lua">-- Creating a new Vector
+local v1 = math_utils.Vector3.new(10, 2, 5)
+-- Creating a second Vector
+local v2 = math_utils.Vector3(3, 2, 10)
+
+-- Printing the two vectors
+print(v1, v2)
+</code></pre>
+
 <h4 id="tostringvector3">tostring(Vector3)</h4>
 <p>Vector3 <strong>implements the <code>__tostring</code> metamethod</strong>, which means that doing <code>tostring(Vector3)</code> will <code>return Vector3:string(0)</code>.</p>
 <pre><code class="lua">-- Creating a new Vector
@@ -647,6 +697,16 @@ local v1_string = tostring(v1)
 
 -- Printing v1's string
 print(v1_string)
+</code></pre>
+
+<h4 id="length-of-vector3">Length of Vector3</h4>
+<p><strong>Note: This only works on ComputerCraft version 1.87+.</strong></p>
+<p>Vector3 <strong>implements the <code>__len</code> metamethod</strong>, which means that <code>#Vector3</code> works.</p>
+<pre><code class="lua">-- Creating a new Vector
+local v1 = math_utils.Vector3.new(10, 2, 5)
+
+-- Printing the length of the vector
+print(#v1)
 </code></pre>
 
 <h4 id="sum-of-vector3">Sum of Vector3</h4>
