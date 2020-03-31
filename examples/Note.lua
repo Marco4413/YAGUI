@@ -17,10 +17,13 @@ local EPS = 6
 local loop_stats = true
 
 local button_timeout = 0.5
+
+local cursor_char = string.char(149)
 local cursor_blinking_speed = 0.5
+local cursor_color = colors.white
+local cursor_background_color = nil
 
 local text_color = colors.white
-local cursor_color = colors.white
 local editor_background = colors.black
 
 local background_color = colors.gray
@@ -189,8 +192,11 @@ bCompact.timed.enabled = true
 bCompact.timed.clock.interval = button_timeout
 bCompact.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFTSHIFT, YAGUI.KEY_C}
 
+mEditor.cursor.text = cursor_char
 mEditor.cursor.blink.interval = cursor_blinking_speed
-mEditor.colors.cursor = cursor_color
+mEditor.colors.cursor = cursor_background_color
+mEditor.colors.cursor_text = cursor_color
+
 
 -- Creating elements that will make File menu
 local bFile     = YAGUI.gui_elements.Button(1, 1, 4, 1, "File", text_color, lighter_background_color, background_color)
@@ -243,8 +249,11 @@ mInput.pos.x     , mInput.pos.y, mInput.size.x, mInput.size.y = LAYOUT.this_layo
 lInputTip.pos.x  , lInputTip.pos.y  , lInputTip.text = LAYOUT.this_layout.lInputTip()
 
 mInput.limits = YAGUI.math_utils.Vector2(0, 1)
+mInput.cursor.text = cursor_char
 mInput.cursor.blink.interval = cursor_blinking_speed
-mInput.colors.cursor = cursor_color
+mInput.colors.cursor = cursor_background_color
+mInput.colors.cursor_text = cursor_color
+
 
 -- Creating elements for OverWrite loop
 local wOverWrite = YAGUI.gui_elements.Window(18, 7, 15, 6, lighter_background_color, shadows)
