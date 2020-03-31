@@ -29,7 +29,13 @@ local lighter_background_color = colors.lightGray
 local special_button_active_color = colors.green
 local special_button_not_active_color = colors.red
 
+local keywords_highlight_color = colors.yellow
+local comment_highlight_color = colors.green
+local string_highlight_color = colors.red
+
 local shadows = true
+
+local syntax_highlight_enabled = true
 
 -- END OF SETTINGS
 
@@ -60,14 +66,15 @@ local LAYOUT = {
         lPath    = function () return 1, 19; end,
 
         bFile     = function () return 1, 1, 4, 1; end,
-        wFileMenu = function () return 1, 2, 10, 7; end,
+        wFileMenu = function () return 1, 2, 10, 8; end,
         bNewOpen  = function () return 1, 1, 10, 1; end,
         bSave     = function () return 1, 2, 10, 1; end,
         bSaveAs   = function () return 1, 3, 10, 1; end,
         bDelete   = function () return 1, 4, 10, 1; end,
         bGoto     = function () return 1, 5, 10, 1; end,
         bRun      = function () return 1, 6, 10, 1; end,
-        bQuit     = function () return 1, 7, 10, 1; end,
+        bSHL      = function () return 1, 7, 10, 1; end,
+        bQuit     = function () return 1, 8, 10, 1; end,
 
         lInputTitle = function () return 2, 9; end,
         mInput      = function () return 2, 10, 49, 1; end,
@@ -111,6 +118,33 @@ local LAYOUT = {
 }
 
 LAYOUT:init()
+
+-- These tables contain words to be highlighted
+local words_highlight = {
+    [keywords_highlight_color] = {
+        ["and"] = true,
+        ["break"] = true,
+        ["do"] = true,
+        ["else"] = true,
+        ["elseif"] = true,
+        ["end"] = true,
+        ["false"] = true,
+        ["for"] = true,
+        ["function"] = true,
+        ["if"] = true,
+        ["in"] = true,
+        ["local"] = true,
+        ["nil"] = true,
+        ["not"] = true,
+        ["or"] = true,
+        ["repeat"] = true,
+        ["return"] = true,
+        ["then"] = true,
+        ["true"] = true,
+        ["until"] = true,
+        ["while"] = true
+    }
+}
 
 -- Creating elements
 
@@ -160,14 +194,15 @@ mEditor.colors.cursor = cursor_color
 
 -- Creating elements that will make File menu
 local bFile     = YAGUI.gui_elements.Button(1, 1, 4, 1, "File", text_color, lighter_background_color, background_color)
-local wFileMenu = YAGUI.gui_elements.Window(1, 2, 10, 7, background_color, shadows)
+local wFileMenu = YAGUI.gui_elements.Window(1, 2, 10, 8, background_color, shadows)
 local bNewOpen  = YAGUI.gui_elements.Button(1, 2, 10, 1, "New/Open", text_color, lighter_background_color, background_color)
 local bSave     = YAGUI.gui_elements.Button(1, 3, 10, 1, "Save"    , text_color, lighter_background_color, background_color)
 local bSaveAs   = YAGUI.gui_elements.Button(1, 4, 10, 1, "SaveAs"  , text_color, lighter_background_color, background_color)
 local bDelete   = YAGUI.gui_elements.Button(1, 5, 10, 1, "Delete"  , text_color, lighter_background_color, background_color)
 local bGoto     = YAGUI.gui_elements.Button(1, 6, 10, 1, "Goto"    , text_color, lighter_background_color, background_color)
 local bRun      = YAGUI.gui_elements.Button(1, 7, 10, 1, "Run"     , text_color, lighter_background_color, background_color)
-local bQuit     = YAGUI.gui_elements.Button(1, 8, 10, 1, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
+local bSHL      = YAGUI.gui_elements.Button(1, 8, 10, 1, "SyntaxHL", text_color, lighter_background_color, background_color)
+local bQuit     = YAGUI.gui_elements.Button(1, 9, 10, 1, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
 
 -- Applying layout
 bFile.pos.x    , bFile.pos.y    , bFile.size.x    , bFile.size.y     = LAYOUT.this_layout.bFile()
@@ -178,11 +213,12 @@ bSaveAs.pos.x  , bSaveAs.pos.y  , bSaveAs.size.x  , bSaveAs.size.y   = LAYOUT.th
 bDelete.pos.x  , bDelete.pos.y  , bDelete.size.x  , bDelete.size.y   = LAYOUT.this_layout.bDelete()
 bGoto.pos.x    , bGoto.pos.y    , bGoto.size.x    , bGoto.size.y     = LAYOUT.this_layout.bGoto()
 bRun.pos.x     , bRun.pos.y     , bRun.size.x     , bRun.size.y      = LAYOUT.this_layout.bRun()
+bSHL.pos.x     , bSHL.pos.y     , bSHL.size.x     , bSHL.size.y      = LAYOUT.this_layout.bSHL()
 bQuit.pos.x    , bQuit.pos.y    , bQuit.size.x    , bQuit.size.y     = LAYOUT.this_layout.bQuit()
 
 wFileMenu.draw_priority = YAGUI.LOW_PRIORITY
 wFileMenu.hidden = true
-wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bQuit}, true)
+wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bSHL, bQuit}, true)
 
 bSave.timed.enabled = true
 bSave.timed.clock.interval = button_timeout
@@ -194,6 +230,7 @@ bQuit.timed.enabled = true
 bQuit.timed.clock.interval = button_timeout
 
 bFile.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_TAB}
+bSHL.active = syntax_highlight_enabled
 
 -- Creating elements for loop lInput
 local lInputTitle = YAGUI.gui_elements.Label(2, 9, "", text_color)
@@ -233,6 +270,151 @@ bOWReject.shortcut = {YAGUI.KEY_N}
 
 -- Defining functions
 
+local function remove_highlight()
+    mEditor.rich_text = {}
+    if mEditor.focussed then
+        mEditor.rich_text[mEditor.cursor.pos.y] = {
+            ["background"] = background_color
+        }
+    end
+end
+
+local syntax_highlight_cache = {}
+
+local function syntax_highlight(from, to)
+    local text_paint = YAGUI.color_utils.colors[text_color]
+    local comment_paint = YAGUI.color_utils.colors[comment_highlight_color]
+    local string_paint = YAGUI.color_utils.colors[string_highlight_color]
+
+    local function replace_char(str, x, char)
+        return str:sub(0, x - 1)..char..str:sub(x + 1)
+    end
+
+    from = from or mEditor.first_visible_line
+    to = to or (mEditor.first_visible_line + mEditor.size.y - 1)
+    
+    local state = "code"
+    local nested_state = "none"
+    local quote_ignore = false
+    local current_quote = ""
+
+    local prev_line_cache = syntax_highlight_cache[from - 1]
+    if prev_line_cache then
+        state = prev_line_cache.state
+        nested_state = prev_line_cache.nested_state
+        quote_ignore = prev_line_cache.quote_ignore
+        current_quote = prev_line_cache.current_quote
+    end
+
+    for y=from, to do
+        if not mEditor.rich_text[y] then
+            mEditor.rich_text[y] = {}
+        end
+
+        local line = mEditor.lines[y]
+        if not line then break; end
+
+        local foreground = ""
+
+        local words_in_line = YAGUI.string_utils.split(line, "[^%w_]")
+        local x = 0
+        for key, word in next, words_in_line do
+            for color, dictionary in next, words_highlight do
+                if dictionary[word] then
+                    foreground = foreground..string.rep(YAGUI.color_utils.colors[text_color], x - #foreground)..string.rep(YAGUI.color_utils.colors[color], #word)
+                end
+            end
+            
+            x = x + #word + 1
+        end
+        foreground = foreground..YAGUI.color_utils.colors[text_color]
+
+
+        for char_key=1, #line do
+            local char = line:sub(char_key, char_key)
+            if state == "code" then
+                if char == "\"" then
+                    foreground = replace_char(foreground, char_key, string_paint)
+                    if char_key ~= #line then
+                        state = "string"
+                        current_quote = "\""
+                    end
+                elseif char == "'" then
+                    foreground = replace_char(foreground, char_key, string_paint)
+                    if char_key ~= #line then
+                        state = "string"
+                        current_quote = "'"
+                    end
+                elseif line:sub(char_key, char_key + 1) == "[[" then
+                    state = "long-string"
+                    foreground = replace_char(foreground, char_key, string_paint)
+                elseif line:sub(char_key, char_key + 1) == "--" then
+                    if line:sub(char_key, char_key + 3) == "--[[" then
+                        state = "closed-comment"
+                        foreground = replace_char(foreground, char_key, comment_paint)
+                    else
+                        state = "comment"
+                        foreground = replace_char(foreground, char_key, comment_paint)
+                    end
+                elseif char_key > #foreground then
+                    foreground = replace_char(foreground, char_key, text_paint)
+                end
+            elseif state == "string" then
+                foreground = replace_char(foreground, char_key, string_paint)
+                if char == "\\" then
+                    if char_key == #line then
+                        nested_state = "multi-line"
+                    else
+                        local next_char = line:sub(char_key + 1, char_key + 1)
+                        if next_char == current_quote then
+                            quote_ignore = true
+                        end
+                    end
+                elseif nested_state == "none" and (char_key == #line) then
+                    quote_ignore = false
+                    current_quote = ""
+                    state = "code"
+                elseif char == current_quote then
+                    if quote_ignore then
+                        quote_ignore = false
+                    else
+                        current_quote = ""
+                        state = "code"
+                        nested_state = "none"
+                    end
+                else
+                    nested_state = "none"
+                end
+            elseif state == "long-string" then
+                foreground = replace_char(foreground, char_key, string_paint)
+                if line:sub(char_key, char_key + 1) == "]]" then
+                    foreground = replace_char(foreground, char_key + 1, string_paint)
+                    state = "code"
+                end
+            elseif state == "comment" then
+                foreground = foreground:sub(0, char_key - 1)
+                state = "code"
+                break
+            elseif state == "closed-comment" then
+                foreground = replace_char(foreground, char_key, comment_paint)
+                if line:sub(char_key, char_key + 1) == "]]" then
+                    foreground = replace_char(foreground, char_key + 1, comment_paint)
+                    state = "code"
+                end
+            end
+        end
+
+        syntax_highlight_cache[y] = {
+            ["state"] = state,
+            ["nested_state"] = nested_state,
+            ["quote_ignore"] = quote_ignore,
+            ["current_quote"] = current_quote
+        }
+
+        mEditor.rich_text[y].foreground = foreground
+    end
+end
+
 -- This functions opens a file from path, if file doesn't exist then it will create a new file
 local function open_notes(path)
     path = shell.resolve(path)
@@ -257,6 +439,11 @@ local function open_notes(path)
         file.write("")
 
         file.close()
+    end
+    mEditor:set_cursor(1, 1)
+    
+    if syntax_highlight_enabled then
+        syntax_highlight(1, #mEditor.lines)
     end
 end
 
@@ -388,6 +575,19 @@ YAGUI.generic_utils.set_callback(
 )
 
 YAGUI.generic_utils.set_callback(
+    bSHL,
+    YAGUI.ONPRESS,
+    function (self)
+        syntax_highlight_enabled = self.active
+        if syntax_highlight_enabled then
+            syntax_highlight(1, #mEditor.lines)
+        else
+            remove_highlight()
+        end
+    end
+)
+
+YAGUI.generic_utils.set_callback(
     bQuit,
     YAGUI.ONTIMEOUT,
     function (self)
@@ -419,9 +619,58 @@ YAGUI.generic_utils.set_callback(
 
 YAGUI.generic_utils.set_callback(
     mEditor,
+    YAGUI.ONFOCUS,
+    function (self)
+        if not self.focussed then
+            local rich_line = self.rich_text[self.cursor.pos.y]
+            if rich_line and rich_line.foreground then
+                rich_line.background = nil
+            else
+                self.rich_text[self.cursor.pos.y] = nil
+            end
+        end
+    end
+)
+
+YAGUI.generic_utils.set_callback(
+    mEditor,
     YAGUI.ONMOUSESCROLL,
     function (self)
         return true
+    end
+)
+
+YAGUI.generic_utils.set_callback(
+    mEditor,
+    YAGUI.ONCURSORCHANGE,
+    function (self, new_x, new_y)
+        if self.focussed then
+            local old_rich_line = self.rich_text[self.cursor.pos.y]
+            if old_rich_line and old_rich_line["foreground"] then
+                old_rich_line["background"] = nil
+            else
+                self.rich_text[self.cursor.pos.y] = nil
+            end
+
+            local new_rich_line = self.rich_text[new_y]
+            if new_rich_line and new_rich_line["foreground"] then
+                new_rich_line["background"] = background_color
+            else
+                self.rich_text[new_y] = {
+                    ["background"] = background_color
+                }
+            end
+        end
+    end
+)
+
+YAGUI.generic_utils.set_callback(
+    mEditor,
+    YAGUI.ONWRITE,
+    function (self)
+        if syntax_highlight_enabled then
+            syntax_highlight(self.cursor.pos.y, #self.lines)
+        end
     end
 )
 
@@ -451,7 +700,7 @@ YAGUI.generic_utils.set_callback(
             bRun.callbacks.onTimeout(bRun, event)
         elseif (not mEditor.focussed) then
             if YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFT) then
-                mEditor.first_visible_char = math.max(0, mEditor.first_visible_char - 1)
+                mEditor.first_visible_char = math.max(1, mEditor.first_visible_char - 1)
             elseif YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_RIGHT) then
                 mEditor.first_visible_char = mEditor.first_visible_char + 1
             end

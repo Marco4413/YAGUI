@@ -54,6 +54,8 @@ All **constants that will help you to set objects' callbacks** through [`generic
 * **ONKEY**
 * **ONCHAR**
 * **ONMOUSESCROLL**
+* **ONCURSORCHANGE**
+* **ONWRITE**
 
 ### Objects
 

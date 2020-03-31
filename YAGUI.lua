@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.21",
+    ver = "1.22",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -50,6 +50,8 @@ local const = {
     ONKEY = 10,
     ONCHAR = 11,
     ONMOUSESCROLL = 12,
+    ONCURSORCHANGE = 13,
+    ONWRITE = 14,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -114,6 +116,10 @@ generic_utils = {
             gui_element.callbacks.onChar = callback
         elseif event == const.ONMOUSESCROLL then
             gui_element.callbacks.onMouseScroll = callback
+        elseif event == const.ONCURSORCHANGE then
+            gui_element.callbacks.onCursorChange = callback
+        elseif event == const.ONWRITE then
+            gui_element.callbacks.onWrite = callback
         end
     end,
     -- RETURNS THE TYPE OF COMPUTER (computer, turtle, pocket) THAT IS BEING USED
@@ -572,7 +578,9 @@ table_utils = {
                     
                     str_tbl = str_tbl..string.format("%s[%s]%s=%s", this_indent, key_string, space, space)
                     if value_type == "table" then
-                        if (depth <= -1) or (current_depth < depth) then
+                        if not next(value) then
+                            str_tbl = str_tbl.."{}"
+                        elseif (depth <= -1) or (current_depth < depth) then
                             if found_tables[value_string] and not recursion then
                                 str_tbl = str_tbl..string.format("%q", found_tables[value_string])
                             else
@@ -639,16 +647,20 @@ color_utils = {
         [ 16384 ] = "e",
         [ 32768 ] = "f"
     },
+    paint = {},
     -- TAKES A DECIMAL VALUE FROM COLORS API AND RETURNS ITS PAINT VALUE
     color_to_paint = function (color)
         return color_utils.colors[color]
     end,
     -- TAKES A PAINT AND RETURNS ITS DECIMAL VALUE FROM COLORS API
     paint_to_color = function (paint)
-        local has, color = table_utils.has_value(color_utils.colors, paint)
-        if has then return color; end
+        return color_utils.paint[paint]
     end
 }
+
+for key, value in next, color_utils.colors do
+    color_utils.paint[value] = key
+end
 
 -- EVENT UTILS MODULE
 event_utils = {
@@ -874,11 +886,36 @@ local screen_buffer = {
     point = function (self, x, y, color)
         self.buffer:set_pixel(x, y, " ", color, color)
     end,
-    -- WRITES A TEXT ON THE SCREEN
+    -- WRITES TEXT ON THE SCREEN
     write = function (self, x, y, text, foreground, background)
         for rel_x=0, #text - 1 do
-            char = text:sub(rel_x + 1, rel_x + 1)
+            local char = text:sub(rel_x + 1, rel_x + 1)
             self.buffer:set_pixel(x + rel_x, y, char, foreground, background)
+        end
+    end,
+    -- WRITES TEXT ON THE SCREEN USING PAINT
+    blit = function (self, x, y, text, foreground, background)
+        local last_fg = ""
+        local last_bg = ""
+        foreground = foreground or ""
+        background = background or ""
+        for rel_x=0, #text - 1 do
+            local char = text:sub(rel_x + 1, rel_x + 1)
+            
+            local this_fg = foreground:sub(rel_x + 1, rel_x + 1)
+            this_fg = #this_fg > 0 and this_fg or last_fg
+
+            local this_bg = background:sub(rel_x + 1, rel_x + 1)
+            this_bg = #this_bg > 0 and this_bg or last_bg
+            
+            self.buffer:set_pixel(
+                x + rel_x, y, char,
+                color_utils.paint[this_fg],
+                color_utils.paint[this_bg]
+            )
+
+            last_fg = this_fg
+            last_bg = this_bg
         end
     end,
     -- DRAWS A RECTANGLE ON THE SCREEN
@@ -1418,6 +1455,7 @@ gui_elements = {
                 size = math_utils.Vector2.new(width, height),
                 editable = true,
                 tab_spaces = "  ",
+                rich_text = {},
                 lines = {},
                 first_visible_line = 1,
                 first_visible_char = 1,
@@ -1443,7 +1481,9 @@ gui_elements = {
                     onFocus = function () end,
                     onKey = function () end,
                     onChar = function () end,
-                    onMouseScroll = function () end
+                    onMouseScroll = function () end,
+                    onCursorChange = function () end,
+                    onWrite = function () end
                 }
             }
             newMemo.cursor.blink.binded_cursor = newMemo.cursor
@@ -1468,9 +1508,44 @@ gui_elements = {
             local rel_cursor_y = self.cursor.pos.y - self.first_visible_line
 
             for y=1, self.size.y do
-                local line = self.lines[y + self.first_visible_line - 1] or ""
-                local visible_line = line:sub(self.first_visible_char, self.first_visible_char + self.size.x - 1)
-                screen_buffer:write(self.pos.x, self.pos.y + y - 1, visible_line, self.colors.foreground)
+                local line_i = y + self.first_visible_line - 1
+                local rich_line = self.rich_text[line_i] or {}
+
+                local line = self.lines[line_i] or ""
+                local line_visible_start = self.first_visible_char
+                local line_visible_end = self.first_visible_char + self.size.x - 1
+                local visible_line = line:sub(line_visible_start, line_visible_end)
+
+                local y_pos = self.pos.y + y - 1
+
+                if rich_line.background then
+                    if type(rich_line.background) == "string" then
+                        local bg = rich_line.background:sub(line_visible_start, line_visible_end)
+                        bg = #bg > 0 and bg or rich_line.background:sub(#rich_line.background)
+                        screen_buffer:blit(
+                            self.pos.x, y_pos, string.rep(" ", self.size.x),
+                            nil,
+                            bg
+                        )
+                    else
+                        screen_buffer:rectangle(self.pos.x, y_pos, self.size.x, 1, rich_line.background)
+                    end
+                end
+                
+                if rich_line.foreground then
+                    if type(rich_line.foreground) == "string" then
+                        local fg = rich_line.foreground:sub(line_visible_start, line_visible_end)
+                        fg = #fg > 0 and fg or rich_line.foreground:sub(#rich_line.foreground)
+                        screen_buffer:blit(
+                            self.pos.x, y_pos, visible_line,
+                            fg
+                        )
+                    else
+                        screen_buffer:write(self.pos.x, y_pos, visible_line, rich_line.foreground)
+                    end
+                else
+                    screen_buffer:write(self.pos.x, y_pos, visible_line, self.colors.foreground)
+                end
             end
 
             if self.cursor.visible and (rel_cursor_x >= 0) and (rel_cursor_x < self.size.x) and (rel_cursor_y >= 0) and (rel_cursor_y < self.size.y) then
@@ -1488,16 +1563,16 @@ gui_elements = {
             if not self.editable then return false; end
             if formatted_event.name == const.TOUCH then
                 if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                    self.callbacks.onPress(self, formatted_event)
+                    self:focus(true, formatted_event)
                     local x = formatted_event.x - self.pos.x
                     local y = formatted_event.y - self.pos.y
                     self:set_cursor(x + self.first_visible_char, y + self.first_visible_line)
-                    self:focus(true, formatted_event)
-                    self.callbacks.onPress(self, formatted_event)
                     
                     return true -- RETURNING TRUE DELETES THE EVENT
                 else
-                    self:focus(false, formatted_event)
                     self.callbacks.onFailedPress(self, formatted_event)
+                    self:focus(false, formatted_event)
                     return false
                 end
             elseif formatted_event.name == const.DELETED then
@@ -1585,8 +1660,10 @@ gui_elements = {
                                 self:set_cursor(cursor_x, cursor_y)
                             end
                         else
-                            self.lines[self.cursor.pos.y] = line:sub(1, self.cursor.pos.x - 2)..line:sub(self.cursor.pos.x)
+                            local new_line = line:sub(1, self.cursor.pos.x - 2)..line:sub(self.cursor.pos.x)
+                            self.lines[self.cursor.pos.y] = new_line
                             self:set_cursor(self.cursor.pos.x - 1, self.cursor.pos.y)
+                            self.callbacks.onWrite(self, new_line, {new_line})
                         end
 
 
@@ -1595,7 +1672,9 @@ gui_elements = {
                         local line_end = line:sub(self.cursor.pos.x)
 
                         if #line_end > 0 then
-                            self.lines[self.cursor.pos.y] = line:sub(1, self.cursor.pos.x - 1)..line:sub(self.cursor.pos.x + 1)
+                            local new_line = line:sub(1, self.cursor.pos.x - 1)..line:sub(self.cursor.pos.x + 1)
+                            self.lines[self.cursor.pos.y] = new_line
+                            self.callbacks.onWrite(self, new_line, {new_line})
                         else
                             local next_line = self.lines[self.cursor.pos.y + 1]
                             if next_line then
@@ -1612,6 +1691,16 @@ gui_elements = {
                         local current_line_to_cursor = self.lines[self.cursor.pos.y]:sub(0, self.cursor.pos.x - 1)
                         local spaces = current_line_to_cursor:gsub("(%s*).*", "%1")
                         self:write("\n"..spaces)
+                    
+                    
+                    elseif formatted_event.key == const.KEY_END then
+                        self:set_cursor(#self.lines[self.cursor.pos.y] + 1, self.cursor.pos.y)
+
+                        
+                    elseif formatted_event.key == const.KEY_HOME then
+                        local current_line_to_cursor = self.lines[self.cursor.pos.y]:sub(0, self.cursor.pos.x - 1)
+                        local spaces = current_line_to_cursor:gsub("(%s*).*", "%1")
+                        self:set_cursor(#spaces + 1, self.cursor.pos.y)
 
 
                     elseif input:are_keys_pressed(false, const.KEY_LEFTSHIFT, const.KEY_TAB) then
@@ -1619,8 +1708,10 @@ gui_elements = {
                         local spaces = current_line:gsub("^(%s*).*$", "%1")
                         local total_spaces = math.min(#self.tab_spaces, #spaces)
                         
-                        self.lines[self.cursor.pos.y] = current_line:sub(total_spaces + 1)
+                        local new_line = current_line:sub(total_spaces + 1)
+                        self.lines[self.cursor.pos.y] = new_line
                         self:set_cursor(self.cursor.pos.x - total_spaces, self.cursor.pos.y)
+                        self.callbacks.onWrite(self, new_line, {new_line})
 
 
                     elseif formatted_event.key == const.KEY_TAB then
@@ -1665,12 +1756,11 @@ gui_elements = {
             else
                 cursor_y = math_utils.constrain(cursor_y, 1, #self.lines)
             end
-
-            cursor_x = math_utils.constrain(cursor_x, 1, #self.lines[cursor_y] + 1)
-            self.cursor.pos = math_utils.Vector2.new(cursor_x, cursor_y)
             
-            local rel_cursor_x = self.cursor.pos.x - self.first_visible_char
-            local rel_cursor_y = self.cursor.pos.y - self.first_visible_line
+            cursor_x = math_utils.constrain(cursor_x, 1, #self.lines[cursor_y] + 1)
+            
+            local rel_cursor_x = cursor_x - self.first_visible_char
+            local rel_cursor_y = cursor_y - self.first_visible_line
 
             if rel_cursor_x >= self.size.x then
                 self.first_visible_char = self.first_visible_char + rel_cursor_x - self.size.x + 1
@@ -1683,6 +1773,9 @@ gui_elements = {
             elseif rel_cursor_y < 0 then
                 self.first_visible_line = self.first_visible_line + rel_cursor_y
             end
+
+            self.callbacks.onCursorChange(self, cursor_x, cursor_y)
+            self.cursor.pos = math_utils.Vector2.new(cursor_x, cursor_y)
         end,
         -- WRITES TEXT WHERE THE CURSOR IS
         write = function (self, ...)
@@ -1749,6 +1842,7 @@ gui_elements = {
                 self.lines[self.cursor.pos.y] = line_start..lines[1]..line_end
                 self:set_cursor(self.cursor.pos.x + #lines[1], self.cursor.pos.y)
             end
+            self.callbacks.onWrite(self, text, lines)
         end,
         print = function (self, ...)
             local text = string_utils.join({...}, "")
