@@ -669,7 +669,7 @@ YAGUI.generic_utils.set_callback(
     YAGUI.ONWRITE,
     function (self)
         if syntax_highlight_enabled then
-            syntax_highlight(self.cursor.pos.y, #self.lines)
+            syntax_highlight(math.max(1, self.cursor.pos.y - 2), #self.lines)
         end
     end
 )
