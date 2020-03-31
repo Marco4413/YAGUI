@@ -33,6 +33,9 @@ local special_button_active_color = colors.green
 local special_button_not_active_color = colors.red
 
 local keywords_highlight_color = colors.yellow
+local API_highlight_color = colors.blue
+local YAGUI_highlight_color = colors.orange
+
 local comment_highlight_color = colors.green
 local string_highlight_color = colors.red
 
@@ -146,6 +149,58 @@ local words_highlight = {
         ["true"] = true,
         ["until"] = true,
         ["while"] = true
+    },
+    [API_highlight_color] = {
+        ["bit"] = true,
+        ["colors"] = true,
+        ["colours"] = true,
+        ["commands"] = true,
+        ["coroutine"] = true,
+        ["disk"] = true,
+        ["fs"] = true,
+        ["gps"] = true,
+        ["help"] = true,
+        ["http"] = true,
+        ["io"] = true,
+        ["keys"] = true,
+        ["math"] = true,
+        ["multishell"] = true,
+        ["os"] = true,
+        ["paintutils"] = true,
+        ["parallel"] = true,
+        ["peripheral"] = true,
+        ["rednet"] = true,
+        ["redstone"] = true,
+        ["rs"] = true,
+        ["settings"] = true,
+        ["shell"] = true,
+        ["string"] = true,
+        ["table"] = true,
+        ["term"] = true,
+        ["textutils"] = true,
+        ["turtle"] = true,
+        ["pocket"] = true,
+        ["vector"] = true,
+        ["window"] = true,
+        ["YAGUI"] = true
+    },
+    [YAGUI_highlight_color] = {
+        ["info"] = true,
+        ["generic_utils"] = true,
+        ["string_utils"] = true,
+        ["math_utils"] = true,
+        ["table_utils"] = true,
+        ["color_utils"] = true,
+        ["event_utils"] = true,
+        ["setting_utils"] = true,
+        ["monitor_utils"] = true,
+        ["screen_buffer"] = true,
+        ["input"] = true,
+        ["WSS"] = true,
+        ["wireless_screen_share"] = true,
+        ["gui_elements"] = true,
+        ["Loop"] = true,
+        ["self"] = true
     }
 }
 
@@ -653,14 +708,14 @@ YAGUI.generic_utils.set_callback(
     mEditor,
     YAGUI.ONCURSORCHANGE,
     function (self, new_x, new_y)
-        if self.focussed then
-            local old_rich_line = self.rich_text[self.cursor.pos.y]
-            if old_rich_line and old_rich_line["foreground"] then
-                old_rich_line["background"] = nil
-            else
-                self.rich_text[self.cursor.pos.y] = nil
-            end
+        local old_rich_line = self.rich_text[self.cursor.pos.y]
+        if old_rich_line and old_rich_line["foreground"] then
+            old_rich_line["background"] = nil
+        else
+            self.rich_text[self.cursor.pos.y] = nil
+        end
 
+        if self.focussed then
             local new_rich_line = self.rich_text[new_y]
             if new_rich_line and new_rich_line["foreground"] then
                 new_rich_line["background"] = background_color
