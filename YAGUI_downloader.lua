@@ -9,9 +9,9 @@ local PROGRAMS = {
         PATH = '/YAGUI.lua'             -- Path where to save the file
     },
     {
-        NAME = 'WSS_listener',
-        URL = master..'examples/WSS_listener.lua',
-        PATH = '/WSS_listener.lua'
+        NAME = 'WSS_Client',
+        URL = master..'examples/WSS_Client.lua',
+        PATH = '/WSS_Client.lua'
     },
     {
         NAME = 'Note',

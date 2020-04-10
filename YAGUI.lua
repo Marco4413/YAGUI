@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.22",
+    ver = "1.23",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -26,6 +26,7 @@ local info = {
 -- CONSTANTS MODULE
 -- THESE WILL BE TRANSFORMED IN GLOBAL VARIABLES WHEN LIBRARY IS RETURNED
 local const = {
+    TIMER = "timer",
     TOUCH = "screen_touch",
     MOUSEUP = "mouse_up",
     MOUSEDRAG = "mouse_drag",
@@ -34,8 +35,17 @@ local const = {
     KEY = "key",
     KEYUP = "key_up",
     PASTE = "paste",
+    REDNET = "rednet_message",
+    MODEM = "modem_message",
     DELETED = "DELETED",
+    NONE = "NONE",
+    HOST = "HOST",
+    USER = "USER",
     DISCONNECTED = "DISCONNECTED",
+    CONNECTION_REQUEST = "CONNECTION_REQUEST",
+    OK = "OK",
+    NO = "NO",
+    ERROR = "ERROR",
     LOW_PRIORITY = 1,
     HIGH_PRIORITY = 2,
     ONSTART = 1,
@@ -52,6 +62,8 @@ local const = {
     ONMOUSESCROLL = 12,
     ONCURSORCHANGE = 13,
     ONWRITE = 14,
+    ONCONNECT = 15,
+    ONDISCONNECT = 16,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -120,6 +132,10 @@ generic_utils = {
             gui_element.callbacks.onCursorChange = callback
         elseif event == const.ONWRITE then
             gui_element.callbacks.onWrite = callback
+        elseif event == const.ONCONNECT then
+            gui_element.callbacks.onConnect = callback
+        elseif event == const.ONDISCONNECT then
+            gui_element.callbacks.onDisconnect = callback
         end
     end,
     -- RETURNS THE TYPE OF COMPUTER (computer, turtle, pocket) THAT IS BEING USED
@@ -198,14 +214,14 @@ string_utils = {
     -- SPLITS STRING EVERY TIME SEPARATOR IS FOUND
     split = function (str, sep)
         if not string.find(str, sep) then
-           return {str}
+            return {str}
         end
         local return_table = {}
         local pattern = "(.-)"..sep.."()"
         local last_pos
         for this_match, pos in string.gfind(str, pattern) do
-           table.insert(return_table, this_match)
-           last_pos = pos
+            table.insert(return_table, this_match)
+            last_pos = pos
         end
         table.insert(return_table, string.sub(str, last_pos))
         return return_table
@@ -676,59 +692,88 @@ event_utils = {
     -- USED TO FORMAT "RAW_EVENTS"
     -- RAW_EVENTS = {os.pullEvent()}
     format_event_table = function (event_table)
+        local has_formatted = false
         local event = {}
         event.name = event_table[1]
-        if event.name == "mouse_click" then
+        if event.name == "timer" then
+            event.name = const.TIMER
+            event.id = event[2]
+            has_formatted = true
+        elseif event.name == "mouse_click" then
             event.name = const.TOUCH
             event.from = "terminal"
             event.button = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            return event
+            has_formatted = true
         elseif event.name == "monitor_touch" then
             event.name = const.TOUCH
             event.from = event_table[2]
             event.button = 1
             event.x = event_table[3]
             event.y = event_table[4]
-            return event
+            has_formatted = true
         elseif event.name == "mouse_drag" then
             event.name = const.MOUSEDRAG
             event.button = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            return event
+            has_formatted = true
         elseif event.name == "mouse_up" then
             event.name = const.MOUSEUP
             event.button = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            return event
+            has_formatted = true
         elseif event.name == "mouse_scroll" then
             event.name = const.MOUSESCROLL
             event.direction = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            return event
+            has_formatted = true
         elseif event.name == "char" then
             event.name = const.CHAR
             event.char = event_table[2]
-            return event
+            has_formatted = true
         elseif event.name == "key" then
             event.name = const.KEY
             event.key = event_table[2]
-            return event
+            has_formatted = true
         elseif event.name == "key_up" then
             event.name = const.KEYUP
             event.key = event_table[2]
-            return event
+            has_formatted = true
         elseif event.name == "paste" then
             event.name = const.PASTE
             event.paste = event_table[2]
-            return event
+            has_formatted = true
+        elseif event.name == "rednet_message" then
+            event.name = const.REDNET
+            event.from = event_table[2]
+            event.message = event_table[3]
+            local dp = event_table[4]
+            if type(dp) == "number" then
+                event.distance = dp
+            else
+                event.protocol = tostring(dp)
+            end
+            has_formatted = true
+        elseif event.name == "modem_message" then
+            local msg = event_table[5]
+            event.name = const.MODEM
+            event.side = event_table[2]
+            event.from = event_table[4]
+            event.protocol = msg.sProtocol or ""
+            event.message = msg.message
+            has_formatted = true
         end
-        table.remove(event_table, 1)
-        event.parameters = event_table
+
+        if not has_formatted then
+            for key=2, #event_table do
+                table.insert(event.parameters, event_table[key])
+            end
+        end
+        event.raw = event_table
         return event
     end
 }
@@ -1087,114 +1132,6 @@ local input = {
         end
     end
 }
-
--- WSS MODULE
--- NOTE THAT NO VARIABLE FROM THIS TABLE SHOULD BE CHANGED MANUALLY
--- YOU CAN ONLY USE FUNCTIONS FROM THIS TABLE OR GET VARIABLES,
--- DON'T CHANGE THEM IF YOU WANT IT TO WORK
-local WSS = {}
-WSS = {
-    -- SIDE WHERE THE MODEM IS
-    side = nil,
-    -- PROTOCOL WHERE THE HOST WILL BE CREATED OR SEARCHED IN
-    protocol = "YAGUI-"..info.ver.."_WSS",
-    -- PREFIX FOR HOST COMPUTERS
-    host_prefix = "_Host:",
-    -- DEFAULT TIMEOUT FOR client:listen()
-    default_timeout = 0.5,
-    -- OPENS REDNET ON SIDE
-    open = function (self, side)
-        rednet.open(side)
-        self.side = side
-    end,
-    -- CLOSES REDNET ON SIDE
-    close = function (self)
-        rednet.close(self.side)
-        self.side = nil
-    end,
-    -- FUNCTIONS TO MAKE AND MANAGE A WSS SERVER
-    server = {
-        -- LINK TO WSS TABLE
-        root = {},
-        -- NAME OF THE HOSTED SERVER
-        servername = nil,
-        -- HOSTNAME ON THE SERVER
-        hostname = nil,
-        -- HOSTS A WSS SERVER ON CURRENT COMPUTER AS hostname
-        host = function (self, hostname)
-            if not hostname then hostname = os.getComputerID(); end
-            hostname = tostring(hostname)
-            local servername = self.root.protocol..self.root.host_prefix..hostname
-            
-            if rednet.lookup(servername, hostname) then return false, hostname; end
-
-            rednet.host(servername, hostname)
-            self.servername = servername
-            self.hostname = hostname
-            return true, hostname
-        end,
-        -- UNHOSTS CURRENTLY RUNNING SERVER
-        unhost = function (self)
-            rednet.broadcast(
-                const.DISCONNECTED,
-                self.servername
-            )
-            rednet.unhost(self.servername, self.hostname)
-            self.servername = nil
-            self.hostname = nil
-        end,
-        -- BROADCASTS SCREEN_BUFFER TO ALL CONNECTED COMPUTERS
-        broadcast = function (self)
-            rednet.broadcast(
-                screen_buffer.frame,
-                self.servername
-            )
-        end
-    },
-    -- FUNCTIONS TO CONNECT AND RECEIVE FROM A WSS SERVER
-    client = {
-        -- LINK TO WSS TABLE
-        root = {},
-        -- NAME OF THE SERVER WHERE THIS COMPUTER IS CONNECTED
-        servername = nil,
-        -- ID OF SERVER HOST
-        host_id = nil,
-        -- CONNECTS TO SERVER HOSTED BY hostname
-        connect = function (self, hostname)
-            hostname = tostring(hostname)
-            local servername = self.root.protocol..self.root.host_prefix..hostname
-
-            local ID = rednet.lookup(servername, hostname)
-            if not ID then return false, hostname; end
-
-            self.servername = servername
-            self.host_id = ID
-
-            return true, hostname
-        end,
-        -- DISCONNECTS FROM SERVER
-        disconnect = function (self)
-            self.servername = nil
-            self.host_id = nil
-        end,
-        -- LISTENS FOR MESSAGES FROM THE SERVER
-        listen = function (self, timeout)
-            if not timeout then timeout = self.root.default_timeout; end
-            local message = {rednet.receive(self.servername, timeout)}
-            if message[1] == self.host_id then
-                local buffer = message[2]
-                if not buffer then return false; end
-                if buffer == const.DISCONNECTED then return buffer; end
-                screen_buffer.buffer.background = buffer.background
-                screen_buffer.buffer.pixels = buffer.pixels
-                return true
-            end
-            return false
-        end
-    }
-}
-WSS.server.root = WSS
-WSS.client.root = WSS
 
 -- GUI ELEMENTS MODULE
 local gui_elements = {}
@@ -1583,9 +1520,11 @@ gui_elements = {
                 self.cursor.blink:event(self.cursor.blink, formatted_event)
                 if formatted_event.name == const.PASTE then
                     self:write(formatted_event.paste)
+                    return true
                 elseif formatted_event.name == const.CHAR then
                     if self.callbacks.onChar(self, formatted_event) then return true; end
                     self:write(formatted_event.char)
+                    return true
                 elseif formatted_event.name == const.KEY then
                     if self.callbacks.onKey(self, formatted_event) then return true; end
                     if input:are_keys_pressed(false, const.KEY_LEFTALT, const.KEY_UP) then
@@ -1602,6 +1541,7 @@ gui_elements = {
                             self:write(this_line.."\n"..prev_line)
                             self:set_cursor(old_x, self.cursor.pos.y - 1)
                         end
+                        return true
                     
                     
                     elseif input:are_keys_pressed(false, const.KEY_LEFTALT, const.KEY_DOWN) then
@@ -1618,14 +1558,17 @@ gui_elements = {
                         self:set_cursor(1, self.cursor.pos.y)
                         self:write(next_line.."\n"..this_line)
                         self:set_cursor(old_x, self.cursor.pos.y)
+                        return true
 
 
                     elseif formatted_event.key == const.KEY_UP then
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y - 1)
+                        return true
                         
                         
                     elseif formatted_event.key == const.KEY_DOWN then
                         self:set_cursor(self.cursor.pos.x, self.cursor.pos.y + 1)
+                        return true
                         
                         
                     elseif formatted_event.key == const.KEY_RIGHT then
@@ -1635,6 +1578,7 @@ gui_elements = {
                         else
                             self:set_cursor(self.cursor.pos.x + 1, self.cursor.pos.y)
                         end
+                        return true
 
 
                     elseif formatted_event.key == const.KEY_LEFT then
@@ -1644,6 +1588,7 @@ gui_elements = {
                         else
                             self:set_cursor(self.cursor.pos.x - 1, self.cursor.pos.y)
                         end
+                        return true
 
 
                     elseif formatted_event.key == const.KEY_BACKSPACE then
@@ -1665,6 +1610,7 @@ gui_elements = {
                             self:set_cursor(self.cursor.pos.x - 1, self.cursor.pos.y)
                             self.callbacks.onWrite(self, new_line, {new_line})
                         end
+                        return true
 
 
                     elseif formatted_event.key == const.KEY_DELETE then
@@ -1685,22 +1631,26 @@ gui_elements = {
                                 self:set_cursor(cursor_x, cursor_y)
                             end
                         end
+                        return true
                         
 
                     elseif formatted_event.key == const.KEY_ENTER then
                         local current_line_to_cursor = self.lines[self.cursor.pos.y]:sub(0, self.cursor.pos.x - 1)
                         local spaces = current_line_to_cursor:gsub("(%s*).*", "%1")
                         self:write("\n"..spaces)
+                        return true
                     
                     
                     elseif formatted_event.key == const.KEY_END then
                         self:set_cursor(#self.lines[self.cursor.pos.y] + 1, self.cursor.pos.y)
+                        return true
 
                         
                     elseif formatted_event.key == const.KEY_HOME then
                         local current_line_to_cursor = self.lines[self.cursor.pos.y]:sub(0, self.cursor.pos.x - 1)
                         local spaces = current_line_to_cursor:gsub("(%s*).*", "%1")
                         self:set_cursor(#spaces + 1, self.cursor.pos.y)
+                        return true
 
 
                     elseif input:are_keys_pressed(false, const.KEY_LEFTSHIFT, const.KEY_TAB) then
@@ -1712,6 +1662,7 @@ gui_elements = {
                         self.lines[self.cursor.pos.y] = new_line
                         self:set_cursor(self.cursor.pos.x - total_spaces, self.cursor.pos.y)
                         self.callbacks.onWrite(self, new_line, {new_line})
+                        return true
 
 
                     elseif formatted_event.key == const.KEY_TAB then
@@ -1721,14 +1672,15 @@ gui_elements = {
                         self:write(self.tab_spaces)
                         local delta_x = #self.lines[self.cursor.pos.y] - line_len
                         self:set_cursor(old_x + delta_x, self.cursor.pos.y)
+                        return true
 
 
                     end
                 elseif formatted_event.name == const.MOUSESCROLL then
                     if self.callbacks.onMouseScroll(self, formatted_event) then return true; end
                     self.first_visible_line = math_utils.constrain(self.first_visible_line + formatted_event.direction, 1, #self.lines)
+                    return true
                 end
-                return true
             end
         end,
         focus = function (self, active, formatted_event)
@@ -1995,6 +1947,172 @@ gui_elements.Progressbar.__index = gui_elements.Progressbar
 gui_elements.Memo.__index = gui_elements.Memo
 gui_elements.Window.__index = gui_elements.Window
 
+-- WSS MODULE
+local WSS = {}
+WSS = {
+    new = function (self, broadcast_interval)
+        local newWSS = {
+            draw_priority = const.LOW_PRIORITY,
+            hidden = false,
+            buffer = {},
+            events_whitelist = {
+                [const.TOUCH] = true,
+                [const.KEY] = true,
+                [const.KEYUP] = true,
+                [const.CHAR] = true,
+                [const.MOUSEDRAG] = true,
+                [const.MOUSESCROLL] = true,
+                [const.MOUSEUP] = true
+            },
+            close_on_host_disconnect = true,
+            side = const.NONE,
+            mode = const.NONE,
+            host_id = const.NONE,
+            users = {},
+            protocol = "YAGUI-"..info.ver.."_WSS",
+            broadcast_clock = gui_elements.Clock.new(broadcast_interval or 4),
+            callbacks = {
+                onDraw = function () end,
+                onEvent = function () end,
+                onConnect = function () end,
+                onDisconnect = function () end
+            }
+        }
+        newWSS.broadcast_clock.WSS = newWSS
+        generic_utils.set_callback(
+            newWSS.broadcast_clock,
+            const.ONCLOCK,
+            function (self, formatted_event)
+                rednet.broadcast(
+                    screen_buffer.frame,
+                    self.WSS.protocol
+                )
+            end
+        )
+        setmetatable(newWSS, WSS)
+        return newWSS
+    end,
+    draw = function (self)
+        if self.hidden then return false; end
+        self.callbacks.onDraw(self)
+
+        if self.mode == const.USER then
+            if self.buffer and self.buffer.background and self.buffer.pixels then
+                screen_buffer.buffer.background = self.buffer.background
+                screen_buffer.buffer.pixels = self.buffer.pixels
+            end
+        end
+    end,
+    event = function (self, formatted_event)
+        if self.hidden then return false; end
+        if self.callbacks.onEvent(self, formatted_event) then return true; end
+
+        local return_value = false
+        if formatted_event.name == const.REDNET then
+            if formatted_event.protocol == self.protocol then
+                local msg = formatted_event.message
+                if self.mode == const.HOST then
+                    if msg == const.CONNECTION_REQUEST then
+                        rednet.send(formatted_event.from, const.OK, self.protocol)
+                        self.users[formatted_event.from] = true
+                        return_value = true
+                        self.callbacks.onConnect(self, formatted_event)
+                    elseif msg == const.DISCONNECTED then
+                        self.users[formatted_event.from] = nil
+                        return_value = true
+                        self.callbacks.onDisconnect(self, formatted_event)
+                    elseif self.events_whitelist[msg.name or "nil"] and self.users[formatted_event.from] and type(msg) == "table" then
+                        if msg.raw then os.queueEvent(table.unpack(msg.raw)); end
+                        return_value = true
+                    end
+                elseif self.mode == const.USER then
+                    if formatted_event.from == self.host_id then
+                        if msg == const.DISCONNECTED then
+                            if self.close_on_host_disconnect then self:close(); end
+                            
+                            return_value = true
+                            self.callbacks.onDisconnect(self, formatted_event)
+                        elseif type(msg) == "table" then
+                            self.buffer = msg
+                            return_value = true
+                        end
+                    end
+                end
+            end
+        end
+        
+        if self.mode == const.USER then
+            if formatted_event.name == const.TOUCH then
+                return_value = true
+            end
+            if self.events_whitelist[tostring(formatted_event.name)] then
+                rednet.send(self.host_id, formatted_event, self.protocol)
+                return_value = true
+            end
+        elseif self.mode == const.HOST then
+            self.broadcast_clock:event(formatted_event)
+        end
+
+        return return_value
+    end,
+    use_side = function (self, side)
+        self.side = side
+    end,
+    connect = function (self, id, timeout, max_attempts)
+        timeout = timeout or 2
+        max_attempts = max_attempts or 10
+
+        rednet.open(self.side)
+        self.host_id = id
+        self.mode = const.USER
+        rednet.send(self.host_id, const.CONNECTION_REQUEST, self.protocol)
+
+        local attempt = 0
+        while true do
+            attempt = attempt + 1
+            local resp = {rednet.receive(self.protocol, timeout)}
+
+            if resp[1] == id and resp[2] == const.OK and resp[3] == self.protocol then
+                return const.OK
+            elseif attempt >= max_attempts then
+                local err_msg = string.format("Connection timed out on attempt %d after %d ms", attempt, timeout * 1000)
+                if #resp > 0 then
+                    err_msg = string.format("Connection timed out on attempt %d: invalid response (The traffic on the network may be high, try to increase max attempts)", attempt, timeout * 1000)
+                end
+                WSS:close()
+                error(err_msg, 2)
+            end
+        end
+        self.callbacks.onConnect(self, id)
+    end,
+    host = function (self)
+        rednet.open(self.side)
+        self.host_id = os.getComputerID()
+        self.mode = const.HOST
+    end,
+    close = function (self)
+        if rednet.isOpen() then
+            if self.mode == const.HOST then
+                rednet.broadcast(
+                    const.DISCONNECTED,
+                    self.protocol
+                )
+            elseif self.mode == const.USER then
+                rednet.send(
+                    self.host_id,
+                    const.DISCONNECTED,
+                    self.protocol
+                )
+            end
+            rednet.close(self.side)
+        end
+        self.host_id = const.NONE
+        self.mode = const.NONE
+    end
+}
+
+WSS.__index = WSS
+
 -- LOOP MODULE
 local Loop = {}
 Loop = {
@@ -2202,6 +2320,7 @@ Loop.__index = Loop
 
 setmetatable(math_utils.Vector2, new_simple)
 setmetatable(math_utils.Vector3, new_simple)
+setmetatable(WSS, new_simple)
 for key, element in next, gui_elements do
     setmetatable(element, new_simple)
 end

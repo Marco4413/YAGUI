@@ -11,7 +11,7 @@ local YAGUI = dofile(YAGUI_PATH)
 local default_name = "new"
 local default_extension = ".txt"
 
-local WSS_broadcast_interval = 3
+local WSS_broadcast_interval = 1
 local FPS = 60
 local EPS = 6
 local loop_stats = true
@@ -41,7 +41,7 @@ local string_highlight_color = colors.red
 
 local shadows = true
 
-local syntax_highlight_enabled = true
+local syntax_highlight_enabled = false
 
 -- END OF SETTINGS
 
@@ -66,7 +66,7 @@ local LAYOUT = {
     end,
     [ "all" ] = {
         lLines   = function () return 9, 1; end,
-        lCursor  = function () return 21, 1; end,
+        lCursor  = function () return 22, 1; end,
         bCompact = function () return 51, 1, 1, 1; end,
         mEditor  = function () return 5, 2, 47, 17; end,
         lPath    = function () return 1, 19; end,
@@ -217,17 +217,8 @@ local loops = {
     [ "overwrite" ] = lOverWrite
 }
 
--- Creating WSS Clock
-local cWSS = YAGUI.gui_elements.Clock(WSS_broadcast_interval)
-
-YAGUI.generic_utils.set_callback(
-    cWSS,
-    YAGUI.ONCLOCK,
-    function (self)
-        YAGUI.WSS.server:broadcast()
-    end
-)
-cWSS.enabled = false
+-- Creating WSS (Wireless Screen Share)
+local WSS = YAGUI.WSS(WSS_broadcast_interval)
 
 -- Creating main loop elements
 local lLines    = YAGUI.gui_elements.Label(9, 1, "Lines: 0", text_color)
@@ -678,6 +669,10 @@ YAGUI.generic_utils.set_callback(
             table.remove(mEditor.lines, line_key)
         end
         mEditor:set_cursor(1, 1)
+        
+        if syntax_highlight_enabled then
+            syntax_highlight(1, #mEditor.lines)
+        end
     end
 )
 
@@ -851,11 +846,11 @@ if #tArgs > 0 then
 
     if tArgs[1]:lower() == "help" then
         local lines = {
-            { text = "Note <COMMAND>"                                                                                       , foreground = colors.green , background = nil},
-            { text = " - help (shows this list of commands)"                                                                , foreground = colors.blue  , background = nil},
-            { text = " - open <PATH> (opens file at PATH)"                                                                  , foreground = colors.yellow, background = nil},
-            { text = " - multi <MONITORS> (sets MONITORS\n   as io for the app)"                                            , foreground = colors.green , background = nil},
-            { text = " - wss <MODEM_SIDE> [HOSTNAME]\n   (hosts a WSS server using the modem\n   on MODEM_SIDE as HOSTNAME)", foreground = colors.blue  , background = nil}
+            { text = "Note <COMMAND>"                                           , foreground = colors.green , background = nil},
+            { text = " - help (shows this list of commands)"                    , foreground = colors.blue  , background = nil},
+            { text = " - open <PATH> (opens file at PATH)"                      , foreground = colors.yellow, background = nil},
+            { text = " - multi <MONITORS> (sets MONITORS\n   as io for the app)", foreground = colors.green , background = nil},
+            { text = " - wss <MODEM_SIDE> [BROADCAST_INTERVAL]\n   (hosts a WSS server using the modem\n   on MODEM_SIDE and updates connected users\n   every BROADCAST_INTERVAL seconds)", foreground = colors.blue  , background = nil}
         }
     
         for key, line in next, lines do
@@ -896,17 +891,9 @@ if #tArgs > 0 then
                 YAGUI.monitor_utils.better_print(term, colors.red, nil, "Modem: ", modem_side, " wasn't found.")
                 return
             end
-            YAGUI.WSS:open(modem_side)
-            local host
-            if options.wss[2] and not options.wss[2]:gsub(" ", "") == 0 then host = options.wss[2]; end
-            local success, name = YAGUI.WSS.server:host(host)
-            if not success then
-                YAGUI.monitor_utils.better_print(term, colors.red, nil, "Couldn't host WSS server as ", tostring(name), ".")
-                return
-            end
-            cWSS.enabled = true
-            YAGUI.monitor_utils.better_print(term, colors.green, nil, "WSS server was hosted as ", YAGUI.WSS.server.hostname, ".")
-            sleep(2)
+            WSS:use_side(modem_side)
+            WSS:host()
+            WSS.broadcast_clock.interval = tonumber(options.wss[2]) or WSS.broadcast_clock.interval
         end
     end
 end
@@ -917,15 +904,15 @@ open_notes(current_file_path)
 -- Setting up loops
 lMain.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
 lMain.stats:enable(loop_stats)
-lMain:set_elements({cWSS, bFile, wFileMenu, lLines, lCursor, bCompact, mEditor, lPath})
+lMain:set_elements({bFile, wFileMenu, lLines, lCursor, bCompact, mEditor, lPath, WSS})
 
 lInput.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
 lInput.stats:enable(loop_stats)
-lInput:set_elements({cWSS, lInputTitle, mInput, lInputTip})
+lInput:set_elements({lInputTitle, mInput, lInputTip, WSS})
 
 lOverWrite.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
 lOverWrite.stats:enable(loop_stats)
-lOverWrite:set_elements({cWSS, wOverWrite})
+lOverWrite:set_elements({wOverWrite, WSS})
 
 -- Starting main loop
 lMain:start()
@@ -935,8 +922,4 @@ for key, monitor in next, lMain.monitors do
     YAGUI.monitor_utils.better_clear(monitor)
 end
 
--- If WSS was enabled we should probably unhost the server before quitting
-if cWSS.enabled then
-    YAGUI.WSS.server:unhost()
-    YAGUI.WSS:close()
-end
+WSS:close()

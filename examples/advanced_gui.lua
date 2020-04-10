@@ -6,30 +6,6 @@ if not fs.exists(YAGUI_PATH) then printError("Couldn't find YAGUI in path: \""..
 local YAGUI = dofile(YAGUI_PATH)
 -- End of AUTO-GENERATED code
 
--- This is used to make WSS Server (Wireless Screen Share Server) broadcast
--- On YAGUI.WSS:open() there's an argument that's the computer's side
---   where the modem is located.
--- On the computer where you want to receive the information
---   you can download YAGUI_WSS_listener.lua from https://github.com/hds536jhmk/YAGUI/tree/master/examples
---   then you launch it with <modem_side> <Computer ID> terminal arguments,
---   Computer ID is the ID of the computer where this example is ran from.
--- If You want to try it you should remove all comment blocks that
---   start with "--[[WSS" (you can find them near the next line and the last one
---   or you can simply download the already unlocked example).
-local cWSS = YAGUI.gui_elements.Clock(3)
---[[WSS
-YAGUI.WSS:open("left")
-YAGUI.WSS.server:host()
-
-YAGUI.generic_utils.set_callback(
-    cWSS,
-    YAGUI.ONCLOCK,
-    function (self)
-        YAGUI.WSS.server:broadcast()
-    end
-)
---]]
-
 -- CREATING OBJECTS FOR THE FIRST WINDOW
 -- CREATE A BUTTON (THAT WILL DO NOTHING)
 local wbDummy = YAGUI.gui_elements.Button(
@@ -153,16 +129,10 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- SET LOOP ELEMENTS (adds objects to the loop)
-loop:set_elements({cWSS, wWindow, wWindow1})
+loop:set_elements({wWindow, wWindow1})
 loop:set_monitors({"terminal", "left"})
 -- START THE LOOP
 loop:start()
 
 -- WHEN THE LOOP STOPS CLEAR THE SCREEN AND SET CURSOR TO 1, 1
 YAGUI.monitor_utils.better_clear(term)
-
--- CLOSES WSS SERVER
---[[WSS
-YAGUI.WSS.server:unhost()
-YAGUI.WSS:close()
---]]

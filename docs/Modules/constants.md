@@ -7,6 +7,14 @@ Constants **can help you future proofing your application**. If you use them you
 
 Constants **can be separated in categories based on what they are used for**.
 
+### State Checking
+
+These constants are used to **check return values of some functions to see in what state they returned**:
+
+* **OK**
+* **NO**
+* **ERROR**
+
 ### Events
 
 These constants are **useful when you're doing something with a `formatted_event`**, like checking what's the name of the event (e.g. `if formatted_event.name == TOUCH then --[[do stuff]] end`) or what mouse button was pressed (e.g. `if formatted_event.name == MOUSEUP and formatted_event.button == MOUSE_LEFT then --[[do stuff]] end`).
@@ -17,6 +25,7 @@ These can also be **separated in two main categories**.
 
 All event **constants that have to do with the name of an event**:
 
+* **TIMER**
 * **TOUCH**
 * **MOUSEUP**
 * **MOUSEDRAG**
@@ -25,6 +34,8 @@ All event **constants that have to do with the name of an event**:
 * **KEY**
 * **KEYUP**
 * **PASTE**
+* **REDNET**
+* **MODEM**
 * **DELETED**
 
 #### Inputs
@@ -56,6 +67,8 @@ All **constants that will help you to set objects' callbacks** through [`generic
 * **ONMOUSESCROLL**
 * **ONCURSORCHANGE**
 * **ONWRITE**
+* **ONCONNECT**
+* **ONDISCONNECT**
 
 ### Objects
 
@@ -85,8 +98,12 @@ Used to check **what type of computer you're on depending on what [`generic_util
 * **TURTLE**
 * **POCKET**
 
-### WSS Response
+### WSS
 
-For now this **has only the constant that is returned if the computer that hosts a WSS server has disconnected**:
+These **constants are used to check `WSS` return values or `WSS` variables**:
 
+* **NONE**
+* **HOST**
+* **USER**
 * **DISCONNECTED**
+* **CONNECTION_REQUEST**
