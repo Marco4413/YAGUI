@@ -123,6 +123,10 @@
               <ul class="nav flex-column">
             <li class="nav-item" data-level="2"><a href="#categories" class="nav-link">Categories</a>
               <ul class="nav flex-column">
+            <li class="nav-item" data-level="3"><a href="#state-checking" class="nav-link">State Checking</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="3"><a href="#events" class="nav-link">Events</a>
               <ul class="nav flex-column">
             <li class="nav-item" data-level="4"><a href="#names" class="nav-link">Names</a>
@@ -155,7 +159,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="3"><a href="#wss-response" class="nav-link">WSS Response</a>
+            <li class="nav-item" data-level="3"><a href="#wss" class="nav-link">WSS</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -172,12 +176,20 @@
 <p>Constants <strong>can help you future proofing your application</strong>. If you use them you're almost certain that if one of them changes value you're safe because you're just using a variable, and your application will automatically use the changed value when the library is updated.</p>
 <h2 id="categories">Categories</h2>
 <p>Constants <strong>can be separated in categories based on what they are used for</strong>.</p>
+<h3 id="state-checking">State Checking</h3>
+<p>These constants are used to <strong>check return values of some functions to see in what state they returned</strong>:</p>
+<ul>
+<li><strong>OK</strong></li>
+<li><strong>NO</strong></li>
+<li><strong>ERROR</strong></li>
+</ul>
 <h3 id="events">Events</h3>
 <p>These constants are <strong>useful when you're doing something with a <code>formatted_event</code></strong>, like checking what's the name of the event (e.g. <code>if formatted_event.name == TOUCH then --[[do stuff]] end</code>) or what mouse button was pressed (e.g. <code>if formatted_event.name == MOUSEUP and formatted_event.button == MOUSE_LEFT then --[[do stuff]] end</code>).</p>
 <p>These can also be <strong>separated in two main categories</strong>.</p>
 <h4 id="names">Names</h4>
 <p>All event <strong>constants that have to do with the name of an event</strong>:</p>
 <ul>
+<li><strong>TIMER</strong></li>
 <li><strong>TOUCH</strong></li>
 <li><strong>MOUSEUP</strong></li>
 <li><strong>MOUSEDRAG</strong></li>
@@ -186,6 +198,8 @@
 <li><strong>KEY</strong></li>
 <li><strong>KEYUP</strong></li>
 <li><strong>PASTE</strong></li>
+<li><strong>REDNET</strong></li>
+<li><strong>MODEM</strong></li>
 <li><strong>DELETED</strong></li>
 </ul>
 <h4 id="inputs">Inputs</h4>
@@ -215,6 +229,8 @@
 <li><strong>ONMOUSESCROLL</strong></li>
 <li><strong>ONCURSORCHANGE</strong></li>
 <li><strong>ONWRITE</strong></li>
+<li><strong>ONCONNECT</strong></li>
+<li><strong>ONDISCONNECT</strong></li>
 </ul>
 <h3 id="objects">Objects</h3>
 <p>These constants are <strong>used to set some special properties in objects</strong>.</p>
@@ -238,10 +254,14 @@
 <li><strong>TURTLE</strong></li>
 <li><strong>POCKET</strong></li>
 </ul>
-<h3 id="wss-response">WSS Response</h3>
-<p>For now this <strong>has only the constant that is returned if the computer that hosts a WSS server has disconnected</strong>:</p>
+<h3 id="wss">WSS</h3>
+<p>These <strong>constants are used to check <code>WSS</code> return values or <code>WSS</code> variables</strong>:</p>
 <ul>
+<li><strong>NONE</strong></li>
+<li><strong>HOST</strong></li>
+<li><strong>USER</strong></li>
 <li><strong>DISCONNECTED</strong></li>
+<li><strong>CONNECTION_REQUEST</strong></li>
 </ul></div>
             </div>
         </div>
