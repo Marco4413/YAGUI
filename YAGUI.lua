@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.23",
+    ver = "1.23.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -769,6 +769,7 @@ event_utils = {
         end
 
         if not has_formatted then
+            event.parameters = {}
             for key=2, #event_table do
                 table.insert(event.parameters, event_table[key])
             end
@@ -1950,7 +1951,7 @@ gui_elements.Window.__index = gui_elements.Window
 -- WSS MODULE
 local WSS = {}
 WSS = {
-    new = function (self, broadcast_interval)
+    new = function (broadcast_interval)
         local newWSS = {
             draw_priority = const.LOW_PRIORITY,
             hidden = false,
