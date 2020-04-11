@@ -41,7 +41,7 @@ local string_highlight_color = colors.red
 
 local shadows = true
 
-local syntax_highlight_enabled = false
+local syntax_highlight_enabled = true
 
 -- END OF SETTINGS
 
@@ -325,6 +325,12 @@ bOWReject.shortcut = {YAGUI.KEY_N}
 
 -- Defining functions
 
+local function clear_all()
+    for key, monitor in next, lMain.monitors do
+        YAGUI.monitor_utils.better_clear(monitor)
+    end
+end
+
 local function remove_highlight()
     mEditor.rich_text = {}
     if mEditor.focussed then
@@ -484,8 +490,13 @@ local function open_notes(path)
     current_file_path = path
     if fs.exists(path) then
         local file = fs.open(path, "r")
-        
-        mEditor:write(file.readAll())
+
+        local ok = pcall(mEditor.write, mEditor, file.readAll())
+        if not ok then
+            clear_all()
+            WSS:close()
+            error("It took too long to open the file")
+        end
 
         file.close()
     else
@@ -498,7 +509,7 @@ local function open_notes(path)
     mEditor:set_cursor(1, 1)
     
     if syntax_highlight_enabled then
-        syntax_highlight(1, #mEditor.lines)
+        syntax_highlight(1)
     end
 end
 
@@ -635,7 +646,7 @@ YAGUI.generic_utils.set_callback(
     function (self)
         syntax_highlight_enabled = self.active
         if syntax_highlight_enabled then
-            syntax_highlight(1, #mEditor.lines)
+            syntax_highlight(1)
         else
             remove_highlight()
         end
@@ -671,7 +682,7 @@ YAGUI.generic_utils.set_callback(
         mEditor:set_cursor(1, 1)
         
         if syntax_highlight_enabled then
-            syntax_highlight(1, #mEditor.lines)
+            syntax_highlight(1)
         end
     end
 )
@@ -772,6 +783,10 @@ YAGUI.generic_utils.set_callback(
 
         if event.name == YAGUI.MOUSESCROLL then
             mEditor.first_visible_line = YAGUI.math_utils.constrain(mEditor.first_visible_line + event.direction, 1, #mEditor.lines)
+        end
+
+        if syntax_highlight_enabled and (mEditor.first_visible_line + mEditor.size.y - 1 > #syntax_highlight_cache) then
+            syntax_highlight(#syntax_highlight_cache)
         end
     end
 )
@@ -918,8 +933,6 @@ lOverWrite:set_elements({wOverWrite, WSS})
 lMain:start()
 
 -- Clearing all monitors
-for key, monitor in next, lMain.monitors do
-    YAGUI.monitor_utils.better_clear(monitor)
-end
+clear_all()
 
 WSS:close()
