@@ -491,11 +491,14 @@ local function open_notes(path)
     if fs.exists(path) then
         local file = fs.open(path, "r")
 
-        local ok = pcall(mEditor.write, mEditor, file.readAll())
-        if not ok then
-            clear_all()
-            WSS:close()
-            error("It took too long to open the file")
+        while true do
+            local line = file.readLine()
+
+            if line then
+                table.insert(mEditor.lines, line)
+            else
+                break
+            end
         end
 
         file.close()
