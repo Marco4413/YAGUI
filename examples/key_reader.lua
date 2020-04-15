@@ -22,7 +22,7 @@ YAGUI.generic_utils.set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         -- Change label text
-        lEvent.text = "input.pressed_keys = "..textutils.serialise(YAGUI.input.pressed_keys)
+        lEvent.text = "input.pressed_keys = "..YAGUI.table_utils.serialise(YAGUI.input.pressed_keys, -1, true)
         -- if CTRL + T are pressed then stop loop
         if YAGUI.input:are_keys_pressed(YAGUI.KEY_LEFTCTRL, YAGUI.KEY_T) then
             self:stop();

@@ -14,15 +14,17 @@ if tArgs[1] then event_filter = tArgs[1]; end
 
 while true do
     local event = {os.pullEventRaw()}
-    YAGUI.monitor_utils.better_clear(term)
-    
     event = YAGUI.event_utils.format_event_table(event)
+    
+    local event_serialised = YAGUI.table_utils.serialise(event, -1, true)
+
+    YAGUI.monitor_utils.better_clear(term)
     if event_filter then
         if event.name == event_filter then
-            print(textutils.serialise(event))
+            print(event_serialised)
         end
     else
-        print(textutils.serialise(event))
+        print(event_serialised)
     end
     if event.name == "terminate" then break; end
 end
