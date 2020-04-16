@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.23.1",
+    ver = "1.23.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -692,61 +692,50 @@ event_utils = {
     -- USED TO FORMAT "RAW_EVENTS"
     -- RAW_EVENTS = {os.pullEvent()}
     format_event_table = function (event_table)
-        local has_formatted = false
         local event = {}
         event.name = event_table[1]
         if event.name == "timer" then
             event.name = const.TIMER
             event.id = event[2]
-            has_formatted = true
         elseif event.name == "mouse_click" then
             event.name = const.TOUCH
             event.from = "terminal"
             event.button = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            has_formatted = true
         elseif event.name == "monitor_touch" then
             event.name = const.TOUCH
             event.from = event_table[2]
             event.button = 1
             event.x = event_table[3]
             event.y = event_table[4]
-            has_formatted = true
         elseif event.name == "mouse_drag" then
             event.name = const.MOUSEDRAG
             event.button = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            has_formatted = true
         elseif event.name == "mouse_up" then
             event.name = const.MOUSEUP
             event.button = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            has_formatted = true
         elseif event.name == "mouse_scroll" then
             event.name = const.MOUSESCROLL
             event.direction = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
-            has_formatted = true
         elseif event.name == "char" then
             event.name = const.CHAR
             event.char = event_table[2]
-            has_formatted = true
         elseif event.name == "key" then
             event.name = const.KEY
             event.key = event_table[2]
-            has_formatted = true
         elseif event.name == "key_up" then
             event.name = const.KEYUP
             event.key = event_table[2]
-            has_formatted = true
         elseif event.name == "paste" then
             event.name = const.PASTE
             event.paste = event_table[2]
-            has_formatted = true
         elseif event.name == "rednet_message" then
             event.name = const.REDNET
             event.from = event_table[2]
@@ -757,7 +746,6 @@ event_utils = {
             else
                 event.protocol = tostring(dp)
             end
-            has_formatted = true
         elseif event.name == "modem_message" then
             local msg = event_table[5]
             event.name = const.MODEM
@@ -765,10 +753,7 @@ event_utils = {
             event.from = event_table[4]
             event.protocol = msg.sProtocol or ""
             event.message = msg.message
-            has_formatted = true
-        end
-
-        if not has_formatted then
+        else
             event.parameters = {}
             for key=2, #event_table do
                 table.insert(event.parameters, event_table[key])
