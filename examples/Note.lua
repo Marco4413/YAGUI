@@ -920,17 +920,17 @@ end
 open_notes(current_file_path)
 
 -- Setting up loops
-lMain.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
-lMain.stats:enable(loop_stats)
 lMain:set_elements({bFile, wFileMenu, lLines, lCursor, bCompact, mEditor, lPath, WSS})
-
-lInput.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
-lInput.stats:enable(loop_stats)
 lInput:set_elements({lInputTitle, mInput, lInputTip, WSS})
-
-lOverWrite.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
-lOverWrite.stats:enable(loop_stats)
 lOverWrite:set_elements({wOverWrite, WSS})
+
+for key, loop in next, loops do
+    loop.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
+    loop.stats:enable(loop_stats)
+    loop.options.raw_mode = true
+    loop.options.stop_on_terminate = false
+end
+lMain.options.stop_on_terminate = true
 
 -- Starting main loop
 lMain:start()

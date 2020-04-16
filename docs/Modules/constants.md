@@ -36,6 +36,7 @@ All event **constants that have to do with the name of an event**:
 * **PASTE**
 * **REDNET**
 * **MODEM**
+* **TERMINATE**
 * **DELETED**
 
 #### Inputs

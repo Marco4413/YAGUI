@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.23.2",
+    ver = "1.24",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -37,6 +37,7 @@ local const = {
     PASTE = "paste",
     REDNET = "rednet_message",
     MODEM = "modem_message",
+    TERMINATE = "terminate",
     DELETED = "DELETED",
     NONE = "NONE",
     HOST = "HOST",
@@ -753,6 +754,8 @@ event_utils = {
             event.from = event_table[4]
             event.protocol = msg.sProtocol or ""
             event.message = msg.message
+        elseif event.name == "terminate" then
+            event.name = const.TERMINATE
         else
             event.parameters = {}
             for key=2, #event_table do
@@ -1788,8 +1791,9 @@ gui_elements = {
             self:write(new_line..text)
         end,
         clear = function (self)
-            self.lines = {""}
-            self:set_cursor(1, 1)
+            self.lines = {}
+            self.callbacks.onCursorChange(self, 1, 1)
+            self.cursor.pos = math_utils.Vector2.new(1, 1)
         end
     },
     Window = {
@@ -2105,8 +2109,10 @@ Loop = {
     -- CREATES A NEW LOOP
     new = function (FPS_target, EPS_target)
         local newLoop = {
+            enabled = false,
             options = {
-                enabled = false,
+                raw_mode = false,
+                stop_on_terminate = true, -- Works only if raw_mode is set to true
                 FPS_target = FPS_target,
                 EPS_target = EPS_target
             },
@@ -2165,6 +2171,17 @@ Loop = {
             end
         )
         newLoop.stats:enable(false)
+        -- Set draw clock callback
+        newLoop.elements.loop.clock.Loop = newLoop
+        generic_utils.set_callback(
+            newLoop.elements.loop.clock,
+            const.ONCLOCK,
+            function (self, formatted_event)
+                self.Loop.callbacks.onClock(self.Loop, formatted_event)
+                self.Loop:draw_elements()
+                self.interval = 1 / self.Loop.options.FPS_target
+            end
+        )
         setmetatable(newLoop, Loop)
         return newLoop
     end,
@@ -2222,11 +2239,13 @@ Loop = {
                 end
             end
         end
-        
+
         if self.callbacks.onEvent(self, formatted_event) then
             formatted_event = {name = const.DELETED}
         end
 
+        if self.options.stop_on_terminate and formatted_event.name == const.TERMINATE then self:stop(); return; end
+        
         if formatted_event.name == const.TOUCH then
             local is_monitor_whitelisted = false
             for monitor_name, monitor in next, self.monitors do
@@ -2271,20 +2290,16 @@ Loop = {
     start = function (self)
         self.enabled = true
         input:reset()
-        generic_utils.set_callback(
-            self.elements.loop.clock,
-            const.ONCLOCK,
-            function (CLOCK, formatted_event)
-                self.callbacks.onClock(self, formatted_event)
-                self:draw_elements()
-                CLOCK.interval = 1 / self.options.FPS_target
-            end
-        )
         self.stats:update_pos()
         self.callbacks.onStart(self)
         while self.enabled do
             local timer = os.startTimer(1 / self.options.EPS_target)
-            local raw_event = {os.pullEvent()}
+            local raw_event
+            if self.options.raw_mode then
+                raw_event = {os.pullEventRaw()}
+            else
+                raw_event = {os.pullEvent()}
+            end
             local formatted_event = event_utils.format_event_table(raw_event)
 
             input:manage_event(formatted_event)
