@@ -270,7 +270,7 @@ bQuit.pos.x    , bQuit.pos.y    , bQuit.size.x    , bQuit.size.y     = LAYOUT.th
 
 wFileMenu.draw_priority = YAGUI.LOW_PRIORITY
 wFileMenu.hidden = true
-wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bSHL, bQuit}, true)
+wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bSHL, bQuit})
 
 bSave.timed.enabled = true
 bSave.timed.clock.interval = button_timeout
@@ -313,7 +313,7 @@ lOW.pos.x       , lOW.pos.y = LAYOUT.this_layout.lOW()
 bOWAccept.pos.x , bOWAccept.pos.y , bOWAccept.size.x , bOWAccept.size.y  = LAYOUT.this_layout.bOWAccept()
 bOWReject.pos.x , bOWReject.pos.y , bOWReject.size.x , bOWReject.size.y  = LAYOUT.this_layout.bOWReject()
 
-wOverWrite:set_elements({lOW, bOWAccept, bOWReject}, true)
+wOverWrite:set_elements({lOW, bOWAccept, bOWReject})
 
 bOWAccept.timed.enabled = true
 bOWAccept.timed.clock.interval = button_timeout
@@ -322,6 +322,8 @@ bOWReject.timed.clock.interval = button_timeout
 
 bOWAccept.shortcut = {YAGUI.KEY_Y}
 bOWReject.shortcut = {YAGUI.KEY_N}
+
+lOW.offset = YAGUI.math_utils.Vector2.new(YAGUI.math_utils.round_numbers(wOverWrite.size.x / 2, wOverWrite.size.y / 2)) - lOW.pos
 
 -- Defining functions
 
@@ -840,6 +842,19 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- Callbacks for loop lOverWrite
+YAGUI.generic_utils.set_callback(
+    wOverWrite,
+    YAGUI.ONRESIZE,
+    function (self, old_x, old_y, old_size_x, old_size_y)
+        lOW.pos = YAGUI.math_utils.Vector2.new(YAGUI.math_utils.round_numbers(self.size.x / 2, self.size.y / 2)) - lOW.offset
+
+        bOWAccept.pos.y = self.size.y - 1
+
+        bOWReject.pos.x = self.size.x - 2
+        bOWReject.pos.y = self.size.y - 1
+    end
+)
+
 YAGUI.generic_utils.set_callback(
     bOWAccept,
     YAGUI.ONTIMEOUT,

@@ -7,7 +7,7 @@ Well... Modules are basically **all the tables that make the library** (e.g. [`s
 
 I chose to use tables for these reasons:
 
-1. It's **easier to make** [**dofile/require**](../Introduction/index.md#library-syntax) **work on the library's end**.
+1. It's **easier to make** [**dofile/require**](../index.md#library-syntax) **work on the library's end**.
 2. It's **way more intuitive** than having functions directly in the library (e.g. I want to do something with a string, oh wait there's [`string_utils`](./string_utils_module.md), maybe that can help me).
 3. **Better organized**.
 4. I don't think there's a fourth point...

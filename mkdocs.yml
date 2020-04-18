@@ -15,12 +15,11 @@ nav:
       - math_utils:
         - General: Modules/math_utils_module.md
         - Vectors: Modules/Vectors.md
+      - table_utils: Modules/table_utils_module.md
 theme:
   name: darkly
   highlightjs: true
   hljs_languages:
       - lua
   navigation_depth: 4
-extra:
-  version: 0.9
 extra_css: [style.css]

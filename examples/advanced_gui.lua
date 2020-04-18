@@ -25,6 +25,7 @@ local wbQuit = YAGUI.gui_elements.Button(
 wbQuit.timed.enabled = true
 wbQuit.timed.clock.interval = 0.25
 
+-- NOTE: WINDOW ELEMENTS' POSITION IS RELATIVE TO THE WINDOW (e.g. TOP LEFT CORNER OF THE WINDOW IS 1,1)
 -- CREATE A BUTTON (THAT WILL BE USED TO INCREASE THE PROGRESS ON THE PROGRESSBAR)
 local wbIncrease = YAGUI.gui_elements.Button(
     13, 2,
@@ -59,14 +60,18 @@ local wWindow = YAGUI.gui_elements.Window(
     24, 13,           -- X, Y SIZE
     colors.blue, true -- BACKGROUND, SHADOW
 )
+
+-- MAKING THE WINDOW NOT RESIZEABLE
+wWindow.resize_options.enabled = false
+
 -- ADDING OBJECTS THAT WE WANT ON THE WINDOW TO IT
 wWindow:set_elements({wbDummy, wbQuit, wbIncrease, wbDecrease, wpbProgress})
 
 
 -- CREATING A MEMO
 local wmMemo = YAGUI.gui_elements.Memo(
-    28, 2,                    -- X, Y POS
-    22, 7,                    -- X, Y, SIZE
+    2, 3,                    -- X, Y POS
+    22, 6,                    -- X, Y, SIZE
     colors.white, colors.blue -- FOREGROUND, BACKGROUND
 )
 -- WRITING ON MEMO WITH ITS FUNCTION
@@ -74,7 +79,7 @@ wmMemo:write("This was written\nBy using Memo's\nWrite function!")
 
 -- CREATING ANOTHER MEMO
 local wmMemo1 = YAGUI.gui_elements.Memo(
-    28, 10,
+    2, 10,
     21, 4,
     colors.white, colors.green
 )
@@ -87,8 +92,24 @@ local wWindow1 = YAGUI.gui_elements.Window(
     24, 14,
     colors.red, true
 )
+
+-- BLOCKING WINDOW'S RESIZE FROM THE TOP ROW
+wWindow1.resize_options.enabled_directions[-1][-1] = false -- [X][Y] = BOOLEAN
+wWindow1.resize_options.enabled_directions[ 0][-1] = false
+wWindow1.resize_options.enabled_directions[ 1][-1] = false
+
 -- ADDING OBJECTS THAT WE WANT ON THE WINDOW TO IT
-wWindow1:set_elements({wmMemo, wmMemo1})
+wWindow1:set_elements({
+    -- CREATING A FAKE OBJECT TO DRAW A BAR ON THE TOP OF THE WINDOW
+    {
+        -- POS MUST BE A PROPERTY OF THE OBJECT IF DRAW METHOD IS PRESENT
+        pos = YAGUI.math_utils.Vector2.new(1, 1),
+        draw = function (self)
+            YAGUI.screen_buffer:rectangle(self.pos.x, self.pos.y, wWindow1.size.x, 1, colors.yellow)
+        end
+    },
+    wmMemo, wmMemo1
+})
 
 local loop = YAGUI.Loop(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
 -- MOVING LOOP STATS AT THE BOTTOM OF THE SCREEN
@@ -125,6 +146,21 @@ YAGUI.generic_utils.set_callback(
     YAGUI.ONTIMEOUT, -- TIMEOUT IS THE EVENT THAT IS CALLED WHEN BUTTON IS TIMED AND ITS CLOCK HAS TIMED OUT
     function (self, formatted_event)
         loop:stop()
+    end
+)
+
+-- SET THE CALLBACK FOR WINDOW 1'S RESIZE
+YAGUI.generic_utils.set_callback(
+    wWindow1,
+    YAGUI.ONRESIZE,
+    function (self, old_x, old_y, old_size_x, old_size_y)
+        -- CALCULATING HOW SIZE CHANGED
+        local delta_size = self.size - YAGUI.math_utils.Vector2.new(old_size_x, old_size_y)
+        -- RESIZING wmMemo
+        wmMemo.size.x = wmMemo.size.x + delta_size.x
+        -- RESIZING wmMemo1 AND SETTING ITS LIMITS EQUAL TO ITS SIZE
+        wmMemo1.size = wmMemo1.size + delta_size
+        wmMemo1.limits = wmMemo1.size
     end
 )
 

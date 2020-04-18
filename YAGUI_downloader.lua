@@ -15,7 +15,7 @@ local PROGRAMS = {
     },
     {
         NAME = 'Note',
-        URL = master..'examples/Note.lua',
+        URL = master..'examples/Note-mini.lua',
         PATH = '/Note.lua'
     }
 }
