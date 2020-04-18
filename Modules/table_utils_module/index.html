@@ -8,7 +8,7 @@
         <meta name="author" content="hds536jhmk">
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>generic_utils - YAGUI's Documentation</title>
+        <title>table_utils - YAGUI's Documentation</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -58,7 +58,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">generic_utils</a>
+    <a href="../generic_utils_module/" class="dropdown-item">generic_utils</a>
 </li>
                                     
 <li>
@@ -80,7 +80,7 @@
   </li>
                                     
 <li>
-    <a href="../table_utils_module/" class="dropdown-item">table_utils</a>
+    <a href="./" class="dropdown-item active">table_utils</a>
 </li>
                                 </ul>
                             </li>
@@ -93,17 +93,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../constants/" class="nav-link">
+                                <a rel="prev" href="../Vectors/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../string_utils_module/" class="nav-link">
+                                <a rel="next" class="nav-link disabled">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/hds536jhmk/YAGUI/edit/master/docs/Modules/generic_utils_module.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/hds536jhmk/YAGUI/edit/master/docs/Modules/table_utils_module.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -123,17 +123,25 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#generic_utils" class="nav-link">generic_utils</a>
+            <li class="nav-item" data-level="1"><a href="#table_utils" class="nav-link">table_utils</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#set_callback" class="nav-link">set_callback</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#get_computer_type" class="nav-link">get_computer_type</a>
+            <li class="nav-item" data-level="2"><a href="#has_value" class="nav-link">has_value</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#expect" class="nav-link">expect</a>
+            <li class="nav-item" data-level="2"><a href="#has_key" class="nav-link">has_key</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#serialise" class="nav-link">serialise</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#unserialise" class="nav-link">unserialise</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#better_unpack" class="nav-link">better_unpack</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -144,82 +152,87 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="generic_utils">generic_utils</h1>
-<p>Contains <strong>functions that could be moved into another Module</strong> if another function that's similar to one of them is made, <strong>it has functions that haven't got their own group yet</strong>.</p>
-<h2 id="set_callback">set_callback</h2>
-<p><em>nil</em> : <strong>set_callback</strong>( <em>table</em> : <strong>gui_element</strong>, <em>constant</em> : <strong>event</strong>, <em>function</em> : <strong>callback</strong> )</p>
-<p>It <strong>returns nil</strong>.</p>
-<p><strong>gui_element</strong> is the <strong>object that you want to add a callback to</strong>.</p>
-<p><strong>event</strong> is the <a href="../constants/#callbacks"><strong>callback constant</strong></a> <strong>that determines which callback you're setting</strong>.</p>
-<p><strong>callback</strong> is the <strong>function that is called when the object event was triggered</strong>.</p>
-<pre><code class="lua">-- Create a clock that &quot;ticks&quot; every second
-local c = gui_elements.Clock.new(1)
+<h1 id="table_utils">table_utils</h1>
+<p>Contains all <strong>function that are helpful when dealing with tables</strong>.</p>
+<h2 id="has_value">has_value</h2>
+<p><em>boolean</em>, <em>string/number/nil</em> : <strong>has_value</strong>( <em>table</em> : <strong>tbl</strong>, <em>any</em> : <strong>value</strong> )</p>
+<p><strong>Returns a boolean and a string/number/nil</strong>, the <strong>first return value</strong> is <strong>whether or not <code>value</code> was found as a value in <code>tbl</code></strong>, the <strong>second one</strong> is the <strong>key at which <code>value</code> was found in <code>tbl</code></strong> if <strong>not found it's nil</strong>.</p>
+<p><strong>tbl</strong> is the table <strong>where <code>value</code> should be searched in</strong>.</p>
+<p><strong>value</strong> is the <strong>value to be found in <code>tbl</code></strong>.</p>
+<pre><code class="lua">-- Creating a table
+local tbl = {
+    1, 6, 3,
+    [&quot;foo bar&quot;] = 23
+}
 
--- Add callback for when the clock &quot;ticks&quot;
-generic_utils.set_callback(
-    c,              -- object
-    ONCLOCK,        -- event
-    function (self) -- callback
-        -- DO STUFF WHEN THE CLOCK TRIGGERS
-    end
+-- Searching the number 23 in tbl
+local has, key = table_utils.has_value(tbl, 23)
+
+-- Printing if value was found, value's key and getting the value on the found key
+print(has, key, has and tbl[key] or &quot;NOVALUE&quot;)
+</code></pre>
+
+<h2 id="has_key">has_key</h2>
+<p><em>boolean</em>, <em>any</em> : <strong>has_key</strong>( <em>table</em> : <strong>tbl</strong>, <em>string/number</em> : <strong>key</strong> )</p>
+<p><strong>Returns a boolean and any</strong>, the <strong>first return value</strong> is <strong>whether or not <code>key</code> was found in <code>tbl</code></strong>, the <strong>second one</strong> is the <strong>value of <code>tbl</code> at <code>key</code></strong> if <strong>not found it's nil</strong>.</p>
+<p><strong>tbl</strong> is the <strong>table where <code>key</code> should be in</strong>.</p>
+<p><strong>key</strong> is the <strong>key to search for in <code>tbl</code></strong>.</p>
+<pre><code class="lua">-- Creating a table
+local tbl = {
+    1, 6, 3,
+    [&quot;foo bar&quot;] = 23
+}
+
+-- Searching the key &quot;foo bar&quot; in tbl
+local has, value = table_utils.has_key(tbl, &quot;foo bar&quot;)
+
+-- Printing if key was found, value at key and getting the value at key found
+print(has, value, has and tbl[&quot;foo bar&quot;] or &quot;NOKEY&quot;)
+</code></pre>
+
+<h2 id="serialise">serialise</h2>
+<p><em>string</em> : <strong>serialise</strong>( <em>table</em> : <strong>tbl</strong>, <em>number</em> : <strong>depth</strong>, <em>boolean</em> : <strong>pretty</strong>, <em>boolean</em> : <strong>recursion</strong>, <em>boolean</em> : <strong>serialise_metatables</strong>, <em>boolean</em> : <strong>serialise_index</strong>, <em>string</em> : <strong>indent</strong>, <em>string</em> : <strong>new_line</strong>, <em>string</em> : <strong>space</strong> )</p>
+<p><strong>Returns a string which is <code>tbl</code> serialised</strong>, if <strong>functions are found</strong> they're <strong>serialised as <code>tostring(func)</code></strong>.</p>
+<p><em>tbl</em> is the <strong>table to be serialised</strong>.</p>
+<p><strong>depth</strong> is the <strong>depth at which serialisation will be done</strong>, if <strong>set to -1 it will be ignored</strong> (e.g. <code>{1, {2}}</code> to be fully serialised depth should be set to 2 or -1).</p>
+<p><strong>pretty</strong> is <strong>whether or not the serialised table should be prettified</strong>.</p>
+<p><strong>recursion</strong> is how recursion should be handled, if <strong>set to false</strong> if a <strong>table that was already found was found again then it will be a string that's the path to the first table found</strong> (root being the table serialised) <strong>else it will also be serialised</strong> (should be set to false if depth was set to -1).</p>
+<p><strong>serialise_metatables</strong> is <strong>whether or not metatables should also be serialised</strong>.</p>
+<p><strong>serialise_index</strong> is <strong>whether or not the key __index should be serialised if found</strong>.</p>
+<p><strong>indent</strong> is the <strong>string that is going to be used to indent the serialised table</strong> if <code>pretty</code> was set to true.</p>
+<p><strong>new_line</strong> is the <strong>string to be used at the end of a line</strong> (e.g. <code>"\n"</code>) if <code>pretty</code> was set to true.</p>
+<p><strong>space</strong> is the <strong>string to be used as a space</strong> if <code>pretty</code> was set to true.</p>
+<pre><code class="lua">-- Creating a table
+local tbl = {
+    1, 6, 3,
+    [&quot;foo bar&quot;] = 23
+}
+
+-- Serialising tbl
+local s_tbl = table_utils.serialise(tbl, -1, true)
+
+-- Printing serialised tbl
+print(s_tbl)
+</code></pre>
+
+<h2 id="unserialise">unserialise</h2>
+<p><strong>COPY OF <a href="https://computercraft.info/wiki/Textutils.unserialize"><code>textutils.unserialise</code></a></strong>.</p>
+<h2 id="better_unpack">better_unpack</h2>
+<p><em>...</em> :  <strong>better_unpack</strong>( <em>table</em> : <strong>tbl</strong>, <em>number</em> : <strong>i</strong>, <em>number</em> : <strong>max_i</strong> )</p>
+<p><strong>Returns all the values in <code>tbl</code> from <code>i</code> to <code>max_i</code></strong>.</p>
+<p><strong>tbl</strong> is the <strong>table to be unpacked</strong>.</p>
+<p><strong>i</strong> is the <strong>starting index</strong> (1 by default).</p>
+<p><strong>max_i</strong> is the <strong>last index</strong> (<code>#tbl</code> by default).</p>
+<pre><code class="lua">-- Creating a table
+local tbl = {
+    1, 6, 3,
+    [&quot;foo bar&quot;] = 23
+}
+
+-- Printing unpacked tbl starting from index 2
+print(
+    table_utils.better_unpack(tbl, 2)
 )
-
--- Loop that updates the clock
-while true do
-    sleep(0.1) -- Using sleep to not get &quot;too long without yielding&quot; error
-    c:event()
-end
-</code></pre>
-
-<h2 id="get_computer_type">get_computer_type</h2>
-<p><em>constant</em>, <em>boolean</em> : <strong>get_computer_type</strong>()</p>
-<p>Returns a <a href="../constants/#computer-type"><strong>computer type constant</strong></a> and a boolean that's true if the <strong>computer is advanced</strong> and false if not.</p>
-<pre><code class="lua">-- Get computer type and if it's advanced
-local computer_type, advanced = generic_utils.get_computer_type()
-
--- Check if computer_type is a COMPUTER
-if computer_type ~= COMPUTER then
-    printError(&quot;You must be using a computer to start this script.&quot;)
-    return
-end
--- Check if computer is advanced
-if not advanced then
-    printError(&quot;This script only works on advanced computers.&quot;)
-    return
-end
-
--- DO STUFF
-</code></pre>
-
-<h2 id="expect">expect</h2>
-<p><em>boolean</em> : <strong>expect</strong>( <em>string</em> : <strong>context</strong>, <em>any</em> : <strong>...</strong> )</p>
-<p>Returns <strong>true if it doesn't error</strong>.</p>
-<p>It <strong>checks if even arguments in <code>...</code> are of type specified by the previous string in <code>...</code></strong>, if they aren't it errors.</p>
-<p><strong>context</strong> is a <strong>string that can be specified by the code that's useful to get more information about the error</strong> (Usually it's the function's name) <strong>if <code>nil</code> it's <code>"unknown"</code> by default</strong>.</p>
-<pre><code class="lua">-- Get user input
-print(&quot;Insert a number:&quot;)
-local var1 = read()
-print(&quot;Insert a string:&quot;)
-local var2 = read()
-
--- Convert user input into a number if it is a valid number
-var1 = tonumber(var1) or var1
-var2 = tonumber(var2) or var2
-
--- Check that the first user input is a number and the second one is a string
--- Note: if you want an argument that can be of multiple types you can use a string that
---  has multiple types separated by &quot;/&quot;, &quot;.&quot; or &quot;,&quot; (e.g. &quot;number/string&quot; or &quot;number,string&quot;)
---  and be aware that types mustn't have spaces in between (They don't get trimmed) else
---  it won't work properly
-local function check_user_input()
-    generic_utils.expect(
-        &quot;User Input&quot;,
-        &quot;number&quot;, var1,
-        &quot;string&quot;, var2
-    )
-end
-
-check_user_input()
 </code></pre></div>
             </div>
         </div>
