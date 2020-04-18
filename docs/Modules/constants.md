@@ -70,6 +70,8 @@ All **constants that will help you to set objects' callbacks** through [`generic
 * **ONWRITE**
 * **ONCONNECT**
 * **ONDISCONNECT**
+* **ONSEND**
+* **ONRECEIVE**
 * **ONDRAG**
 * **ONRESIZE**
 
@@ -101,11 +103,14 @@ Used to check **what type of computer you're on depending on what [`generic_util
 * **TURTLE**
 * **POCKET**
 
-### WSS
+### WSS & FT
 
-These **constants are used to check `WSS` return values or `WSS` variables**:
+These **constants are used to check `WSS` or `FT` return values and variables**:
 
 * **NONE**
+* **ALL**
+* **SEND**
+* **RECEIVE**
 * **HOST**
 * **USER**
 * **DISCONNECTED**

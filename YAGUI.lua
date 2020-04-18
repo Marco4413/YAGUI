@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.25",
+    ver = "1.26",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -40,6 +40,9 @@ local const = {
     TERMINATE = "terminate",
     DELETED = "DELETED",
     NONE = "NONE",
+    ALL = "ALL",
+    SEND = "SEND",
+    RECEIVE = "RECEIVE",
     HOST = "HOST",
     USER = "USER",
     DISCONNECTED = "DISCONNECTED",
@@ -65,8 +68,10 @@ local const = {
     ONWRITE = 14,
     ONCONNECT = 15,
     ONDISCONNECT = 16,
-    ONDRAG = 17,
-    ONRESIZE = 18,
+    ONSEND = 17,
+    ONRECEIVE = 18,
+    ONDRAG = 19,
+    ONRESIZE = 20,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -139,6 +144,10 @@ generic_utils = {
             gui_element.callbacks.onConnect = callback
         elseif event == const.ONDISCONNECT then
             gui_element.callbacks.onDisconnect = callback
+        elseif event == const.ONSEND then
+            gui_element.callbacks.onSend = callback
+        elseif event == const.ONRECEIVE then
+            gui_element.callbacks.onReceive = callback
         elseif event == const.ONDRAG then
             gui_element.callbacks.onDrag = callback
         elseif event == const.ONRESIZE then
@@ -1819,17 +1828,17 @@ gui_elements = {
                 pos = math_utils.Vector2.new(x, y),
                 size = math_utils.Vector2.new(width, height),
                 can_drag = false,
-                drag_options = {
+                dragging = {
                     enabled = true,
                     from = math_utils.Vector2.new(1, 1)
                 },
-                resize_options = {
+                resizing = {
                     enabled = true,
                     corner = math_utils.Vector2.new(-1, 1),
                     enabled_directions = {
                         -- Columns are the X axis
                         -- Rows are the Y axis
-                        -- e.g. Window.resize_options.enabled_directions[X][Y] (0, 0 is the middle)
+                        -- e.g. Window.resizing.enabled_directions[X][Y] (0, 0 is the middle)
                         [-1] = {[1] = true, [0] = true,  [-1] = true},
                         [ 0] = {[1] = true, [0] = false, [-1] = true},
                         [ 1] = {[1] = true, [0] = true,  [-1] = true}
@@ -1888,61 +1897,61 @@ gui_elements = {
                 if formatted_event.name == const.TOUCH then
                     if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                         self.can_drag = false
-                        if self.resize_options.enabled then
+                        if self.resizing.enabled then
                             local resizing = true
                             local bottom = formatted_event.y == self.pos.y + self.size.y - 1
                             local top = formatted_event.y == self.pos.y
                             if formatted_event.x == self.pos.x + self.size.x - 1 then
-                                if self.resize_options.enabled_directions[1][1] and bottom then
-                                    self.resize_options.corner = self.pos.ONE:duplicate()
-                                    self.resize_options.pinned.x = false
-                                    self.resize_options.pinned.y = false
-                                elseif self.resize_options.enabled_directions[1][-1] and top then
-                                    self.resize_options.corner = self.pos.UP + self.pos.RIGHT
-                                    self.resize_options.pinned.x = false
-                                    self.resize_options.pinned.y = false
-                                elseif self.resize_options.enabled_directions[1][0] and not (bottom or top) then
-                                    self.resize_options.corner = self.pos.UP + self.pos.RIGHT
-                                    self.resize_options.pinned.x = false
-                                    self.resize_options.pinned.y = true
+                                if self.resizing.enabled_directions[1][1] and bottom then
+                                    self.resizing.corner = self.pos.ONE:duplicate()
+                                    self.resizing.pinned.x = false
+                                    self.resizing.pinned.y = false
+                                elseif self.resizing.enabled_directions[1][-1] and top then
+                                    self.resizing.corner = self.pos.UP + self.pos.RIGHT
+                                    self.resizing.pinned.x = false
+                                    self.resizing.pinned.y = false
+                                elseif self.resizing.enabled_directions[1][0] and not (bottom or top) then
+                                    self.resizing.corner = self.pos.UP + self.pos.RIGHT
+                                    self.resizing.pinned.x = false
+                                    self.resizing.pinned.y = true
                                 else
                                     resizing = false
                                 end
                             elseif formatted_event.x == self.pos.x then
-                                if self.resize_options.enabled_directions[-1][1] and bottom then
-                                    self.resize_options.corner = self.pos.DOWN + self.pos.LEFT
-                                    self.resize_options.pinned.x = false
-                                    self.resize_options.pinned.y = false
-                                elseif self.resize_options.enabled_directions[-1][-1] and top then
-                                    self.resize_options.corner = self.pos.ONE * -1
-                                    self.resize_options.pinned.x = false
-                                    self.resize_options.pinned.y = false
-                                elseif self.resize_options.enabled_directions[-1][0] and not (bottom or top) then
-                                    self.resize_options.corner = self.pos.ONE * -1
-                                    self.resize_options.pinned.x = false
-                                    self.resize_options.pinned.y = true
+                                if self.resizing.enabled_directions[-1][1] and bottom then
+                                    self.resizing.corner = self.pos.DOWN + self.pos.LEFT
+                                    self.resizing.pinned.x = false
+                                    self.resizing.pinned.y = false
+                                elseif self.resizing.enabled_directions[-1][-1] and top then
+                                    self.resizing.corner = self.pos.ONE * -1
+                                    self.resizing.pinned.x = false
+                                    self.resizing.pinned.y = false
+                                elseif self.resizing.enabled_directions[-1][0] and not (bottom or top) then
+                                    self.resizing.corner = self.pos.ONE * -1
+                                    self.resizing.pinned.x = false
+                                    self.resizing.pinned.y = true
                                 else
                                     resizing = false
                                 end
-                            elseif self.resize_options.enabled_directions[0][1] and bottom then
-                                self.resize_options.corner = self.pos.DOWN + self.pos.RIGHT
-                                self.resize_options.pinned.x = true
-                                self.resize_options.pinned.y = false
-                            elseif self.resize_options.enabled_directions[0][-1] and top then
-                                self.resize_options.corner = self.pos.UP + self.pos.RIGHT
-                                self.resize_options.pinned.x = true
-                                self.resize_options.pinned.y = false
+                            elseif self.resizing.enabled_directions[0][1] and bottom then
+                                self.resizing.corner = self.pos.DOWN + self.pos.RIGHT
+                                self.resizing.pinned.x = true
+                                self.resizing.pinned.y = false
+                            elseif self.resizing.enabled_directions[0][-1] and top then
+                                self.resizing.corner = self.pos.UP + self.pos.RIGHT
+                                self.resizing.pinned.x = true
+                                self.resizing.pinned.y = false
                             else
                                 resizing = false
                             end
                             if not resizing then
-                                self.resize_options.corner = self.pos.ZERO:duplicate()
-                                self.drag_options.from = math_utils.Vector2.new(formatted_event.x, formatted_event.y)
-                                self.can_drag = self.drag_options.enabled and true
+                                self.resizing.corner = self.pos.ZERO:duplicate()
+                                self.dragging.from = math_utils.Vector2.new(formatted_event.x, formatted_event.y)
+                                self.can_drag = self.dragging.enabled and true
                             end
                         else
-                            self.drag_options.from = math_utils.Vector2.new(formatted_event.x, formatted_event.y)
-                            self.can_drag = self.drag_options.enabled and true
+                            self.dragging.from = math_utils.Vector2.new(formatted_event.x, formatted_event.y)
+                            self.can_drag = self.dragging.enabled and true
                         end
                         self.focussed = true
                         self.callbacks.onPress(self, formatted_event)
@@ -1957,7 +1966,7 @@ gui_elements = {
                     if self.can_drag then
                         self:drag(formatted_event.x, formatted_event.y)
                     else
-                        self:resize(formatted_event.x, formatted_event.y, self.resize_options.pinned.x, self.resize_options.pinned.y)
+                        self:resize(formatted_event.x, formatted_event.y, self.resizing.pinned.x, self.resizing.pinned.y)
                     end
                     return true
                 elseif formatted_event.name == const.DELETED then
@@ -1970,49 +1979,49 @@ gui_elements = {
             end
             return delete_event
         end,
-        -- DRAGS WINDOW TO POS BASED ON drag_options.from
+        -- DRAGS WINDOW TO POS BASED ON dragging.from
         drag = function (self, x, y)
-            if self.drag_options.enabled then
+            if self.dragging.enabled then
                 local old_pos = self.pos:duplicate()
                 local delta_drag = math_utils.Vector2.new(
-                    x - self.drag_options.from.x,
-                    y - self.drag_options.from.y
+                    x - self.dragging.from.x,
+                    y - self.dragging.from.y
                 )
                 self.pos = self.pos + delta_drag
-                self.drag_options.from = math_utils.Vector2.new(x, y)
+                self.dragging.from = math_utils.Vector2.new(x, y)
 
                 self.callbacks.onDrag(self, old_pos.x, old_pos.y)
             end
         end,
-        -- RESIZES WINDOW BASED ON resize_options
+        -- RESIZES WINDOW BASED ON resizing
         resize = function (self, x, y, pin_x, pin_y)
-            if self.resize_options.enabled and self.resize_options.corner ~= self.pos.ZERO then
+            if self.resizing.enabled and self.resizing.corner ~= self.pos.ZERO then
                 local function constrain_size()
-                    self.size.x = math_utils.constrain(self.size.x, self.resize_options.min_size.x, self.resize_options.max_size.x)
-                    self.size.y = math_utils.constrain(self.size.y, self.resize_options.min_size.y, self.resize_options.max_size.y)
+                    self.size.x = math_utils.constrain(self.size.x, self.resizing.min_size.x, self.resizing.max_size.x)
+                    self.size.y = math_utils.constrain(self.size.y, self.resizing.min_size.y, self.resizing.max_size.y)
                 end
 
                 local new_pos = math_utils.Vector2.new(x, y)
                 local old_pos = self.pos:duplicate()
                 local old_size = self.size:duplicate()
 
-                if self.resize_options.corner == self.pos.ONE then
+                if self.resizing.corner == self.pos.ONE then
                     self.size = new_pos - self.pos + self.pos.ONE
                     constrain_size()
-                elseif self.resize_options.corner == self.pos.ONE * -1 then
+                elseif self.resizing.corner == self.pos.ONE * -1 then
                     self.size = self.size + self.pos - new_pos
                     constrain_size()
 
                     local delta_pos = old_size - self.size
                     self.pos = self.pos + delta_pos
-                elseif self.resize_options.corner == self.pos.UP + self.pos.RIGHT then
+                elseif self.resizing.corner == self.pos.UP + self.pos.RIGHT then
                     self.size.x = new_pos.x - self.pos.x + 1
                     self.size.y = self.size.y + self.pos.y - new_pos.y
                     constrain_size()
 
                     local delta_y = old_size.y - self.size.y
                     self.pos.y = self.pos.y + delta_y
-                elseif self.resize_options.corner == self.pos.DOWN + self.pos.LEFT then
+                elseif self.resizing.corner == self.pos.DOWN + self.pos.LEFT then
                     local old_size_x = self.size.x
                     self.size.x = self.size.x + self.pos.x - new_pos.x
                     self.size.y = new_pos.y - self.pos.y + 1
@@ -2084,7 +2093,7 @@ WSS = {
     new = function (broadcast_interval)
         local newWSS = {
             draw_priority = const.LOW_PRIORITY,
-            hidden = false,
+            enabled = false,
             buffer = {},
             events_whitelist = {
                 [const.TOUCH] = true,
@@ -2124,7 +2133,7 @@ WSS = {
         return newWSS
     end,
     draw = function (self)
-        if self.hidden then return false; end
+        if not self.enabled then return false; end
         self.callbacks.onDraw(self)
 
         if self.mode == const.USER then
@@ -2135,7 +2144,7 @@ WSS = {
         end
     end,
     event = function (self, formatted_event)
-        if self.hidden then return false; end
+        if not self.enabled then return false; end
         if self.callbacks.onEvent(self, formatted_event) then return true; end
 
         local return_value = false
@@ -2243,6 +2252,104 @@ WSS = {
 }
 
 WSS.__index = WSS
+
+-- FT MODULE
+local FT = {}
+FT = {
+    new = function (psw)
+        local newFT = {
+            enabled = true,
+            computer_whitelist = {},
+            side = const.NONE,
+            mode = const.ALL,
+            password = psw or const.NONE,
+            protocol = "YAGUI-"..info.ver.."_FT",
+            save_dir = "/FT",
+            callbacks = {
+                onEvent = function () end,
+                onConnect = function () end,
+                onSend = function () end,
+                onReceive = function () end
+            }
+        }
+        setmetatable(newFT, FT)
+        return newFT
+    end,
+    event = function (self, formatted_event)
+        if not self.enabled then return false; end
+        if self.callbacks.onEvent(self, formatted_event) then return true; end
+
+        if (formatted_event.name == const.REDNET) or (formatted_event.protocol == self.protocol) then
+            if (self.mode == const.ALL) or (self.mode == const.RECEIVE) then
+                local id = formatted_event.from
+                if self.computer_whitelist[id] or self.callbacks.onConnect(self, formatted_event) then
+                    local msg = formatted_event.message
+                    if type(msg) == "table" and msg.name and msg.content then
+                        if msg.psw == self.password then
+                            local name = fs.getName(tostring(msg.name))
+                            local path = fs.combine(self.save_dir, name)
+                            
+                            if fs.exists(path) then
+                                rednet.send(id, const.NO, self.protocol)
+                            else
+                                local content = tostring(msg.content)
+                                if self.callbacks.onReceive(self, formatted_event, id, name, path, content) then return true; end
+
+                                local file = fs.open(path, "w")
+                                if file then
+                                    file.write(content)
+                                    file.close()
+                                    rednet.send(id, const.OK, self.protocol)
+                                else
+                                    rednet.send(id, const.ERROR, self.protocol)
+                                end
+                            end
+                        else
+                            rednet.send(id, const.NO, self.protocol)
+                        end
+                    else
+                        rednet.send(id, const.ERROR, self.protocol)
+                    end
+                else
+                    rednet.send(id, const.NO, self.protocol)
+                end
+            end
+        end
+    end,
+    send = function (self, receiver_id, password, file_name, file_path)
+        if (self.mode == const.ALL) or (self.mode == const.SEND) then
+            file_name = file_name or fs.getName(file_path)
+            password = password or const.NONE
+            local file = fs.open(file_path, "r")
+            local content = file.readAll()
+            file.close()
+            local msg = {
+                psw = password,
+                name = file_name,
+                content = content
+            }
+
+            if self.callbacks.onSend(self, formatted_event, msg) then return true; end
+
+            rednet.send(
+                receiver_id,
+                msg,
+                self.protocol
+            )
+        end
+    end,
+    open = function (self, side)
+        self.side = side
+        rednet.open(side)
+    end,
+    close = function (self)
+        if rednet.isOpen() then
+            rednet.close(self.side)
+        end
+    end
+}
+
+FT.__index = FT
 
 -- LOOP MODULE
 local Loop = {}
@@ -2463,6 +2570,7 @@ Loop.__index = Loop
 setmetatable(math_utils.Vector2, new_simple)
 setmetatable(math_utils.Vector3, new_simple)
 setmetatable(WSS, new_simple)
+setmetatable(FT, new_simple)
 for key, element in next, gui_elements do
     setmetatable(element, new_simple)
 end
@@ -2548,6 +2656,8 @@ local lib = {
     input = input,
     WSS = WSS,
     wireless_screen_share = WSS,
+    FT = FT,
+    file_transfer = FT,
     gui_elements = gui_elements,
     Loop = Loop
 }

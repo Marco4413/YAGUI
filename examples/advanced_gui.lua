@@ -62,7 +62,7 @@ local wWindow = YAGUI.gui_elements.Window(
 )
 
 -- MAKING THE WINDOW NOT RESIZEABLE
-wWindow.resize_options.enabled = false
+wWindow.resizing.enabled = false
 
 -- ADDING OBJECTS THAT WE WANT ON THE WINDOW TO IT
 wWindow:set_elements({wbDummy, wbQuit, wbIncrease, wbDecrease, wpbProgress})
@@ -94,9 +94,9 @@ local wWindow1 = YAGUI.gui_elements.Window(
 )
 
 -- BLOCKING WINDOW'S RESIZE FROM THE TOP ROW
-wWindow1.resize_options.enabled_directions[-1][-1] = false -- [X][Y] = BOOLEAN
-wWindow1.resize_options.enabled_directions[ 0][-1] = false
-wWindow1.resize_options.enabled_directions[ 1][-1] = false
+wWindow1.resizing.enabled_directions[-1][-1] = false -- [X][Y] = BOOLEAN
+wWindow1.resizing.enabled_directions[ 0][-1] = false
+wWindow1.resizing.enabled_directions[ 1][-1] = false
 
 -- ADDING OBJECTS THAT WE WANT ON THE WINDOW TO IT
 wWindow1:set_elements({
