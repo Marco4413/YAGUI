@@ -152,7 +152,7 @@
 <li>But there's for sure a fifth point: This <strong>documentation will be much easier to organize</strong>.</li>
 </ol>
 <h2 id="all-the-modules-that-are-available">All the modules that are available</h2>
-<p>There are currently 16 modules available, where 1 is dumped into the library and 1 is a duplicate of another one:</p>
+<p>There are currently 18 modules available, where 1 is dumped into the library and 2 are duplicates of other ones:</p>
 <ol>
 <li><a href="info_module/"><strong>info</strong></a> : Contains <strong>all informations about the library</strong> (<a href="info_module/#ver-string">version</a>, <a href="info_module/#copyright-string">copyright</a>, <a href="info_module/#documentation-string">docs</a>, ...).</li>
 <li><a href="constants/"><strong>const</strong></a> : This is the one that's <strong>dumped into the library</strong> and <strong>contains all available constants</strong> that you can use to make future proofing easier.</li>
@@ -169,6 +169,8 @@
 <li><strong>gui_elements</strong> : Contains <strong>all elements that make a GUI</strong> (e.g. <code>Button</code>, <code>Progressbar</code>).</li>
 <li><strong>WSS</strong> : This is an <strong>object</strong> that <strong>works just like all the ones on <code>gui_elements</code></strong> that <strong>enables screen sharing over</strong> <a href="https://computercraft.info/wiki/Rednet_(API)"><strong>rednet</strong></a>. The <strong>HOST sends <code>screen_buffer</code> informations to all connected users</strong> while the <strong>CLIENT sends events to the HOST</strong> (This description is <strong>only valid for YAGUI versions 1.23+</strong>)</li>
 <li>wireless_screen_share : Duplicate of WSS.</li>
+<li>FT : This is an <strong>object</strong> that <strong>works just like all the ones on <code>gui_elements</code></strong> that <strong>enables file transfer over</strong> <a href="https://computercraft.info/wiki/Rednet_(API)"><strong>rednet</strong></a>.</li>
+<li>file_transfer : Duplicate of FT</li>
 <li><strong>Loop</strong> : A <strong>loop that automatically manages specified <code>gui_elements</code></strong> by giving them events and drawing them to the screen, <strong>also manages <code>screen_buffer</code></strong> (it just draws it when it's done drawing the elements, so you can draw things on the screen and see the effects. Note that elements are always on top of what you draw if you draw stuff on <code>onEvent</code> and <code>onClock</code> <code>Loop</code> callbacks) <strong>and <code>input</code> modules</strong>.</li>
 </ol></div>
             </div>
