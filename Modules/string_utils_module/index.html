@@ -133,6 +133,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#split_by_char" class="nav-link">split_by_char</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#compare_versions" class="nav-link">compare_versions</a>
               <ul class="nav flex-column">
               </ul>
@@ -191,7 +195,26 @@ local s = &quot;f o o b a r&quot;
 -- Split s on every empty space
 local t1 = string_utils.split(s, &quot; &quot;)
 -- Join t1 and put a space between every value of it
-local s1 = string_utils.join(s, &quot; &quot;)
+local s1 = string_utils.join(t1, &quot; &quot;)
+
+-- Prints the splitted string
+print(textutils.serialise(t1))
+-- Prints the joined table (it should be equal to s)
+print(s1)
+</code></pre>
+
+<h2 id="split_by_char">split_by_char</h2>
+<p><em>table</em> : <strong>split_by_char</strong>( <em>string</em> : <strong>str</strong>, <em>string</em> : <strong>char</strong> )</p>
+<p>It <strong>returns a table</strong> which <strong>contains all characters in <code>str</code> separated by <code>char</code> except for <code>char</code></strong>, this <strong>doesn't accept patterns</strong> so it's <strong>A LOT faster than <a href="#split"><code>string_utils.split</code></a></strong>.</p>
+<p><strong>str</strong> is the <strong>string that is going to be split</strong>.</p>
+<p><strong>char</strong> is the <strong>character that determines where <code>str</code> is split</strong> (this can't be an empty string or it will return an empty table).</p>
+<pre><code class="lua">-- Create a string that has some sort of text in it
+local s = &quot;f o o b a r&quot;
+
+-- Split s on every &quot;o&quot; character
+local t1 = string_utils.split_by_char(s, &quot;o&quot;)
+-- Join t1 and put an &quot;o&quot; character between every value of it
+local s1 = string_utils.join(t1, &quot;o&quot;)
 
 -- Prints the splitted string
 print(textutils.serialise(t1))
@@ -240,7 +263,7 @@ print(s2)
 
 <h2 id="get_extension">get_extension</h2>
 <p><em>string</em> : <strong>get_extension</strong>( <em>string</em> : <strong>path</strong> )</p>
-<p><strong>Returns a string that is the extension of the file in path</strong>.</p>
+<p><strong>Returns a string that is the extension of the file in <code>path</code></strong>.</p>
 <p><strong>path</strong> is the <strong>path of the file</strong> that you want to know its extension.</p>
 <pre><code class="lua">-- First file path
 local f1 = &quot;./foobar.txt&quot;
