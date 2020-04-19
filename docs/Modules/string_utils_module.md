@@ -45,7 +45,32 @@ local s = "f o o b a r"
 -- Split s on every empty space
 local t1 = string_utils.split(s, " ")
 -- Join t1 and put a space between every value of it
-local s1 = string_utils.join(s, " ")
+local s1 = string_utils.join(t1, " ")
+
+-- Prints the splitted string
+print(textutils.serialise(t1))
+-- Prints the joined table (it should be equal to s)
+print(s1)
+```
+
+## split_by_char
+
+*table* : **split_by_char**( *string* : **str**, *string* : **char** )
+
+It **returns a table** which **contains all characters in `str` separated by `char` except for `char`**, this **doesn't accept patterns** so it's **A LOT faster than [`string_utils.split`](#split)**.
+
+**str** is the **string that is going to be split**.
+
+**char** is the **character that determines where `str` is split** (this can't be an empty string or it will return an empty table).
+
+```lua
+-- Create a string that has some sort of text in it
+local s = "f o o b a r"
+
+-- Split s on every "o" character
+local t1 = string_utils.split_by_char(s, "o")
+-- Join t1 and put an "o" character between every value of it
+local s1 = string_utils.join(t1, "o")
 
 -- Prints the splitted string
 print(textutils.serialise(t1))
@@ -106,7 +131,7 @@ print(s2)
 
 *string* : **get_extension**( *string* : **path** )
 
-**Returns a string that is the extension of the file in path**.
+**Returns a string that is the extension of the file in `path`**.
 
 **path** is the **path of the file** that you want to know its extension.
 

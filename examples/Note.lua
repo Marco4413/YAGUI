@@ -66,7 +66,7 @@ local LAYOUT = {
     end,
     [ "all" ] = {
         lLines   = function () return 9, 1; end,
-        lCursor  = function () return 22, 1; end,
+        lCursor  = function () return 46, 1, YAGUI.ALIGN_RIGHT; end,
         bCompact = function () return 51, 1, 1, 1; end,
         mEditor  = function () return 5, 2, 47, 17; end,
         lPath    = function () return 1, 19; end,
@@ -87,7 +87,7 @@ local LAYOUT = {
         lInputTip   = function () return 3, 12, "You can press CONTROL to cancel."; end,
 
         wOverWrite = function () return 18, 7, 15, 6; end,
-        lOW        = function () return 3, 2; end,
+        lOW        = function () return 8, 2; end,
         bOWAccept  = function () return 2, 5, 3, 1; end,
         bOWReject  = function () return 13, 5, 2, 1; end,
 
@@ -95,6 +95,7 @@ local LAYOUT = {
     },
     [ YAGUI.COMPUTER ] = {},
     [ YAGUI.TURTLE ] = {
+        lCursor  = function () return 34, 1, YAGUI.ALIGN_RIGHT; end,
         bCompact = function () return 39, 1, 1, 1; end,
         mEditor  = function () return 5, 2, 35, 11; end,
         lPath    = function () return 1, 13; end,
@@ -108,7 +109,7 @@ local LAYOUT = {
         stats = function () return 33, 12; end
     },
     [ YAGUI.POCKET ] = {
-        lCursor  = function () return 1, 19; end,
+        lCursor  = function () return 1, 19, YAGUI.ALIGN_LEFT; end,
         bCompact = function () return 26, 1, 1, 1; end,
         mEditor  = function () return 3, 2, 24, 17; end,
         lPath    = function () return 1, 20; end,
@@ -126,8 +127,17 @@ local LAYOUT = {
 LAYOUT:init()
 
 -- These tables contain words to be highlighted
-local words_highlight = {
-    [keywords_highlight_color] = {
+local words_highlight = {}
+
+local function add_to_highlight(tbl, col)
+    if not words_highlight[col] then words_highlight[col] = {}; end
+    for word, value in next, tbl do
+        words_highlight[col][word] = value
+    end
+end
+
+add_to_highlight(
+    {
         ["and"] = true,
         ["break"] = true,
         ["do"] = true,
@@ -149,8 +159,10 @@ local words_highlight = {
         ["true"] = true,
         ["until"] = true,
         ["while"] = true
-    },
-    [API_highlight_color] = {
+    }, keywords_highlight_color
+)
+add_to_highlight(
+    {
         ["bit"] = true,
         ["colors"] = true,
         ["colours"] = true,
@@ -183,8 +195,10 @@ local words_highlight = {
         ["vector"] = true,
         ["window"] = true,
         ["YAGUI"] = true
-    },
-    [YAGUI_highlight_color] = {
+    }, API_highlight_color
+)
+add_to_highlight(
+    {
         ["info"] = true,
         ["generic_utils"] = true,
         ["string_utils"] = true,
@@ -196,13 +210,15 @@ local words_highlight = {
         ["monitor_utils"] = true,
         ["screen_buffer"] = true,
         ["input"] = true,
+        ["gui_elements"] = true,
         ["WSS"] = true,
         ["wireless_screen_share"] = true,
-        ["gui_elements"] = true,
+        ["FT"] = true,
+        ["file_transfer"] = true,
         ["Loop"] = true,
         ["self"] = true
-    }
-}
+    }, YAGUI_highlight_color
+)
 
 -- Creating elements
 
@@ -221,15 +237,15 @@ local loops = {
 local WSS = YAGUI.WSS(WSS_broadcast_interval)
 
 -- Creating main loop elements
-local lLines    = YAGUI.gui_elements.Label(9, 1, "Lines: 0", text_color)
-local lCursor   = YAGUI.gui_elements.Label(21, 1, "Cursor: (1; 1)", text_color)
-local bCompact  = YAGUI.gui_elements.Button(51, 1, 1, 1, "C", text_color, special_button_active_color, special_button_not_active_color)
-local mEditor   = YAGUI.gui_elements.Memo(5, 2, 47, 17, text_color, editor_background)
-local lPath     = YAGUI.gui_elements.Label(1, 19, "/path/", text_color)
+local lLines    = YAGUI.gui_elements.Label(0, 0, "Lines: 0", text_color)
+local lCursor   = YAGUI.gui_elements.Label(0, 0, "Cursor: (1; 1)", text_color)
+local bCompact  = YAGUI.gui_elements.Button(0, 0, 0, 0, "C", text_color, special_button_active_color, special_button_not_active_color)
+local mEditor   = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, editor_background)
+local lPath     = YAGUI.gui_elements.Label(0, 0, "/path/", text_color)
 
 -- Applying layout
 lLines.pos.x  , lLines.pos.y  = LAYOUT.this_layout.lLines()
-lCursor.pos.x , lCursor.pos.y = LAYOUT.this_layout.lCursor()
+lCursor.pos.x , lCursor.pos.y, lCursor.text_alignment = LAYOUT.this_layout.lCursor()
 bCompact.pos.x, bCompact.pos.y, bCompact.size.x, bCompact.size.y = LAYOUT.this_layout.bCompact()
 mEditor.pos.x , mEditor.pos.y , mEditor.size.x , mEditor.size.y  = LAYOUT.this_layout.mEditor()
 lPath.pos.x   , lPath.pos.y   = LAYOUT.this_layout.lPath()
@@ -245,16 +261,16 @@ mEditor.colors.cursor_text = cursor_color
 
 
 -- Creating elements that will make File menu
-local bFile     = YAGUI.gui_elements.Button(1, 1, 4, 1, "File", text_color, lighter_background_color, background_color)
-local wFileMenu = YAGUI.gui_elements.Window(1, 2, 10, 8, background_color, shadows)
-local bNewOpen  = YAGUI.gui_elements.Button(1, 2, 10, 1, "New/Open", text_color, lighter_background_color, background_color)
-local bSave     = YAGUI.gui_elements.Button(1, 3, 10, 1, "Save"    , text_color, lighter_background_color, background_color)
-local bSaveAs   = YAGUI.gui_elements.Button(1, 4, 10, 1, "SaveAs"  , text_color, lighter_background_color, background_color)
-local bDelete   = YAGUI.gui_elements.Button(1, 5, 10, 1, "Delete"  , text_color, lighter_background_color, background_color)
-local bGoto     = YAGUI.gui_elements.Button(1, 6, 10, 1, "Goto"    , text_color, lighter_background_color, background_color)
-local bRun      = YAGUI.gui_elements.Button(1, 7, 10, 1, "Run"     , text_color, lighter_background_color, background_color)
-local bSHL      = YAGUI.gui_elements.Button(1, 8, 10, 1, "SyntaxHL", text_color, lighter_background_color, background_color)
-local bQuit     = YAGUI.gui_elements.Button(1, 9, 10, 1, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
+local bFile     = YAGUI.gui_elements.Button(0, 0, 0, 0, "File", text_color, lighter_background_color, background_color)
+local wFileMenu = YAGUI.gui_elements.Window(0, 0, 0, 0, background_color, shadows)
+local bNewOpen  = YAGUI.gui_elements.Button(0, 0, 0, 0, "New/Open", text_color, lighter_background_color, background_color)
+local bSave     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Save"    , text_color, lighter_background_color, background_color)
+local bSaveAs   = YAGUI.gui_elements.Button(0, 0, 0, 0, "SaveAs"  , text_color, lighter_background_color, background_color)
+local bDelete   = YAGUI.gui_elements.Button(0, 0, 0, 0, "Delete"  , text_color, lighter_background_color, background_color)
+local bGoto     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Goto"    , text_color, lighter_background_color, background_color)
+local bRun      = YAGUI.gui_elements.Button(0, 0, 0, 0, "Run"     , text_color, lighter_background_color, background_color)
+local bSHL      = YAGUI.gui_elements.Button(0, 0, 0, 0, "SyntaxHL", text_color, lighter_background_color, background_color)
+local bQuit     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
 
 -- Applying layout
 bFile.pos.x    , bFile.pos.y    , bFile.size.x    , bFile.size.y     = LAYOUT.this_layout.bFile()
@@ -285,9 +301,9 @@ bFile.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_TAB}
 bSHL.active = syntax_highlight_enabled
 
 -- Creating elements for loop lInput
-local lInputTitle = YAGUI.gui_elements.Label(2, 9, "", text_color)
-local mInput      = YAGUI.gui_elements.Memo(2, 10, 49, 1, text_color, lighter_background_color)
-local lInputTip   = YAGUI.gui_elements.Label(3, 12, "You can press CONTROL to cancel.", text_color)
+local lInputTitle = YAGUI.gui_elements.Label(0, 0, "", text_color)
+local mInput      = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, lighter_background_color)
+local lInputTip   = YAGUI.gui_elements.Label(0, 0, "You can press CONTROL to cancel.", text_color)
 
 -- Applying layout
 lInputTitle.pos.x, lInputTitle.pos.y                 = LAYOUT.this_layout.lInputTitle()
@@ -302,13 +318,16 @@ mInput.colors.cursor_text = cursor_color
 
 
 -- Creating elements for OverWrite loop
-local wOverWrite = YAGUI.gui_elements.Window(18, 7, 15, 6, lighter_background_color, shadows)
-local lOW        = YAGUI.gui_elements.Label(20, 8, "Do you want\nto overwrite?", text_color)
-local bOWAccept  = YAGUI.gui_elements.Button(19, 11, 3, 1, "Yes", text_color, background_color, lighter_background_color)
-local bOWReject  = YAGUI.gui_elements.Button(30, 11, 2, 1, "No", text_color, background_color, lighter_background_color)
+local wOverWrite = YAGUI.gui_elements.Window(0, 0, 0, 0, lighter_background_color, shadows)
+local lOW        = YAGUI.gui_elements.Label(0, 0, "Do you want\nto overwrite?", text_color)
+local bOWAccept  = YAGUI.gui_elements.Button(0, 0, 0, 0, "Yes", text_color, background_color, lighter_background_color)
+local bOWReject  = YAGUI.gui_elements.Button(0, 0, 0, 0, "No", text_color, background_color, lighter_background_color)
 
 -- Applying layout
 wOverWrite.pos.x, wOverWrite.pos.y, wOverWrite.size.x, wOverWrite.size.y = LAYOUT.this_layout.wOverWrite()
+wOverWrite.resizing.min_size = wOverWrite.size
+wOverWrite.resizing.max_size = wOverWrite.size * 2
+
 lOW.pos.x       , lOW.pos.y = LAYOUT.this_layout.lOW()
 bOWAccept.pos.x , bOWAccept.pos.y , bOWAccept.size.x , bOWAccept.size.y  = LAYOUT.this_layout.bOWAccept()
 bOWReject.pos.x , bOWReject.pos.y , bOWReject.size.x , bOWReject.size.y  = LAYOUT.this_layout.bOWReject()
@@ -323,7 +342,8 @@ bOWReject.timed.clock.interval = button_timeout
 bOWAccept.shortcut = {YAGUI.KEY_Y}
 bOWReject.shortcut = {YAGUI.KEY_N}
 
-lOW.offset = YAGUI.math_utils.Vector2.new(YAGUI.math_utils.round_numbers(wOverWrite.size.x / 2, wOverWrite.size.y / 2)) - lOW.pos
+lOW.text_alignment = YAGUI.ALIGN_CENTER
+lOW.offset = YAGUI.math_utils.Vector2.new(0, YAGUI.math_utils.round(wOverWrite.size.y / 2) - lOW.pos.y)
 
 -- Defining functions
 
@@ -493,14 +513,11 @@ local function open_notes(path)
     if fs.exists(path) then
         local file = fs.open(path, "r")
 
-        while true do
-            local line = file.readLine()
-
-            if line then
-                table.insert(mEditor.lines, line)
-            else
-                break
-            end
+        local ok = pcall(mEditor.write, mEditor, file.readAll())
+        if not ok then
+            clear_all()
+            WSS:close()
+            error("It took too long to open the file")
         end
 
         file.close()

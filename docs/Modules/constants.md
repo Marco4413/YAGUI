@@ -94,6 +94,7 @@ Used to **specify text alignment on some objects**:
 
 * **ALIGN_LEFT**
 * **ALIGN_CENTER**
+* **ALIGN_RIGHT**
 
 ### Computer Type
 

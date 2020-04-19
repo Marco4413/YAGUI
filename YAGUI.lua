@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.26",
+    ver = "1.27",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -81,7 +81,8 @@ local const = {
     TURTLE = "turtle",
     POCKET = "pocket",
     ALIGN_LEFT = 1,
-    ALIGN_CENTER = 2
+    ALIGN_CENTER = 2,
+    ALIGN_RIGHT = 3
 }
 
 for key_name, key in next, keys do
@@ -218,16 +219,15 @@ string_utils = {
     magic_characters = {"(", ")", ".", "%", "+", "-", "*", "?", "[", "]", "^", "$"},
     -- JOINS A TABLE OF STRINGS INTO A STRING THAT HAS STRINGS SEPARATED BY THE SPECIFIED SEPARATOR
     join = function (tbl, sep)
-        if not sep then sep = ""; end
+        sep = sep or ""
         local str = ""
         for key=1, #tbl do
             local value = tbl[key]
-            str = str..tostring(value)
-            if key < #tbl then str = str..sep; end
+            str = str..tostring(value)..(key < #tbl and sep or "")
         end
         return str
     end,
-    -- SPLITS STRING EVERY TIME SEPARATOR IS FOUND
+    -- SPLITS STRING EVERY TIME SEPARATOR (PATTERN) IS FOUND
     split = function (str, sep)
         if not string.find(str, sep) then
             return {str}
@@ -241,6 +241,19 @@ string_utils = {
         end
         table.insert(return_table, string.sub(str, last_pos))
         return return_table
+    end,
+    -- SPLITS STRING EVERY TIME CHAR IS FOUND
+    split_by_char = function (str, char)
+        local lines = {}
+        local lp = 1
+        for i=1, #str do
+            if str:sub(i, i) == char then
+                table.insert(lines, i == lp and "" or str:sub(lp, i - 1))
+                lp = i + 1
+            end
+        end
+        table.insert(lines, str:sub(lp, #str))
+        return lines
     end,
     -- COMPARES V1 AND V2 AND IF V1 IS NEWER THAN V2 THEN IT RETURNS 1, IF THEY'RE THE SAME IT RETURNS 0 ELSE IT RETURNS -1
     -- v1 = "0.2"; v2 = "0.1" -> returns 1
@@ -597,8 +610,8 @@ table_utils = {
                 for key, value in next, tbl do
                     local key_type = type(key)
                     local key_string
-                    if key_type == "string" then
-                        key_string = string.format("%q", key)
+                    if (key_type == "string") or (key_type == "table") then
+                        key_string = string.format("%q", tostring(key))
                     else
                         key_string = tostring(key)
                     end
@@ -606,18 +619,17 @@ table_utils = {
                     if not serialise_index and (key == "__index") then value = {}; end
 
                     local value_type = type(value)
-                    local value_string = tostring(value)
                     
                     str_tbl = str_tbl..string.format("%s[%s]%s=%s", this_indent, key_string, space, space)
                     if value_type == "table" then
                         if not next(value) then
                             str_tbl = str_tbl.."{}"
                         elseif (depth <= -1) or (current_depth < depth) then
-                            if found_tables[value_string] and not recursion then
-                                str_tbl = str_tbl..string.format("%q", found_tables[value_string])
+                            if found_tables[value] and not recursion then
+                                str_tbl = str_tbl..string.format("%q", found_tables[value])
                             else
                                 local this_path = path.."."..tostring(key)
-                                found_tables[value_string] = this_path
+                                found_tables[value] = this_path
                                 current_depth = current_depth + 1
                                 str_tbl = str_tbl..i_tbl_serialize(value, this_path)
                                 current_depth = current_depth - 1
@@ -626,9 +638,9 @@ table_utils = {
                             str_tbl = str_tbl.."{}"
                         end
                     elseif (value_type == "string") or (value_type == "function") then
-                        str_tbl = str_tbl..string.format("%q", value_string)
+                        str_tbl = str_tbl..string.format("%q", tostring(value))
                     else
-                        str_tbl = str_tbl..string.format("%s", value_string)
+                        str_tbl = str_tbl..string.format("%s", tostring(value))
                     end
                     if next(tbl, key) then
                         str_tbl = str_tbl..","..new_line
@@ -1192,7 +1204,7 @@ gui_elements = {
                 draw_priority = const.LOW_PRIORITY,
                 focussed = false,
                 hidden = false,
-                text_alignment = const.ALIGN_CENTER,
+                text_alignment = const.ALIGN_LEFT,
                 text = text,
                 pos = math_utils.Vector2.new(x, y),
                 colors = {
@@ -1212,22 +1224,19 @@ gui_elements = {
             self.callbacks.onDraw(self)
 
             
-            local lines = string_utils.split(self.text, "\n")
+            local lines = string_utils.split_by_char(self.text, "\n")
 
             if self.text_alignment == const.ALIGN_LEFT then
                 for key, line in next, lines do
                     screen_buffer:write(self.pos.x, self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
                 end
             elseif self.text_alignment == const.ALIGN_CENTER then
-                local x_center_offset = 0
-
                 for key, line in next, lines do
-                    if key == 1 then
-                        x_center_offset = math.floor(#line / 2)
-                        screen_buffer:write(self.pos.x, self.pos.y, line, self.colors.foreground, self.colors.background)
-                    else
-                        screen_buffer:write(self.pos.x + x_center_offset - math.floor(#line / 2), self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
-                    end
+                    screen_buffer:write(self.pos.x - math.floor(#line / 2), self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
+                end
+            elseif self.text_alignment == const.ALIGN_RIGHT then
+                for key, line in next, lines do
+                    screen_buffer:write(self.pos.x - #line + 1, self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
                 end
             end
         end
@@ -1287,7 +1296,7 @@ gui_elements = {
                 screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.unactive_background)
             end
 
-            local lines = string_utils.split(self.text, "\n")
+            local lines = string_utils.split_by_char(self.text, "\n")
             local text_y = math.floor((self.size.y - #lines) / 2) + self.pos.y
 
             for rel_y=0, #lines - 1 do
@@ -1297,6 +1306,8 @@ gui_elements = {
                     line_x = self.pos.x
                 elseif self.text_alignment == const.ALIGN_CENTER then
                     line_x = math.floor((self.size.x - #line) / 2) + self.pos.x
+                elseif self.text_alignment == const.ALIGN_RIGHT then
+                    line_x = self.pos.x + self.size.x - #line
                 end
                 screen_buffer:write(line_x, text_y + rel_y, line, self.colors.foreground)
             end
@@ -1743,7 +1754,7 @@ gui_elements = {
         -- WRITES TEXT WHERE THE CURSOR IS
         write = function (self, ...)
             local text = string_utils.join({...}, "")
-            local lines = string_utils.split(text, "\n")
+            local lines = string_utils.split_by_char(text, "\n")
             self:set_cursor(self.cursor.pos.x, self.cursor.pos.y, true)
 
             if #self.whitelist > 0 then
@@ -1848,7 +1859,7 @@ gui_elements = {
                         y = false
                     },
                     min_size = math_utils.Vector2.new(width, height),
-                    max_size = math_utils.Vector2.new(width * 2, height * 2)
+                    max_size = math_utils.Vector2.new(width, height) * 2
                 },
                 shadow = {
                     enabled = shadow,
