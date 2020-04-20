@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.27",
+    ver = "1.27.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -599,14 +599,18 @@ table_utils = {
         
         if not pretty then indent, new_line, space = "", "", ""; end
         
-        local found_tables = {}
         local root = "root"
+        local found_tables = {
+            [tbl] = root
+        }
 
         local function i_tbl_serialize(tbl, path)
             local this_indent = indent:rep(current_depth + 1)
             local str_tbl = "{"..new_line
 
             local function add_tbl(tbl)
+                local tbl_length = #tbl
+                local last_i = 0
                 for key, value in next, tbl do
                     local key_type = type(key)
                     local key_string
@@ -617,10 +621,15 @@ table_utils = {
                     end
 
                     if not serialise_index and (key == "__index") then value = {}; end
-
                     local value_type = type(value)
                     
-                    str_tbl = str_tbl..string.format("%s[%s]%s=%s", this_indent, key_string, space, space)
+                    if key_type == "number" and key <= tbl_length and key == last_i + 1 then
+                        last_i = key
+                        str_tbl = str_tbl..this_indent
+                    else
+                        str_tbl = str_tbl..string.format("%s[%s]%s=%s", this_indent, key_string, space, space)
+                    end
+
                     if value_type == "table" then
                         if not next(value) then
                             str_tbl = str_tbl.."{}"
@@ -628,7 +637,7 @@ table_utils = {
                             if found_tables[value] and not recursion then
                                 str_tbl = str_tbl..string.format("%q", found_tables[value])
                             else
-                                local this_path = path.."."..tostring(key)
+                                local this_path = path.."["..key_string.."]"
                                 found_tables[value] = this_path
                                 current_depth = current_depth + 1
                                 str_tbl = str_tbl..i_tbl_serialize(value, this_path)
@@ -642,6 +651,7 @@ table_utils = {
                     else
                         str_tbl = str_tbl..string.format("%s", tostring(value))
                     end
+
                     if next(tbl, key) then
                         str_tbl = str_tbl..","..new_line
                     else
@@ -649,6 +659,7 @@ table_utils = {
                     end
                 end
             end
+
             local metatable = getmetatable(tbl)
             if serialise_metatables and metatable then
                 add_tbl(metatable)
