@@ -120,15 +120,13 @@ print(
 
 ## get
 
-*any* : **get**( *table* : **tbl**, *table* : **path**, *number* : **start_i** )
+*any* : **get**( *table* : **tbl**, *any* : **...** )
 
-**Returns the value at `path` in `tbl`** starting **from index `start_i` of `path`** (e.g. `path = {1, 2}` then it will `return tbl[1][2]`).
+**Returns the value going through the keys `...` in `tbl`** (e.g. `{...} = {1, 2}` then it will `return tbl[1][2]`).
 
 **tbl** the **table where you want to get the value from**.
 
-**path** the **path in `tbl` of the value** you want to get.
-
-**start_i** the **starting index of path**.
+**...** the **keys to go through in `tbl`**.
 
 ```lua
 -- Creating a table
@@ -142,21 +140,21 @@ local tbl = {
 
 -- Printing value in tbl["foo bar"][2]
 print(
-    table_utils.get(tbl, {10, "foo bar", 2}, 2)
+    table_utils.get(tbl, {"foo bar", 2})
 )
 ```
 
 ## set
 
-*any* : **set**( *any* : **value**, *table* : **tbl**, *table* : **path**, *number* : **start_i** )
+*any* : **set**( *any* : **value**, *table* : **tbl**, *any* : **...** )
 
-**Sets the value at `path` in `tbl`** starting **from index `start_i` of `path` to `value`** and **returns the old value** (e.g. `path = {1, 2}` then it will set `tbl[1][2] = value`).
+**Sets the value found going through keys `...` in `tbl` to `value`** and **returns the old value** (e.g. `{...} = {1, 2}` then it will set `tbl[1][2] = value`).
+
+**value** the **value you want to set**.
 
 **tbl** the **table where you want to set the value**.
 
-**path** the **path in `tbl` to the value** you want to set.
-
-**start_i** the **starting index of path**.
+**...** the **keys to go through in `tbl` to get to the value** you want to set.
 
 ```lua
 -- Creating a table
@@ -169,7 +167,7 @@ local tbl = {
 }
 
 -- Changing the value at tbl["foo bar"][2] and saving the old one on a variable
-local old = table_utils.set("Foo Bar", tbl, {10, "foo bar", 2}, 2)
+local old = table_utils.set("Foo Bar", tbl, {"foo bar", 2})
 -- Printing value in tbl["foo bar"][2] before and after changing it
 print(
     old,

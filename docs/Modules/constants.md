@@ -74,6 +74,7 @@ All **constants that will help you to set objects' callbacks** through [`generic
 * **ONRECEIVE**
 * **ONDRAG**
 * **ONRESIZE**
+* **ONPASTE**
 
 ### Objects
 

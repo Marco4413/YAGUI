@@ -5,6 +5,10 @@ Contains **functions that could be moved into another Module** if another functi
 
 ## set_callback
 
+**NOTE: THIS FUNCTION HAS BEEN DEPRECATED ON v1.29**
+
+* **Now the "modern" syntax is `gui_element.set_callback`.**
+
 *nil* : **set_callback**( *table* : **gui_element**, *constant* : **event**, *function* : **callback** )
 
 It **returns nil**.

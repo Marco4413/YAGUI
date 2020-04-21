@@ -17,8 +17,7 @@ lEvent.text_alignment = YAGUI.ALIGN_LEFT
 lMain:set_elements({lEvent})
 
 -- Setting callback for loop events
-YAGUI.generic_utils.set_callback(
-    lMain,
+lMain:set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         -- Change label text

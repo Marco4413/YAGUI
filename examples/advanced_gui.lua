@@ -118,8 +118,7 @@ loop.stats.pos.y = 18
 loop.stats:show(true)
 
 -- SET THE CALLBACK FOR WHEN THE INCREASE PROGRESSBAR BUTTON IS PRESSED
-YAGUI.generic_utils.set_callback(
-    wbIncrease,                       -- BUTTON OBJECT
+wbIncrease:set_callback(
     YAGUI.ONPRESS,                   -- EVENT THAT WILL TRIGGER THE CALLBACK
     function (self, formatted_event) -- THE CALLBACK FUNCTION
         if self.active then
@@ -130,8 +129,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- SET THE CALLBACK FOR WHEN THE DECREASE PROGRESSBAR BUTTON IS PRESSED
-YAGUI.generic_utils.set_callback(
-    wbDecrease,
+wbDecrease:set_callback(
     YAGUI.ONPRESS,
     function (self, formatted_event)
         if self.active then
@@ -141,8 +139,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- SET THE CALLBACK FOR THE QUIT BUTTON
-YAGUI.generic_utils.set_callback(
-    wbQuit,
+wbQuit:set_callback(
     YAGUI.ONTIMEOUT, -- TIMEOUT IS THE EVENT THAT IS CALLED WHEN BUTTON IS TIMED AND ITS CLOCK HAS TIMED OUT
     function (self, formatted_event)
         loop:stop()
@@ -150,8 +147,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- SET THE CALLBACK FOR WINDOW 1'S RESIZE
-YAGUI.generic_utils.set_callback(
-    wWindow1,
+wWindow1:set_callback(
     YAGUI.ONRESIZE,
     function (self, old_x, old_y, old_size_x, old_size_y)
         -- CALCULATING HOW SIZE CHANGED

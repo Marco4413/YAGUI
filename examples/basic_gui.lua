@@ -56,8 +56,7 @@ local pbProgress = YAGUI.gui_elements.Progressbar(
 local loop = YAGUI.Loop(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
 
 -- SET THE CALLBACK FOR WHEN THE INCREASE PROGRESSBAR BUTTON IS PRESSED
-YAGUI.generic_utils.set_callback(
-    bIncrease,                       -- BUTTON OBJECT
+bIncrease:set_callback(
     YAGUI.ONPRESS,                   -- EVENT THAT WILL TRIGGER THE CALLBACK
     function (self, formatted_event) -- THE CALLBACK FUNCTION
         if self.active then
@@ -68,8 +67,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- SET THE CALLBACK FOR WHEN THE DECREASE PROGRESSBAR BUTTON IS PRESSED
-YAGUI.generic_utils.set_callback(
-    bDecrease,
+bDecrease:set_callback(
     YAGUI.ONPRESS,
     function (self, formatted_event)
         if self.active then
@@ -79,8 +77,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- SET THE CALLBACK FOR THE QUIT BUTTON
-YAGUI.generic_utils.set_callback(
-    bQuit,
+bQuit:set_callback(
     YAGUI.ONTIMEOUT, -- TIMEOUT IS THE EVENT THAT IS CALLED WHEN BUTTON IS TIMED AND ITS CLOCK HAS TIMED OUT
     function (self, formatted_event)
         loop:stop()

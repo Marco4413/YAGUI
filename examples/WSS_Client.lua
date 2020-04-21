@@ -40,7 +40,7 @@ WSS:connect(host_id, timeout, max_attempts)
 
 local lMain = YAGUI.Loop(20, 6)
 
-YAGUI.generic_utils.set_callback(
+WSS:set_callback(
     WSS,
     YAGUI.ONDISCONNECT,
     function (self)
@@ -49,7 +49,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
+bQuit:set_callback(
     bQuit,
     YAGUI.ONTIMEOUT,
     function (self)

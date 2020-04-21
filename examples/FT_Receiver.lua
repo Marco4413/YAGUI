@@ -43,16 +43,14 @@ FT.save_dir = dir
 
 local lMain = YAGUI.Loop(20, 6)
 
-YAGUI.generic_utils.set_callback(
-    FT,
+FT:set_callback(
     YAGUI.ONCONNECT,
     function (self, event)
         return true
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    FT,
+FT:set_callback(
     YAGUI.ONRECEIVE,
     function (self, event, id, name, path, content)
         mLog:print("Received: "..YAGUI.table_utils.serialise(
@@ -67,8 +65,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bQuit,
+bQuit:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         lMain:stop()

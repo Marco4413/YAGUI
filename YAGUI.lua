@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.28",
+    ver = "1.29",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -72,6 +72,7 @@ local const = {
     ONRECEIVE = 18,
     ONDRAG = 19,
     ONRESIZE = 20,
+    ONPASTE = 21,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -91,14 +92,6 @@ for key_name, key in next, keys do
     end
 end
 
-local new_simple = {
-    __call = function (self, ...)
-        return self.new(...)
-    end
-}
-
-new_simple.__index = new_simple
-
 -- DEFINING ALL UTILITIES HERE TO BE ABLE TO ACCESS THEM EVERYWHERE
 local generic_utils = {}
 local string_utils = {}
@@ -112,48 +105,9 @@ local monitor_utils = {}
 -- GENERIC UTILS MODULE
 generic_utils = {
     -- SETS A CALLBACK TO THE SPECIFIED OBJECT
+    --  Note: It was deprecated in v1.29 You should now be using element.set_callback instead
     set_callback = function (gui_element, event, callback)
-        if event == const.ONSTART then
-            gui_element.callbacks.onStart = callback
-        elseif event == const.ONSTOP then
-            gui_element.callbacks.onStop = callback
-        elseif event == const.ONDRAW then
-            gui_element.callbacks.onDraw = callback
-        elseif event == const.ONPRESS then
-            gui_element.callbacks.onPress = callback
-        elseif event == const.ONFAILEDPRESS then
-            gui_element.callbacks.onFailedPress = callback
-        elseif event == const.ONTIMEOUT then
-            gui_element.callbacks.onTimeout = callback
-        elseif event == const.ONCLOCK then
-            gui_element.callbacks.onClock = callback
-        elseif event == const.ONEVENT then
-            gui_element.callbacks.onEvent = callback
-        elseif event == const.ONFOCUS then
-            gui_element.callbacks.onFocus = callback
-        elseif event == const.ONKEY then
-            gui_element.callbacks.onKey = callback
-        elseif event == const.ONCHAR then
-            gui_element.callbacks.onChar = callback
-        elseif event == const.ONMOUSESCROLL then
-            gui_element.callbacks.onMouseScroll = callback
-        elseif event == const.ONCURSORCHANGE then
-            gui_element.callbacks.onCursorChange = callback
-        elseif event == const.ONWRITE then
-            gui_element.callbacks.onWrite = callback
-        elseif event == const.ONCONNECT then
-            gui_element.callbacks.onConnect = callback
-        elseif event == const.ONDISCONNECT then
-            gui_element.callbacks.onDisconnect = callback
-        elseif event == const.ONSEND then
-            gui_element.callbacks.onSend = callback
-        elseif event == const.ONRECEIVE then
-            gui_element.callbacks.onReceive = callback
-        elseif event == const.ONDRAG then
-            gui_element.callbacks.onDrag = callback
-        elseif event == const.ONRESIZE then
-            gui_element.callbacks.onResize = callback
-        end
+        gui_element:set_callback(event, callback)
     end,
     -- RETURNS THE TYPE OF COMPUTER (computer, turtle, pocket) THAT IS BEING USED
     get_computer_type = function ()
@@ -685,19 +639,19 @@ table_utils = {
             return tbl[i], table_utils.better_unpack(tbl, i + 1, max_i)
         end
     end,
-    get = function (tbl, path, start_i)
-        start_i = start_i or 1
-        if start_i <= #path then
-            local this = tbl[path[start_i]]
-            return table_utils.get(this, path, start_i + 1)
-        else
-            return tbl
+    get = function (tbl, ...)
+        local path = {...}
+        local current_value = tbl
+        for i=1, #path do
+            current_value = current_value[path[i]]
         end
+        return current_value
     end,
-    set = function (value, tbl, path, start_i)
+    set = function (value, tbl, ...)
+        local path = {...}
         local key_to_change = table.remove(path)
-        start_i = start_i or 1
-        local table_with_key = table_utils.get(tbl, path, start_i)
+        local table_with_key = table_utils.get(tbl, table.unpack(path))
+
         local old_value = table_with_key[key_to_change]
         table_with_key[key_to_change] = value
         return old_value
@@ -1303,8 +1257,7 @@ gui_elements = {
             newButton.timed.clock.binded_button = newButton
             newButton.timed.clock.oneshot = true
             newButton.timed.clock:stop()
-            generic_utils.set_callback(
-                newButton.timed.clock,
+            newButton.timed.clock:set_callback(
                 const.ONCLOCK,
                 function (self, formatted_event)
                     self.binded_button.active = false
@@ -1471,12 +1424,12 @@ gui_elements = {
                     onChar = function () end,
                     onMouseScroll = function () end,
                     onCursorChange = function () end,
-                    onWrite = function () end
+                    onWrite = function () end,
+                    onPaste = function () end
                 }
             }
             newMemo.cursor.blink.binded_cursor = newMemo.cursor
-            generic_utils.set_callback(
-                newMemo.cursor.blink,
+            newMemo.cursor.blink:set_callback(
                 const.ONCLOCK,
                 function (self, formatted_event)
                     self.binded_cursor.visible = not self.binded_cursor.visible
@@ -1570,6 +1523,7 @@ gui_elements = {
             if self.focussed then
                 self.cursor.blink:event(self.cursor.blink, formatted_event)
                 if formatted_event.name == const.PASTE then
+                    if self.callbacks.onPaste(self, formatted_event) then return true; end
                     self:write(formatted_event.paste)
                     return true
                 elseif formatted_event.name == const.CHAR then
@@ -2159,8 +2113,7 @@ WSS = {
             }
         }
         newWSS.broadcast_clock.WSS = newWSS
-        generic_utils.set_callback(
-            newWSS.broadcast_clock,
+        newWSS.broadcast_clock:set_callback(
             const.ONCLOCK,
             function (self, formatted_event)
                 rednet.broadcast(
@@ -2446,8 +2399,7 @@ Loop = {
         -- Set a reference to loop elements in stats table
         newLoop.stats.elements = newLoop.elements.loop
         -- Set stats_clock callback
-        generic_utils.set_callback(
-            newLoop.elements.loop.stats_clock,
+        newLoop.elements.loop.stats_clock:set_callback(
             const.ONCLOCK,
             function (self, formatted_event)
                 self.stats:update_pos()
@@ -2460,8 +2412,7 @@ Loop = {
         newLoop.stats:show(false)
         -- Set draw clock callback
         newLoop.elements.loop.clock.Loop = newLoop
-        generic_utils.set_callback(
-            newLoop.elements.loop.clock,
+        newLoop.elements.loop.clock:set_callback(
             const.ONCLOCK,
             function (self, formatted_event)
                 self.Loop.callbacks.onClock(self.Loop, formatted_event)
@@ -2602,15 +2553,78 @@ Loop = {
 
 Loop.__index = Loop
 
+-- Metatable that handles table calling
+local simple_new = {
+    __call = function (self, ...)
+        return self.new(...)
+    end
+}
+simple_new.__index = simple_new
 
-setmetatable(math_utils.Vector2, new_simple)
-setmetatable(math_utils.Vector3, new_simple)
-setmetatable(WSS, new_simple)
-setmetatable(FT, new_simple)
+-- Metatable that handles set_callback for objects
+local objects_methods = {
+    __call = function (self, ...)
+        return self.new(...)
+    end,
+    set_callback = function (self, event, callback)
+        if event == const.ONSTART then
+            self.callbacks.onStart = callback
+        elseif event == const.ONSTOP then
+            self.callbacks.onStop = callback
+        elseif event == const.ONDRAW then
+            self.callbacks.onDraw = callback
+        elseif event == const.ONPRESS then
+            self.callbacks.onPress = callback
+        elseif event == const.ONFAILEDPRESS then
+            self.callbacks.onFailedPress = callback
+        elseif event == const.ONTIMEOUT then
+            self.callbacks.onTimeout = callback
+        elseif event == const.ONCLOCK then
+            self.callbacks.onClock = callback
+        elseif event == const.ONEVENT then
+            self.callbacks.onEvent = callback
+        elseif event == const.ONFOCUS then
+            self.callbacks.onFocus = callback
+        elseif event == const.ONKEY then
+            self.callbacks.onKey = callback
+        elseif event == const.ONCHAR then
+            self.callbacks.onChar = callback
+        elseif event == const.ONMOUSESCROLL then
+            self.callbacks.onMouseScroll = callback
+        elseif event == const.ONCURSORCHANGE then
+            self.callbacks.onCursorChange = callback
+        elseif event == const.ONWRITE then
+            self.callbacks.onWrite = callback
+        elseif event == const.ONCONNECT then
+            self.callbacks.onConnect = callback
+        elseif event == const.ONDISCONNECT then
+            self.callbacks.onDisconnect = callback
+        elseif event == const.ONSEND then
+            self.callbacks.onSend = callback
+        elseif event == const.ONRECEIVE then
+            self.callbacks.onReceive = callback
+        elseif event == const.ONDRAG then
+            self.callbacks.onDrag = callback
+        elseif event == const.ONRESIZE then
+            self.callbacks.onResize = callback
+        elseif event == const.ONPASTE then
+            self.callbacks.onPaste = callback
+        end
+    end
+}
+objects_methods.__index = objects_methods
+
+-- Setting simple_new as a metatable to the tables that support it
+setmetatable(math_utils.Vector2, simple_new)
+setmetatable(math_utils.Vector3, simple_new)
+
+-- Setting objects_methods as a metatable to the tables that support it
+setmetatable(WSS, objects_methods)
+setmetatable(FT, objects_methods)
 for key, element in next, gui_elements do
-    setmetatable(element, new_simple)
+    setmetatable(element, objects_methods)
 end
-setmetatable(Loop, new_simple)
+setmetatable(Loop, objects_methods)
 
 -- TARGS
 local tArgs = {...}

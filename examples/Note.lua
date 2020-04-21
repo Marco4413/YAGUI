@@ -558,16 +558,14 @@ end
 -- Setting callbacks
 
 -- Callbacks for wFileMenu
-YAGUI.generic_utils.set_callback(
-    bFile,
+bFile:set_callback(
     YAGUI.ONPRESS,
     function (self)
         wFileMenu.hidden = not self.active
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    wFileMenu,
+wFileMenu:set_callback(
     YAGUI.ONFAILEDPRESS,
     function (self)
         if bFile.active then
@@ -577,8 +575,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bNewOpen,
+bNewOpen:set_callback(
     YAGUI.ONPRESS,
     function (self)
         self.active = false
@@ -596,16 +593,14 @@ bNewOpen.callbacks.onActionComplete = function (path)
     end
 end
 
-YAGUI.generic_utils.set_callback(
-    bSave,
+bSave:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         save_notes(current_file_path)
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bSaveAs,
+bSaveAs:set_callback(
     YAGUI.ONPRESS,
     function (self)
         self.active = false
@@ -630,8 +625,7 @@ bSaveAs.callbacks.onOverWrite = function ()
     bSaveAs.path = nil
 end
 
-YAGUI.generic_utils.set_callback(
-    bDelete,
+bDelete:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         if fs.isReadOnly(current_file_path) then return; end
@@ -639,8 +633,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bGoto,
+bGoto:set_callback(
     YAGUI.ONPRESS,
     function (self)
         self.active = false
@@ -654,8 +647,7 @@ bGoto.callbacks.onActionComplete = function (line)
     mEditor:set_cursor(1, tonumber(line) or mEditor.cursor.pos.y)
 end
 
-YAGUI.generic_utils.set_callback(
-    bRun,
+bRun:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         save_notes(current_file_path)
@@ -664,8 +656,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bSHL,
+bSHL:set_callback(
     YAGUI.ONPRESS,
     function (self)
         syntax_highlight_enabled = self.active
@@ -677,8 +668,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bQuit,
+bQuit:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         lMain:stop()
@@ -686,8 +676,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- Callbacks for loop lMain
-YAGUI.generic_utils.set_callback(
-    bCompact,
+bCompact:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         local lines_to_remove = {}
@@ -711,8 +700,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    mEditor,
+mEditor:set_callback(
     YAGUI.ONFOCUS,
     function (self)
         if not self.focussed then
@@ -726,16 +714,14 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    mEditor,
+mEditor:set_callback(
     YAGUI.ONMOUSESCROLL,
     function (self)
         return true
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    mEditor,
+mEditor:set_callback(
     YAGUI.ONCURSORCHANGE,
     function (self, new_x, new_y)
         local old_rich_line = self.rich_text[self.cursor.pos.y]
@@ -758,8 +744,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    mEditor,
+mEditor:set_callback(
     YAGUI.ONWRITE,
     function (self, text, lines)
         if syntax_highlight_enabled then
@@ -768,8 +753,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    lMain,
+lMain:set_callback(
     YAGUI.ONCLOCK,
     function (self)
         lLines.text = string.format("Lines: %d", #mEditor.lines)
@@ -778,8 +762,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    lMain,
+lMain:set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         if YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFTALT, YAGUI.KEY_S) then
@@ -816,8 +799,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- Callbacks for loop lInput
-YAGUI.generic_utils.set_callback(
-    mInput,
+mInput:set_callback(
     YAGUI.ONKEY,
     function (self, event)
         if event.key == YAGUI.KEY_ENTER then
@@ -828,16 +810,14 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    lInput,
+lInput:set_callback(
     YAGUI.ONSTART,
     function (self)
         mInput:focus(true)
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    lInput,
+lInput:set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         if event.name == YAGUI.KEY then
@@ -849,8 +829,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    lInput,
+lInput:set_callback(
     YAGUI.ONSTOP,
     function (self)
         mInput.bound = nil
@@ -861,8 +840,7 @@ YAGUI.generic_utils.set_callback(
 )
 
 -- Callbacks for loop lOverWrite
-YAGUI.generic_utils.set_callback(
-    wOverWrite,
+wOverWrite:set_callback(
     YAGUI.ONRESIZE,
     function (self, old_x, old_y, old_size_x, old_size_y)
         lOW.pos = YAGUI.math_utils.Vector2(self.size.x / 2, self.size.y / 2) - lOW.offset
@@ -874,8 +852,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bOWAccept,
+bOWAccept:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         self.bound.callbacks.onOverWrite()
@@ -884,8 +861,7 @@ YAGUI.generic_utils.set_callback(
     end
 )
 
-YAGUI.generic_utils.set_callback(
-    bOWReject,
+bOWReject:set_callback(
     YAGUI.ONTIMEOUT,
     function (self)
         lOverWrite:stop()
