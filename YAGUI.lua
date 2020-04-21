@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.27.1",
+    ver = "1.28",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -684,6 +684,23 @@ table_utils = {
         if i <= max_i then
             return tbl[i], table_utils.better_unpack(tbl, i + 1, max_i)
         end
+    end,
+    get = function (tbl, path, start_i)
+        start_i = start_i or 1
+        if start_i <= #path then
+            local this = tbl[path[start_i]]
+            return table_utils.get(this, path, start_i + 1)
+        else
+            return tbl
+        end
+    end,
+    set = function (value, tbl, path, start_i)
+        local key_to_change = table.remove(path)
+        start_i = start_i or 1
+        local table_with_key = table_utils.get(tbl, path, start_i)
+        local old_value = table_with_key[key_to_change]
+        table_with_key[key_to_change] = value
+        return old_value
     end
 }
 
@@ -908,6 +925,7 @@ local screen_buffer = {
         end,
         -- SETS PROPERTIES FOR A PIXEL SO IT ISN'T A "DEFAULT PIXEL" ANYMORE
         set_pixel = function (self, x, y, char, foreground, background)
+            x, y = math.floor(x + 0.5), math.floor(y + 0.5)
             local pixel = self:get_pixel(x, y)
 
             if char and #char == 1 then pixel.char = char; end
@@ -1230,9 +1248,9 @@ gui_elements = {
             return newLabel
         end,
         -- DRAWS LABEL
-        draw = function (self)
+        draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self)
+            self.callbacks.onDraw(self, delta_time)
 
             
             local lines = string_utils.split_by_char(self.text, "\n")
@@ -1243,7 +1261,7 @@ gui_elements = {
                 end
             elseif self.text_alignment == const.ALIGN_CENTER then
                 for key, line in next, lines do
-                    screen_buffer:write(self.pos.x - math.floor(#line / 2), self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
+                    screen_buffer:write(self.pos.x - #line / 2, self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
                 end
             elseif self.text_alignment == const.ALIGN_RIGHT then
                 for key, line in next, lines do
@@ -1298,9 +1316,9 @@ gui_elements = {
             return newButton
         end,
         -- DRAWS BUTTON
-        draw = function (self)
+        draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self)
+            self.callbacks.onDraw(self, delta_time)
             if self.active then 
                 screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.active_background)
             else
@@ -1308,7 +1326,7 @@ gui_elements = {
             end
 
             local lines = string_utils.split_by_char(self.text, "\n")
-            local text_y = math.floor((self.size.y - #lines) / 2) + self.pos.y
+            local text_y = (self.size.y - #lines) / 2 + self.pos.y
 
             for rel_y=0, #lines - 1 do
                 local line = lines[rel_y + 1]
@@ -1316,7 +1334,7 @@ gui_elements = {
                 if self.text_alignment == const.ALIGN_LEFT then
                     line_x = self.pos.x
                 elseif self.text_alignment == const.ALIGN_CENTER then
-                    line_x = math.floor((self.size.x - #line) / 2) + self.pos.x
+                    line_x = (self.size.x - #line) / 2 + self.pos.x
                 elseif self.text_alignment == const.ALIGN_RIGHT then
                     line_x = self.pos.x + self.size.x - #line
                 end
@@ -1383,19 +1401,19 @@ gui_elements = {
             return newProgressbar
         end,
         -- DRAWS PROGRESSBAR
-        draw = function (self)
+        draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self)
+            self.callbacks.onDraw(self, delta_time)
             local value_percentage = math_utils.map(self.value.current, self.value.min, self.value.max, 0, 1, true)
             
-            local filled_progress_width = math.floor(self.size.x * value_percentage)
+            local filled_progress_width = self.size.x * value_percentage
             screen_buffer:rectangle(self.pos.x, self.pos.y, filled_progress_width, self.size.y, self.colors.filled_background)
             screen_buffer:rectangle(self.pos.x + filled_progress_width, self.pos.y, self.size.x - filled_progress_width, self.size.y, self.colors.unfilled_background)
 
             if self.value.draw_percentage then
                 local percentage_text = string_utils.format_number(value_percentage * 100, self.value.percentage_precision).."%"
-                local text_x = math.floor((self.size.x - #percentage_text) / 2) + self.pos.x
-                local text_y = math.floor((self.size.y - 1) / 2) + self.pos.y
+                local text_x = (self.size.x - #percentage_text) / 2 + self.pos.x
+                local text_y = (self.size.y - 1) / 2 + self.pos.y
                 screen_buffer:write(text_x, text_y, percentage_text, self.colors.foreground)
             end
         end,
@@ -1468,9 +1486,9 @@ gui_elements = {
             return newMemo
         end,
         -- DRAWS MEMO
-        draw = function (self)
+        draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self)
+            self.callbacks.onDraw(self, delta_time)
             
             screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background)
 
@@ -1894,9 +1912,9 @@ gui_elements = {
             return newWindow
         end,
         -- DRAWS THE WINDOW
-        draw = function (self)
+        draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self)
+            self.callbacks.onDraw(self, delta_time)
             if self.shadow.enabled then
                 screen_buffer:rectangle(
                     self.pos.x + self.shadow.offset.x,
@@ -1909,7 +1927,7 @@ gui_elements = {
 
             screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background)
 
-            self:draw_elements()
+            self:draw_elements(delta_time)
         end,
         -- GIVES EVENT TO WINDOW
         event = function (self, formatted_event)
@@ -2067,12 +2085,12 @@ gui_elements = {
             end
         end,
         -- DRAWS ALL WINDOW'S ELEMENTS
-        draw_elements = function (self)
+        draw_elements = function (self, delta_time)
             for key=#self.elements, 1, -1 do
                 local element = self.elements[key]
                 if element.draw then
                     element.pos = element.pos + self.pos - self.pos.ONE
-                    element:draw()
+                    element:draw(delta_time)
                     element.pos = element.pos - self.pos + self.pos.ONE
                 end
             end
@@ -2154,9 +2172,9 @@ WSS = {
         setmetatable(newWSS, WSS)
         return newWSS
     end,
-    draw = function (self)
+    draw = function (self, delta_time)
         if not self.enabled then return false; end
-        self.callbacks.onDraw(self)
+        self.callbacks.onDraw(self, delta_time)
 
         if self.mode == const.USER then
             if self.buffer and self.buffer.background and self.buffer.pixels then
@@ -2301,7 +2319,7 @@ FT = {
         if not self.enabled then return false; end
         if self.callbacks.onEvent(self, formatted_event) then return true; end
 
-        if (formatted_event.name == const.REDNET) or (formatted_event.protocol == self.protocol) then
+        if (formatted_event.name == const.REDNET) and (formatted_event.protocol == self.protocol) then
             if (self.mode == const.ALL) or (self.mode == const.RECEIVE) then
                 local id = formatted_event.from
                 if self.computer_whitelist[id] or self.callbacks.onConnect(self, formatted_event) then
@@ -2338,7 +2356,7 @@ FT = {
             end
         end
     end,
-    send = function (self, receiver_id, password, file_name, file_path)
+    send = function (self, receiver_id, password, file_path, file_name)
         if (self.mode == const.ALL) or (self.mode == const.SEND) then
             file_name = file_name or fs.getName(file_path)
             password = password or const.NONE
@@ -2402,10 +2420,7 @@ Loop = {
             stats = {
                 pos = math_utils.Vector2.new(1, 1),
                 elements = nil,
-                enabled = true,
-                enable = function (self, state)
-                    self.enabled = state
-                    self.elements.stats_clock.enabled = state
+                show = function (self, state)
                     self.elements.FPS_label.hidden = not state
                     self.elements.EPS_label.hidden = not state
                 end,
@@ -2413,6 +2428,8 @@ Loop = {
                     self.elements.FPS_label.pos = self.pos
                     self.elements.EPS_label.pos = self.pos + math_utils.Vector2.DOWN
                 end,
+                Frames = 0,
+                Events = 0,
                 FPS = 0,
                 EPS = 0
             },
@@ -2436,11 +2453,11 @@ Loop = {
                 self.stats:update_pos()
                 self.stats.elements.FPS_label.text = tostring(self.stats.FPS).." FPS"
                 self.stats.elements.EPS_label.text = tostring(self.stats.EPS).." EPS"
-                self.stats.FPS = 0
-                self.stats.EPS = 0
+                self.stats.FPS, self.stats.EPS = self.stats.Frames, self.stats.Events
+                self.stats.Frames, self.stats.Events = 0, 0
             end
         )
-        newLoop.stats:enable(false)
+        newLoop.stats:show(false)
         -- Set draw clock callback
         newLoop.elements.loop.clock.Loop = newLoop
         generic_utils.set_callback(
@@ -2448,7 +2465,7 @@ Loop = {
             const.ONCLOCK,
             function (self, formatted_event)
                 self.Loop.callbacks.onClock(self.Loop, formatted_event)
-                self.Loop:draw_elements()
+                self.Loop:draw_elements(1 / self.Loop.stats.FPS)
                 self.interval = 1 / self.Loop.options.FPS_target
             end
         )
@@ -2472,17 +2489,17 @@ Loop = {
         end
     end,
     -- DRAWS ALL ELEMENTS ON SCREEN BUFFER AND DRAWS IT
-    draw_elements = function (self)
+    draw_elements = function (self, delta_time)
         local function draw_table(tbl)
             for key=#tbl, 1, -1 do
                 local element = tbl[key]
                 if element.draw then
-                    element:draw()
+                    element:draw(delta_time)
                 end
             end
         end
 
-        self.callbacks.onDraw(self)
+        self.callbacks.onDraw(self, delta_time)
         local old_screens = screen_buffer.screens
         screen_buffer.screens = self.monitors
 
@@ -2490,15 +2507,14 @@ Loop = {
         draw_table(self.elements.high_priority)
         for key, element in next, self.elements.loop do
             if element.draw then
-                element:draw()
+                element:draw(delta_time)
             end
         end
 
         screen_buffer:draw()
         screen_buffer.screens = old_screens
-        if self.stats.enabled then
-            self.stats.FPS = self.stats.FPS + 1
-        end
+
+        self.stats.Frames = self.stats.Frames + 1
     end,
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
     event_elements = function (self, formatted_event)
@@ -2552,9 +2568,7 @@ Loop = {
 
         event_table(self.elements.low_priority)
 
-        if self.stats.enabled then
-            self.stats.EPS = self.stats.EPS + 1
-        end
+        self.stats.Events = self.stats.Events + 1
     end,
     -- STARTS THE LOOP
     start = function (self)

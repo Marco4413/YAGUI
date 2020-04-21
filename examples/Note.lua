@@ -286,6 +286,8 @@ bQuit.pos.x    , bQuit.pos.y    , bQuit.size.x    , bQuit.size.y     = LAYOUT.th
 
 wFileMenu.draw_priority = YAGUI.LOW_PRIORITY
 wFileMenu.hidden = true
+wFileMenu.dragging.enabled = false
+wFileMenu.resizing.enabled = false
 wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bSHL, bQuit})
 
 bSave.timed.enabled = true
@@ -759,9 +761,9 @@ YAGUI.generic_utils.set_callback(
 YAGUI.generic_utils.set_callback(
     mEditor,
     YAGUI.ONWRITE,
-    function (self)
+    function (self, text, lines)
         if syntax_highlight_enabled then
-            syntax_highlight(math.max(1, self.cursor.pos.y - 2), #self.lines)
+            syntax_highlight(math.max(1, self.cursor.pos.y - #lines), #self.lines)
         end
     end
 )
@@ -863,7 +865,7 @@ YAGUI.generic_utils.set_callback(
     wOverWrite,
     YAGUI.ONRESIZE,
     function (self, old_x, old_y, old_size_x, old_size_y)
-        lOW.pos = YAGUI.math_utils.Vector2.new(YAGUI.math_utils.round_numbers(self.size.x / 2, self.size.y / 2)) - lOW.offset
+        lOW.pos = YAGUI.math_utils.Vector2(self.size.x / 2, self.size.y / 2) - lOW.offset
 
         bOWAccept.pos.y = self.size.y - 1
 
@@ -958,7 +960,7 @@ lOverWrite:set_elements({wOverWrite, WSS})
 
 for key, loop in next, loops do
     loop.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
-    loop.stats:enable(loop_stats)
+    loop.stats:show(loop_stats)
     loop.options.raw_mode = true
     loop.options.stop_on_terminate = false
 end

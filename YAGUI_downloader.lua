@@ -14,6 +14,11 @@ local PROGRAMS = {
         PATH = '/WSS_Client.lua'
     },
     {
+        NAME = 'FT_Receiver',
+        URL = master..'examples/FT_Receiver.lua',
+        PATH = '/FT_Receiver.lua'
+    },
+    {
         NAME = 'Note',
         URL = master..'examples/Note-mini.lua',
         PATH = '/Note.lua'

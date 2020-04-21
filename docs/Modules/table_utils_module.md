@@ -117,3 +117,62 @@ print(
     table_utils.better_unpack(tbl, 2)
 )
 ```
+
+## get
+
+*any* : **get**( *table* : **tbl**, *table* : **path**, *number* : **start_i** )
+
+**Returns the value at `path` in `tbl`** starting **from index `start_i` of `path`** (e.g. `path = {1, 2}` then it will `return tbl[1][2]`).
+
+**tbl** the **table where you want to get the value from**.
+
+**path** the **path in `tbl` of the value** you want to get.
+
+**start_i** the **starting index of path**.
+
+```lua
+-- Creating a table
+local tbl = {
+    1, 6, 3,
+    ["foo bar"] = {
+        {"foo", "bar"},
+        3
+    }
+}
+
+-- Printing value in tbl["foo bar"][2]
+print(
+    table_utils.get(tbl, {10, "foo bar", 2}, 2)
+)
+```
+
+## set
+
+*any* : **set**( *any* : **value**, *table* : **tbl**, *table* : **path**, *number* : **start_i** )
+
+**Sets the value at `path` in `tbl`** starting **from index `start_i` of `path` to `value`** and **returns the old value** (e.g. `path = {1, 2}` then it will set `tbl[1][2] = value`).
+
+**tbl** the **table where you want to set the value**.
+
+**path** the **path in `tbl` to the value** you want to set.
+
+**start_i** the **starting index of path**.
+
+```lua
+-- Creating a table
+local tbl = {
+    1, 6, 3,
+    ["foo bar"] = {
+        {"foo", "bar"},
+        3
+    }
+}
+
+-- Changing the value at tbl["foo bar"][2] and saving the old one on a variable
+local old = table_utils.set("Foo Bar", tbl, {10, "foo bar", 2}, 2)
+-- Printing value in tbl["foo bar"][2] before and after changing it
+print(
+    old,
+    tbl["foo bar"][2]
+)
+```

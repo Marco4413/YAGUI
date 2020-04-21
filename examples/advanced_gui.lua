@@ -114,8 +114,8 @@ wWindow1:set_elements({
 local loop = YAGUI.Loop(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
 -- MOVING LOOP STATS AT THE BOTTOM OF THE SCREEN
 loop.stats.pos.y = 18
--- ENABLING LOOP STATS
-loop.stats:enable(true)
+-- SHOWING LOOP STATS
+loop.stats:show(true)
 
 -- SET THE CALLBACK FOR WHEN THE INCREASE PROGRESSBAR BUTTON IS PRESSED
 YAGUI.generic_utils.set_callback(
