@@ -244,11 +244,10 @@ print(
 </code></pre>
 
 <h2 id="get">get</h2>
-<p><em>any</em> : <strong>get</strong>( <em>table</em> : <strong>tbl</strong>, <em>table</em> : <strong>path</strong>, <em>number</em> : <strong>start_i</strong> )</p>
-<p><strong>Returns the value at <code>path</code> in <code>tbl</code></strong> starting <strong>from index <code>start_i</code> of <code>path</code></strong> (e.g. <code>path = {1, 2}</code> then it will <code>return tbl[1][2]</code>).</p>
+<p><em>any</em> : <strong>get</strong>( <em>table</em> : <strong>tbl</strong>, <em>any</em> : <strong>...</strong> )</p>
+<p><strong>Returns the value going through the keys <code>...</code> in <code>tbl</code></strong> (e.g. <code>{...} = {1, 2}</code> then it will <code>return tbl[1][2]</code>).</p>
 <p><strong>tbl</strong> the <strong>table where you want to get the value from</strong>.</p>
-<p><strong>path</strong> the <strong>path in <code>tbl</code> of the value</strong> you want to get.</p>
-<p><strong>start_i</strong> the <strong>starting index of path</strong>.</p>
+<p><strong>...</strong> the <strong>keys to go through in <code>tbl</code></strong>.</p>
 <pre><code class="lua">-- Creating a table
 local tbl = {
     1, 6, 3,
@@ -260,16 +259,16 @@ local tbl = {
 
 -- Printing value in tbl[&quot;foo bar&quot;][2]
 print(
-    table_utils.get(tbl, {10, &quot;foo bar&quot;, 2}, 2)
+    table_utils.get(tbl, {&quot;foo bar&quot;, 2})
 )
 </code></pre>
 
 <h2 id="set">set</h2>
-<p><em>any</em> : <strong>set</strong>( <em>any</em> : <strong>value</strong>, <em>table</em> : <strong>tbl</strong>, <em>table</em> : <strong>path</strong>, <em>number</em> : <strong>start_i</strong> )</p>
-<p><strong>Sets the value at <code>path</code> in <code>tbl</code></strong> starting <strong>from index <code>start_i</code> of <code>path</code> to <code>value</code></strong> and <strong>returns the old value</strong> (e.g. <code>path = {1, 2}</code> then it will set <code>tbl[1][2] = value</code>).</p>
+<p><em>any</em> : <strong>set</strong>( <em>any</em> : <strong>value</strong>, <em>table</em> : <strong>tbl</strong>, <em>any</em> : <strong>...</strong> )</p>
+<p><strong>Sets the value found going through keys <code>...</code> in <code>tbl</code> to <code>value</code></strong> and <strong>returns the old value</strong> (e.g. <code>{...} = {1, 2}</code> then it will set <code>tbl[1][2] = value</code>).</p>
+<p><strong>value</strong> the <strong>value you want to set</strong>.</p>
 <p><strong>tbl</strong> the <strong>table where you want to set the value</strong>.</p>
-<p><strong>path</strong> the <strong>path in <code>tbl</code> to the value</strong> you want to set.</p>
-<p><strong>start_i</strong> the <strong>starting index of path</strong>.</p>
+<p><strong>...</strong> the <strong>keys to go through in <code>tbl</code> to get to the value</strong> you want to set.</p>
 <pre><code class="lua">-- Creating a table
 local tbl = {
     1, 6, 3,
@@ -280,7 +279,7 @@ local tbl = {
 }
 
 -- Changing the value at tbl[&quot;foo bar&quot;][2] and saving the old one on a variable
-local old = table_utils.set(&quot;Foo Bar&quot;, tbl, {10, &quot;foo bar&quot;, 2}, 2)
+local old = table_utils.set(&quot;Foo Bar&quot;, tbl, {&quot;foo bar&quot;, 2})
 -- Printing value in tbl[&quot;foo bar&quot;][2] before and after changing it
 print(
     old,
