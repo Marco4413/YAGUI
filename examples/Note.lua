@@ -327,8 +327,8 @@ local bOWReject  = YAGUI.gui_elements.Button(0, 0, 0, 0, "No", text_color, backg
 
 -- Applying layout
 wOverWrite.pos.x, wOverWrite.pos.y, wOverWrite.size.x, wOverWrite.size.y = LAYOUT.this_layout.wOverWrite()
-wOverWrite.resizing.min_size = wOverWrite.size
-wOverWrite.resizing.max_size = wOverWrite.size * 2
+wOverWrite.resizing.min_size = wOverWrite.size:duplicate()
+wOverWrite.resizing.max_size = wOverWrite.size:duplicate() * 2
 
 lOW.pos.x       , lOW.pos.y = LAYOUT.this_layout.lOW()
 bOWAccept.pos.x , bOWAccept.pos.y , bOWAccept.size.x , bOWAccept.size.y  = LAYOUT.this_layout.bOWAccept()

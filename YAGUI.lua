@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.29",
+    ver = "1.29.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -879,7 +879,7 @@ local screen_buffer = {
         end,
         -- SETS PROPERTIES FOR A PIXEL SO IT ISN'T A "DEFAULT PIXEL" ANYMORE
         set_pixel = function (self, x, y, char, foreground, background)
-            x, y = math.floor(x + 0.5), math.floor(y + 0.5)
+            x, y = math.floor(x), math.floor(y)
             local pixel = self:get_pixel(x, y)
 
             if char and #char == 1 then pixel.char = char; end
@@ -1215,7 +1215,7 @@ gui_elements = {
                 end
             elseif self.text_alignment == const.ALIGN_CENTER then
                 for key, line in next, lines do
-                    screen_buffer:write(self.pos.x - #line / 2, self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
+                    screen_buffer:write(self.pos.x - #line / 2 + 1, self.pos.y + key - 1, line, self.colors.foreground, self.colors.background)
                 end
             elseif self.text_alignment == const.ALIGN_RIGHT then
                 for key, line in next, lines do
@@ -2000,10 +2000,12 @@ gui_elements = {
                 local old_size = self.size:duplicate()
 
                 if self.resizing.corner == self.pos.ONE then
-                    self.size = new_pos - self.pos + self.pos.ONE
+                    self.size.x = new_pos.x - self.pos.x + 1
+                    self.size.y = new_pos.y - self.pos.y + 1
                     constrain_size()
                 elseif self.resizing.corner == self.pos.ONE * -1 then
-                    self.size = self.size + self.pos - new_pos
+                    self.size.x = self.size.x + self.pos.x - new_pos.x
+                    self.size.y = self.size.y + self.pos.y - new_pos.y
                     constrain_size()
 
                     local delta_pos = old_size - self.size
@@ -2016,7 +2018,6 @@ gui_elements = {
                     local delta_y = old_size.y - self.size.y
                     self.pos.y = self.pos.y + delta_y
                 elseif self.resizing.corner == self.pos.DOWN + self.pos.LEFT then
-                    local old_size_x = self.size.x
                     self.size.x = self.size.x + self.pos.x - new_pos.x
                     self.size.y = new_pos.y - self.pos.y + 1
                     constrain_size()
