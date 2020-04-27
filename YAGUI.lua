@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.29.1",
+    ver = "1.29.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -38,6 +38,7 @@ local const = {
     REDNET = "rednet_message",
     MODEM = "modem_message",
     TERMINATE = "terminate",
+    TERMRESIZE = "term_resize",
     DELETED = "DELETED",
     NONE = "NONE",
     ALL = "ALL",
@@ -772,6 +773,8 @@ event_utils = {
             event.message = msg.message
         elseif event.name == "terminate" then
             event.name = const.TERMINATE
+        elseif event.name == "term_resize" then
+            event.name = const.TERMRESIZE
         else
             event.parameters = {}
             for key=2, #event_table do

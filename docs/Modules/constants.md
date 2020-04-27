@@ -37,6 +37,7 @@ All event **constants that have to do with the name of an event**:
 * **REDNET**
 * **MODEM**
 * **TERMINATE**
+* **TERMRESIZE**
 * **DELETED**
 
 #### Inputs

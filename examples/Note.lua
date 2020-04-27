@@ -12,7 +12,7 @@ local default_name = "new"
 local default_extension = ".txt"
 
 local WSS_broadcast_interval = 1
-local FPS = 60
+local FPS = 20
 local EPS = 6
 local loop_stats = true
 
@@ -54,77 +54,7 @@ YAGUI.screen_buffer.buffer.background = background_color
 
 -- Layout is only used to be able to make this program compatible with all computers (pockets, turtles and normal computers)
 --  It has nothing to do with YAGUI
-local LAYOUT = {
-    init = function (self)
-        local computer_type, advanced = YAGUI.generic_utils.get_computer_type()
-
-        self.this_layout = self.all
-
-        for key, func in next, self[computer_type] do
-            self.this_layout[key] = func
-        end
-    end,
-    [ "all" ] = {
-        lLines   = function () return 9, 1; end,
-        lCursor  = function () return 46, 1, YAGUI.ALIGN_RIGHT; end,
-        bCompact = function () return 51, 1, 1, 1; end,
-        mEditor  = function () return 5, 2, 47, 17; end,
-        lPath    = function () return 1, 19; end,
-
-        bFile     = function () return 1, 1, 4, 1; end,
-        wFileMenu = function () return 1, 2, 10, 8; end,
-        bNewOpen  = function () return 1, 1, 10, 1; end,
-        bSave     = function () return 1, 2, 10, 1; end,
-        bSaveAs   = function () return 1, 3, 10, 1; end,
-        bDelete   = function () return 1, 4, 10, 1; end,
-        bGoto     = function () return 1, 5, 10, 1; end,
-        bRun      = function () return 1, 6, 10, 1; end,
-        bSHL      = function () return 1, 7, 10, 1; end,
-        bQuit     = function () return 1, 8, 10, 1; end,
-
-        lInputTitle = function () return 2, 9; end,
-        mInput      = function () return 2, 10, 49, 1; end,
-        lInputTip   = function () return 3, 12, "You can press CONTROL to cancel."; end,
-
-        wOverWrite = function () return 18, 7, 15, 6; end,
-        lOW        = function () return 8, 2; end,
-        bOWAccept  = function () return 2, 5, 3, 1; end,
-        bOWReject  = function () return 13, 5, 2, 1; end,
-
-        stats = function () return 45, 18; end
-    },
-    [ YAGUI.COMPUTER ] = {},
-    [ YAGUI.TURTLE ] = {
-        lCursor  = function () return 34, 1, YAGUI.ALIGN_RIGHT; end,
-        bCompact = function () return 39, 1, 1, 1; end,
-        mEditor  = function () return 5, 2, 35, 11; end,
-        lPath    = function () return 1, 13; end,
-        
-        lInputTitle = function () return 2, 5; end,
-        mInput      = function () return 2, 6, 37, 1; end,
-        lInputTip   = function () return 3, 8, "You can press CONTROL to cancel."; end,
-
-        wOverWrite = function () return 12, 4, 15, 6; end,
-
-        stats = function () return 33, 12; end
-    },
-    [ YAGUI.POCKET ] = {
-        lCursor  = function () return 1, 19, YAGUI.ALIGN_LEFT; end,
-        bCompact = function () return 26, 1, 1, 1; end,
-        mEditor  = function () return 3, 2, 24, 17; end,
-        lPath    = function () return 1, 20; end,
-
-        mInput   = function () return 2, 10, 24, 1; end,
-        lInputTip   = function () return 8, 12, "You can press\nCONTROL to cancel."; end,
-
-        wOverWrite = function () return 6, 7, 15, 6; end,
-
-        stats = function () return 21, 19; end
-    },
-    [ "this_layout" ] = {}
-}
-
-LAYOUT:init()
+local LAYOUT = {}
 
 -- These tables contain words to be highlighted
 local words_highlight = {}
@@ -243,13 +173,6 @@ local bCompact  = YAGUI.gui_elements.Button(0, 0, 0, 0, "C", text_color, special
 local mEditor   = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, editor_background)
 local lPath     = YAGUI.gui_elements.Label(0, 0, "/path/", text_color)
 
--- Applying layout
-lLines.pos.x  , lLines.pos.y  = LAYOUT.this_layout.lLines()
-lCursor.pos.x , lCursor.pos.y, lCursor.text_alignment = LAYOUT.this_layout.lCursor()
-bCompact.pos.x, bCompact.pos.y, bCompact.size.x, bCompact.size.y = LAYOUT.this_layout.bCompact()
-mEditor.pos.x , mEditor.pos.y , mEditor.size.x , mEditor.size.y  = LAYOUT.this_layout.mEditor()
-lPath.pos.x   , lPath.pos.y   = LAYOUT.this_layout.lPath()
-
 bCompact.timed.enabled = true
 bCompact.timed.clock.interval = button_timeout
 bCompact.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFTSHIFT, YAGUI.KEY_C}
@@ -271,18 +194,6 @@ local bGoto     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Goto"    , text_color, 
 local bRun      = YAGUI.gui_elements.Button(0, 0, 0, 0, "Run"     , text_color, lighter_background_color, background_color)
 local bSHL      = YAGUI.gui_elements.Button(0, 0, 0, 0, "SyntaxHL", text_color, lighter_background_color, background_color)
 local bQuit     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
-
--- Applying layout
-bFile.pos.x    , bFile.pos.y    , bFile.size.x    , bFile.size.y     = LAYOUT.this_layout.bFile()
-wFileMenu.pos.x, wFileMenu.pos.y, wFileMenu.size.x, wFileMenu.size.y = LAYOUT.this_layout.wFileMenu()
-bNewOpen.pos.x , bNewOpen.pos.y , bNewOpen.size.x , bNewOpen.size.y  = LAYOUT.this_layout.bNewOpen()
-bSave.pos.x    , bSave.pos.y    , bSave.size.x    , bSave.size.y     = LAYOUT.this_layout.bSave()
-bSaveAs.pos.x  , bSaveAs.pos.y  , bSaveAs.size.x  , bSaveAs.size.y   = LAYOUT.this_layout.bSaveAs()
-bDelete.pos.x  , bDelete.pos.y  , bDelete.size.x  , bDelete.size.y   = LAYOUT.this_layout.bDelete()
-bGoto.pos.x    , bGoto.pos.y    , bGoto.size.x    , bGoto.size.y     = LAYOUT.this_layout.bGoto()
-bRun.pos.x     , bRun.pos.y     , bRun.size.x     , bRun.size.y      = LAYOUT.this_layout.bRun()
-bSHL.pos.x     , bSHL.pos.y     , bSHL.size.x     , bSHL.size.y      = LAYOUT.this_layout.bSHL()
-bQuit.pos.x    , bQuit.pos.y    , bQuit.size.x    , bQuit.size.y     = LAYOUT.this_layout.bQuit()
 
 wFileMenu.draw_priority = YAGUI.LOW_PRIORITY
 wFileMenu.hidden = true
@@ -307,11 +218,6 @@ local lInputTitle = YAGUI.gui_elements.Label(0, 0, "", text_color)
 local mInput      = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, lighter_background_color)
 local lInputTip   = YAGUI.gui_elements.Label(0, 0, "You can press CONTROL to cancel.", text_color)
 
--- Applying layout
-lInputTitle.pos.x, lInputTitle.pos.y                 = LAYOUT.this_layout.lInputTitle()
-mInput.pos.x     , mInput.pos.y, mInput.size.x, mInput.size.y = LAYOUT.this_layout.mInput()
-lInputTip.pos.x  , lInputTip.pos.y  , lInputTip.text = LAYOUT.this_layout.lInputTip()
-
 mInput.limits = YAGUI.math_utils.Vector2(0, 1)
 mInput.cursor.text = cursor_char
 mInput.cursor.blink.interval = cursor_blinking_speed
@@ -325,15 +231,6 @@ local lOW        = YAGUI.gui_elements.Label(0, 0, "Do you want\nto overwrite?", 
 local bOWAccept  = YAGUI.gui_elements.Button(0, 0, 0, 0, "Yes", text_color, background_color, lighter_background_color)
 local bOWReject  = YAGUI.gui_elements.Button(0, 0, 0, 0, "No", text_color, background_color, lighter_background_color)
 
--- Applying layout
-wOverWrite.pos.x, wOverWrite.pos.y, wOverWrite.size.x, wOverWrite.size.y = LAYOUT.this_layout.wOverWrite()
-wOverWrite.resizing.min_size = wOverWrite.size:duplicate()
-wOverWrite.resizing.max_size = wOverWrite.size:duplicate() * 2
-
-lOW.pos.x       , lOW.pos.y = LAYOUT.this_layout.lOW()
-bOWAccept.pos.x , bOWAccept.pos.y , bOWAccept.size.x , bOWAccept.size.y  = LAYOUT.this_layout.bOWAccept()
-bOWReject.pos.x , bOWReject.pos.y , bOWReject.size.x , bOWReject.size.y  = LAYOUT.this_layout.bOWReject()
-
 wOverWrite:set_elements({lOW, bOWAccept, bOWReject})
 
 bOWAccept.timed.enabled = true
@@ -345,9 +242,101 @@ bOWAccept.shortcut = {YAGUI.KEY_Y}
 bOWReject.shortcut = {YAGUI.KEY_N}
 
 lOW.text_alignment = YAGUI.ALIGN_CENTER
-lOW.offset = YAGUI.math_utils.Vector2.new(0, YAGUI.math_utils.round(wOverWrite.size.y / 2) - lOW.pos.y)
 
 -- Defining functions
+
+local function generate_layout()
+    local w, h = term.getSize()
+    local templates = {
+        [ "all" ] = {
+            lLines   = function () return 9, 1; end,
+            lCursor  = function () return w - 5, 1, YAGUI.ALIGN_RIGHT; end,
+            bCompact = function () return w, 1, 1, 1; end,
+            mEditor  = function () return 5, 2, w - 4, h - 2; end,
+            lPath    = function () return 1, h; end,
+
+            bFile     = function () return 1, 1, 4, 1; end,
+            wFileMenu = function () return 1, 2, 10, 8; end,
+            bNewOpen  = function () return 1, 1, 10, 1; end,
+            bSave     = function () return 1, 2, 10, 1; end,
+            bSaveAs   = function () return 1, 3, 10, 1; end,
+            bDelete   = function () return 1, 4, 10, 1; end,
+            bGoto     = function () return 1, 5, 10, 1; end,
+            bRun      = function () return 1, 6, 10, 1; end,
+            bSHL      = function () return 1, 7, 10, 1; end,
+            bQuit     = function () return 1, 8, 10, 1; end,
+
+            lInputTitle = function () return 2, math.floor(h / 2 - 1); end,
+            mInput      = function () return 2, math.floor(h / 2), w - 2, 1; end,
+            lInputTip   = function () return 3, math.floor(h / 2 + 2), "You can press CONTROL to cancel."; end,
+
+            wOverWrite = function () return math.floor(w / 2 - 7), math.floor(h / 2 - 3), 15, 6; end,
+            lOW        = function () return 8, 2; end,
+            bOWAccept  = function () return 2, 5, 3, 1; end,
+            bOWReject  = function () return 13, 5, 2, 1; end,
+
+            stats = function () return w - 6, h - 1; end
+        },
+        [ YAGUI.COMPUTER ] = {},
+        [ YAGUI.TURTLE ] = {},
+        [ YAGUI.POCKET ] = {
+            lCursor  = function () return 1, h - 1, YAGUI.ALIGN_LEFT; end,
+            mEditor  = function () return 5, 2, w - 4, h - 3; end,
+            lPath    = function () return 1, h; end,
+
+            lInputTip   = function () return 3, math.floor(h / 2 + 2), "You can press\nCONTROL to cancel."; end,
+        },
+        [ "this_layout" ] = {}
+    }
+    
+    local computer_type, advanced = YAGUI.generic_utils.get_computer_type()
+
+    templates.this_layout = templates.all
+
+    for key, func in next, templates[computer_type] do
+        templates.this_layout[key] = func
+    end
+
+    LAYOUT = templates.this_layout
+end
+
+local function apply_layout()
+    -- Main
+    lLines.pos.x  , lLines.pos.y  = LAYOUT.lLines()
+    lCursor.pos.x , lCursor.pos.y, lCursor.text_alignment = LAYOUT.lCursor()
+    bCompact.pos.x, bCompact.pos.y, bCompact.size.x, bCompact.size.y = LAYOUT.bCompact()
+    mEditor.pos.x , mEditor.pos.y , mEditor.size.x , mEditor.size.y  = LAYOUT.mEditor()
+    lPath.pos.x   , lPath.pos.y   = LAYOUT.lPath()
+    -- wFileMenu
+    bFile.pos.x    , bFile.pos.y    , bFile.size.x    , bFile.size.y     = LAYOUT.bFile()
+    wFileMenu.pos.x, wFileMenu.pos.y, wFileMenu.size.x, wFileMenu.size.y = LAYOUT.wFileMenu()
+    bNewOpen.pos.x , bNewOpen.pos.y , bNewOpen.size.x , bNewOpen.size.y  = LAYOUT.bNewOpen()
+    bSave.pos.x    , bSave.pos.y    , bSave.size.x    , bSave.size.y     = LAYOUT.bSave()
+    bSaveAs.pos.x  , bSaveAs.pos.y  , bSaveAs.size.x  , bSaveAs.size.y   = LAYOUT.bSaveAs()
+    bDelete.pos.x  , bDelete.pos.y  , bDelete.size.x  , bDelete.size.y   = LAYOUT.bDelete()
+    bGoto.pos.x    , bGoto.pos.y    , bGoto.size.x    , bGoto.size.y     = LAYOUT.bGoto()
+    bRun.pos.x     , bRun.pos.y     , bRun.size.x     , bRun.size.y      = LAYOUT.bRun()
+    bSHL.pos.x     , bSHL.pos.y     , bSHL.size.x     , bSHL.size.y      = LAYOUT.bSHL()
+    bQuit.pos.x    , bQuit.pos.y    , bQuit.size.x    , bQuit.size.y     = LAYOUT.bQuit()
+    -- lInput
+    lInputTitle.pos.x, lInputTitle.pos.y                 = LAYOUT.lInputTitle()
+    mInput.pos.x     , mInput.pos.y, mInput.size.x, mInput.size.y = LAYOUT.mInput()
+    lInputTip.pos.x  , lInputTip.pos.y  , lInputTip.text = LAYOUT.lInputTip()
+    -- wOverwrite
+    wOverWrite.pos.x, wOverWrite.pos.y, wOverWrite.size.x, wOverWrite.size.y = LAYOUT.wOverWrite()
+    wOverWrite.resizing.min_size = wOverWrite.size:duplicate()
+    wOverWrite.resizing.max_size = wOverWrite.size:duplicate() * 2
+    
+    lOW.pos.x       , lOW.pos.y = LAYOUT.lOW()
+    bOWAccept.pos.x , bOWAccept.pos.y , bOWAccept.size.x , bOWAccept.size.y  = LAYOUT.bOWAccept()
+    bOWReject.pos.x , bOWReject.pos.y , bOWReject.size.x , bOWReject.size.y  = LAYOUT.bOWReject()
+    lOW.offset = YAGUI.math_utils.Vector2.new(0, YAGUI.math_utils.round(wOverWrite.size.y / 2) - lOW.pos.y)
+    -- Loops
+    for key, loop in next, loops do
+        loop.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.stats())
+        loop.stats:update_pos()
+    end
+end
 
 local function clear_all()
     for key, monitor in next, lMain.monitors do
@@ -790,6 +779,9 @@ lMain:set_callback(
 
         if event.name == YAGUI.MOUSESCROLL then
             mEditor.first_visible_line = YAGUI.math_utils.constrain(mEditor.first_visible_line + event.direction, 1, #mEditor.lines)
+        elseif event.name == YAGUI.TERMRESIZE then
+            generate_layout()
+            apply_layout()
         end
 
         if syntax_highlight_enabled and (mEditor.first_visible_line + mEditor.size.y - 1 > #syntax_highlight_cache) then
@@ -825,6 +817,9 @@ lInput:set_callback(
                 lInput:stop()
                 return true
             end
+        elseif event.name == YAGUI.TERMRESIZE then
+            generate_layout()
+            apply_layout()
         end
     end
 )
@@ -868,7 +863,20 @@ bOWReject:set_callback(
     end
 )
 
+lOverWrite:set_callback(
+    YAGUI.ONEVENT,
+    function (self, event)
+        if event.name == YAGUI.TERMRESIZE then
+            generate_layout()
+            apply_layout()
+        end
+    end
+)
+
 -- Main program
+
+generate_layout()
+apply_layout()
 
 if #tArgs > 0 then
 
@@ -935,7 +943,6 @@ lInput:set_elements({lInputTitle, mInput, lInputTip, WSS})
 lOverWrite:set_elements({wOverWrite, WSS})
 
 for key, loop in next, loops do
-    loop.stats.pos = YAGUI.math_utils.Vector2(LAYOUT.this_layout.stats())
     loop.stats:show(loop_stats)
     loop.options.raw_mode = true
     loop.options.stop_on_terminate = false
