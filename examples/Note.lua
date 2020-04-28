@@ -275,7 +275,7 @@ local function generate_layout()
             bOWAccept  = function () return 2, 5, 3, 1; end,
             bOWReject  = function () return 13, 5, 2, 1; end,
 
-            stats = function () return w - 6, h - 1; end
+            stats = function () return w - 1, h - 1; end
         },
         [ YAGUI.COMPUTER ] = {},
         [ YAGUI.TURTLE ] = {},
@@ -943,6 +943,8 @@ lInput:set_elements({lInputTitle, mInput, lInputTip, WSS})
 lOverWrite:set_elements({wOverWrite, WSS})
 
 for key, loop in next, loops do
+    loop.stats.elements.FPS_label.text_alignment = YAGUI.ALIGN_RIGHT
+    loop.stats.elements.EPS_label.text_alignment = YAGUI.ALIGN_RIGHT
     loop.stats:show(loop_stats)
     loop.options.raw_mode = true
     loop.options.stop_on_terminate = false
