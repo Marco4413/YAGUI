@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.29.2",
+    ver = "1.29.3",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -2091,7 +2091,7 @@ WSS = {
     new = function (broadcast_interval)
         local newWSS = {
             draw_priority = const.LOW_PRIORITY,
-            enabled = false,
+            enabled = true,
             buffer = {},
             events_whitelist = {
                 [const.TOUCH] = true,
