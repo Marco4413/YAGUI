@@ -41,7 +41,6 @@ WSS:connect(host_id, timeout, max_attempts)
 local lMain = YAGUI.Loop(20, 6)
 
 WSS:set_callback(
-    WSS,
     YAGUI.ONDISCONNECT,
     function (self)
         YAGUI.screen_buffer.buffer.background = colors.black
@@ -50,7 +49,6 @@ WSS:set_callback(
 )
 
 bQuit:set_callback(
-    bQuit,
     YAGUI.ONTIMEOUT,
     function (self)
         lMain:stop()
