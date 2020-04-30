@@ -172,6 +172,7 @@ local lCursor   = YAGUI.gui_elements.Label(0, 0, "Cursor: (1; 1)", text_color)
 local bCompact  = YAGUI.gui_elements.Button(0, 0, 0, 0, "C", text_color, special_button_active_color, special_button_not_active_color)
 local mEditor   = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, editor_background)
 local lPath     = YAGUI.gui_elements.Label(0, 0, "/path/", text_color)
+local cSHL      = YAGUI.gui_elements.Clock(0.5)
 
 bCompact.timed.enabled = true
 bCompact.timed.clock.interval = button_timeout
@@ -184,6 +185,8 @@ mEditor.colors.cursor_text = cursor_color
 
 mEditor.border = true
 mEditor.colors.border_color = background_color
+
+cSHL.oneshot = true
 
 -- Creating elements that will make File menu
 local bFile     = YAGUI.gui_elements.Button(0, 0, 0, 0, "File", text_color, lighter_background_color, background_color)
@@ -557,6 +560,14 @@ end
 
 -- Setting callbacks
 
+cSHL:set_callback(
+    YAGUI.ONCLOCK,
+    function (self)
+        syntax_highlight(self.starting_line, #mEditor.lines)
+        self.starting_line = nil
+    end
+)
+
 -- Callbacks for wFileMenu
 bFile:set_callback(
     YAGUI.ONPRESS,
@@ -745,7 +756,12 @@ mEditor:set_callback(
     YAGUI.ONWRITE,
     function (self, text, lines)
         if syntax_highlight_enabled then
-            syntax_highlight(math.max(1, self.cursor.pos.y - #lines), #self.lines)
+            if cSHL.starting_line then
+                cSHL.starting_line = math.min(cSHL.starting_line, math.max(1, self.cursor.pos.y - #lines + 1))
+            else
+                cSHL.starting_line = math.max(1, self.cursor.pos.y - #lines + 1)
+            end
+            cSHL:start()
         end
     end
 )
@@ -946,7 +962,7 @@ end
 open_notes(current_file_path)
 
 -- Setting up loops
-lMain:set_elements({bFile, wFileMenu, lLines, lCursor, bCompact, mEditor, lPath, WSS})
+lMain:set_elements({bFile, wFileMenu, lLines, lCursor, bCompact, mEditor, lPath, cSHL, WSS})
 lInput:set_elements({lInputTitle, mInput, lInputTip, WSS})
 lOverWrite:set_elements({wOverWrite, WSS})
 

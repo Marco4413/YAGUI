@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.30",
+    ver = "1.30.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -308,11 +308,11 @@ math_utils = {
         end,
         -- RETURNS VECTOR LENGTH SQUARED
         length_sq = function (self)
-            return math.pow(self.x, 2) + math.pow(self.y, 2)
+            return self.x * self.x + self.y * self.y
         end,
         -- RETURNS VECTOR LENGTH
         length = function (self)
-            return math.sqrt(self:length_sq())
+            return math.sqrt(self.x * self.x + self.y * self.y)
         end,
         -- RETURNS UNIT VECTOR
         unit = function (self)
@@ -402,11 +402,11 @@ math_utils = {
         end,
         -- RETURNS VECTOR LENGTH SQUARED
         length_sq = function (self)
-            return math.pow(self.x, 2) + math.pow(self.y, 2) + math.pow(self.z, 2)
+            return self.x * self.x + self.y * self.y + self.z * self.z
         end,
         -- RETURNS VECTOR LENGTH
         length = function (self)
-            return math.sqrt(self:length_sq())
+            return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
         end,
         -- RETURNS UNIT VECTOR
         unit = function (self)
