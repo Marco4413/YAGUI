@@ -93,6 +93,10 @@ local wWindow1 = YAGUI.gui_elements.Window(
     colors.red, true
 )
 
+-- ADDING A BORDER TO THE WINDOW
+wWindow1.border = true
+wWindow1.colors.border_color = colors.gray
+
 -- BLOCKING WINDOW'S RESIZE FROM THE TOP ROW
 wWindow1.resizing.enabled_directions[-1][-1] = false -- [X][Y] = BOOLEAN
 wWindow1.resizing.enabled_directions[ 0][-1] = false
@@ -113,7 +117,8 @@ wWindow1:set_elements({
 
 local loop = YAGUI.Loop(60, 10) -- FPS TARGET, EPS TARGET (EPS stands for Events per Second)
 -- MOVING LOOP STATS AT THE BOTTOM OF THE SCREEN
-loop.stats.pos.y = 18
+local w, h = term.getSize()
+loop.stats.pos.y = h - 1
 -- SHOWING LOOP STATS
 loop.stats:show(true)
 

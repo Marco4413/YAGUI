@@ -182,6 +182,8 @@ mEditor.cursor.blink.interval = cursor_blinking_speed
 mEditor.colors.cursor = cursor_background_color
 mEditor.colors.cursor_text = cursor_color
 
+mEditor.border = true
+mEditor.colors.border_color = background_color
 
 -- Creating elements that will make File menu
 local bFile     = YAGUI.gui_elements.Button(0, 0, 0, 0, "File", text_color, lighter_background_color, background_color)
@@ -201,10 +203,16 @@ wFileMenu.dragging.enabled = false
 wFileMenu.resizing.enabled = false
 wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bSHL, bQuit})
 
+bNewOpen.timed.enabled = true
+bNewOpen.timed.clock.interval = button_timeout / 2
 bSave.timed.enabled = true
 bSave.timed.clock.interval = button_timeout
+bSaveAs.timed.enabled = true
+bSaveAs.timed.clock.interval = button_timeout / 2
 bDelete.timed.enabled = true
 bDelete.timed.clock.interval = button_timeout
+bGoto.timed.enabled = true
+bGoto.timed.clock.interval = button_timeout / 2
 bRun.timed.enabled = true
 bRun.timed.clock.interval = button_timeout
 bQuit.timed.enabled = true
@@ -223,6 +231,9 @@ mInput.cursor.text = cursor_char
 mInput.cursor.blink.interval = cursor_blinking_speed
 mInput.colors.cursor = cursor_background_color
 mInput.colors.cursor_text = cursor_color
+
+mInput.border = true
+mInput.colors.border_color = background_color
 
 
 -- Creating elements for OverWrite loop
@@ -252,7 +263,7 @@ local function generate_layout()
             lLines   = function () return 9, 1; end,
             lCursor  = function () return w - 5, 1, YAGUI.ALIGN_RIGHT; end,
             bCompact = function () return w, 1, 1, 1; end,
-            mEditor  = function () return 5, 2, w - 4, h - 2; end,
+            mEditor  = function () return 1, 2, w, h - 2; end,
             lPath    = function () return 1, h; end,
 
             bFile     = function () return 1, 1, 4, 1; end,
@@ -266,8 +277,8 @@ local function generate_layout()
             bSHL      = function () return 1, 7, 10, 1; end,
             bQuit     = function () return 1, 8, 10, 1; end,
 
-            lInputTitle = function () return 2, math.floor(h / 2 - 1); end,
-            mInput      = function () return 2, math.floor(h / 2), w - 2, 1; end,
+            lInputTitle = function () return 3, math.floor(h / 2 - 1); end,
+            mInput      = function () return 1, math.floor(h / 2) - 1, w, 3; end,
             lInputTip   = function () return 3, math.floor(h / 2 + 2), "You can press CONTROL to cancel."; end,
 
             wOverWrite = function () return math.floor(w / 2 - 7), math.floor(h / 2 - 3), 15, 6; end,
@@ -281,7 +292,7 @@ local function generate_layout()
         [ YAGUI.TURTLE ] = {},
         [ YAGUI.POCKET ] = {
             lCursor  = function () return 1, h - 1, YAGUI.ALIGN_LEFT; end,
-            mEditor  = function () return 5, 2, w - 4, h - 3; end,
+            mEditor  = function () return 1, 2, w, h - 3; end,
             lPath    = function () return 1, h; end,
 
             lInputTip   = function () return 3, math.floor(h / 2 + 2), "You can press\nCONTROL to cancel."; end,
@@ -565,10 +576,9 @@ wFileMenu:set_callback(
 )
 
 bNewOpen:set_callback(
-    YAGUI.ONPRESS,
+    YAGUI.ONTIMEOUT,
     function (self)
-        self.active = false
-        lInputTitle.text = "New File / Open File"
+        lInputTitle.text = " New File / Open File "
         mInput.bound = self
         lInput:start()
     end
@@ -590,10 +600,9 @@ bSave:set_callback(
 )
 
 bSaveAs:set_callback(
-    YAGUI.ONPRESS,
+    YAGUI.ONTIMEOUT,
     function (self)
-        self.active = false
-        lInputTitle.text = "Save File As"
+        lInputTitle.text = " Save File As "
         mInput.bound = self
         lInput:start()
     end
@@ -623,10 +632,9 @@ bDelete:set_callback(
 )
 
 bGoto:set_callback(
-    YAGUI.ONPRESS,
+    YAGUI.ONTIMEOUT,
     function (self)
-        self.active = false
-        lInputTitle.text = "Line"
+        lInputTitle.text = " Go to Line "
         mInput.bound = self
         mInput.whitelist = numbers
         lInput:start()

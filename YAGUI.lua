@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.29.3",
+    ver = "1.30",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -92,6 +92,21 @@ for key_name, key in next, keys do
         const["KEY_"..key_name:upper()] = key
     end
 end
+
+-- This is used by the library to draw rectangles with borders
+local drawing_characters = {
+    TOP         = string.char(131),
+    BOTTOM      = string.char(143),
+    LEFT        = string.char(149),
+    RIGHT       = string.char(149),
+    MIDDLE      = string.char(140),
+    TOPLEFT     = string.char(151),
+    TOPRIGHT    = string.char(148),
+    BOTTOMLEFT  = string.char(138),
+    BOTTOMRIGHT = string.char(133),
+    MIDDLELEFT  = string.char(132),
+    MIDDLERIGHT = string.char(136)
+}
 
 -- DEFINING ALL UTILITIES HERE TO BE ABLE TO ACCESS THEM EVERYWHERE
 local generic_utils = {}
@@ -877,18 +892,28 @@ local screen_buffer = {
             return {
                 char = " ",
                 foreground = self.background,
-                background = self.background
+                background = self.background,
+                inverted = false
             }
         end,
         -- SETS PROPERTIES FOR A PIXEL SO IT ISN'T A "DEFAULT PIXEL" ANYMORE
-        set_pixel = function (self, x, y, char, foreground, background)
+        set_pixel = function (self, x, y, char, foreground, background, inverted)
             x, y = math.floor(x), math.floor(y)
             local pixel = self:get_pixel(x, y)
 
-            if char and #char == 1 then pixel.char = char; end
-            pixel.foreground = foreground or pixel.background
-            pixel.background = background or pixel.background
+            if char then pixel.char = char:sub(1, 1); end
 
+            if inverted then
+                pixel.foreground, pixel.background = background or pixel.foreground, foreground or pixel.background
+            else
+                if pixel.inverted then
+                    pixel.foreground, pixel.background = foreground or pixel.background, background or pixel.foreground
+                else
+                    pixel.foreground, pixel.background = foreground or pixel.foreground, background or pixel.background
+                end
+            end
+            pixel.inverted = inverted
+            
             if not self.pixels[x] then self.pixels[x] = {}; end
             self.pixels[x][y] = pixel
         end,
@@ -919,15 +944,15 @@ local screen_buffer = {
             
             local width, height = screen.getSize()
             for y=1, height do
-                local row = {text = "", background = "", foreground = ""}
+                local row_text, row_foreground, row_background = "", "", ""
                 for x=1, width do
                     local pixel = buffer:get_pixel(x, y)
-                    row.text = row.text..pixel.char
-                    row.background = row.background..color_utils.colors[pixel.background]
-                    row.foreground = row.foreground..color_utils.colors[pixel.foreground]
+                    row_text = row_text..pixel.char
+                    row_foreground = row_foreground..color_utils.colors[pixel.foreground]
+                    row_background = row_background..color_utils.colors[pixel.background]
                 end
                 screen.setCursorPos(1, y)
-                screen.blit(row.text, row.foreground, row.background)
+                screen.blit(row_text, row_foreground, row_background)
             end
             screen.setCursorPos(old_x, old_y)
         end
@@ -973,10 +998,52 @@ local screen_buffer = {
         end
     end,
     -- DRAWS A RECTANGLE ON THE SCREEN
-    rectangle = function (self, x, y, width, height, color)
-        for rel_x=0, width - 1 do
-            for rel_y=0, height - 1 do
-                self:point(x + rel_x, y + rel_y, color)
+    rectangle = function (self, x, y, width, height, color, border, border_color)
+        if border then
+            for rel_x=0, width - 1 do
+                for rel_y=0, height - 1 do
+                    if height == 1 then
+                        if width == 1 then
+                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLE, border_color, color, true)
+                        else
+                            if rel_x == 0 then
+                                self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLERIGHT, border_color, color, true)
+                            elseif rel_x == width - 1 then
+                                self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLELEFT, border_color, color, true)
+                            else
+                                self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLE, border_color, color, true)
+                            end
+                        end
+                    elseif rel_y == 0 then
+                        if rel_x == 0 then
+                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.TOPLEFT, border_color, color)
+                        elseif rel_x == width - 1 then
+                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.TOPRIGHT, border_color, color, true)
+                        else
+                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.TOP, border_color, color)
+                        end
+                    elseif rel_y == height - 1 then
+                        if rel_x == 0 then
+                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.BOTTOMLEFT, border_color, color, true)
+                        elseif rel_x == width - 1 then
+                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.BOTTOMRIGHT, border_color, color, true)
+                        else
+                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.BOTTOM, border_color, color, true)
+                        end
+                    elseif rel_x == 0 then
+                        self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.LEFT, border_color, color)
+                    elseif rel_x == width - 1 then
+                        self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.RIGHT, border_color, color, true)
+                    else
+                        self.buffer:set_pixel(x + rel_x, y + rel_y, " ", color, color)
+                    end
+                end
+            end
+        else
+            for rel_x=0, width - 1 do
+                for rel_y=0, height - 1 do
+                    self.buffer:set_pixel(x + rel_x, y + rel_y, " ", color, color)
+                end
             end
         end
     end,
@@ -1241,6 +1308,7 @@ gui_elements = {
                 text = text,
                 pos = math_utils.Vector2.new(x, y),
                 size = math_utils.Vector2.new(width, height),
+                border = false,
                 timed = {
                     enabled = false,
                     clock = gui_elements.Clock.new(0.5)
@@ -1248,7 +1316,8 @@ gui_elements = {
                 colors = {
                     foreground = foreground,
                     active_background = active_background,
-                    unactive_background = unactive_background
+                    unactive_background = unactive_background,
+                    border_color = colors.white
                 },
                 callbacks = {
                     onDraw = function () end,
@@ -1276,9 +1345,9 @@ gui_elements = {
             if self.hidden then return; end
             self.callbacks.onDraw(self, delta_time)
             if self.active then 
-                screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.active_background)
+                screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.active_background, self.border, self.colors.border_color)
             else
-                screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.unactive_background)
+                screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.unactive_background, self.border, self.colors.border_color)
             end
 
             local lines = string_utils.split_by_char(self.text, "\n")
@@ -1412,11 +1481,13 @@ gui_elements = {
                 limits = math_utils.Vector2.new(0, 0),
                 whitelist = {},
                 blacklist = {},
+                border = false,
                 colors = {
                     foreground = foreground,
                     background = background,
                     cursor = colors.white,
                     cursor_text = colors.black,
+                    border_color = colors.white
                 },
                 callbacks = {
                     onDraw = function () end,
@@ -1446,33 +1517,44 @@ gui_elements = {
             if self.hidden then return; end
             self.callbacks.onDraw(self, delta_time)
             
-            screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background)
+            screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background, self.border, self.colors.border_color)
+            
+            local this_pos_x = self.pos.x
+            local this_pos_y = self.pos.y
+            local this_size_x = self.size.x
+            local this_size_y = self.size.y
+            if self.border then
+                this_pos_x = this_pos_x + 1
+                this_pos_y = this_pos_y + 1
+                this_size_x = this_size_x - 2
+                this_size_y = this_size_y - 2
+            end
 
             local rel_cursor_x = self.cursor.pos.x - self.first_visible_char
             local rel_cursor_y = self.cursor.pos.y - self.first_visible_line
 
-            for y=1, self.size.y do
+            for y=1, this_size_y do
                 local line_i = y + self.first_visible_line - 1
                 local rich_line = self.rich_text[line_i] or {}
 
                 local line = self.lines[line_i] or ""
                 local line_visible_start = self.first_visible_char
-                local line_visible_end = self.first_visible_char + self.size.x - 1
+                local line_visible_end = self.first_visible_char + this_size_x - 1
                 local visible_line = line:sub(line_visible_start, line_visible_end)
 
-                local y_pos = self.pos.y + y - 1
+                local y_pos = this_pos_y + y - 1
 
                 if rich_line.background then
                     if type(rich_line.background) == "string" then
                         local bg = rich_line.background:sub(line_visible_start, line_visible_end)
                         bg = #bg > 0 and bg or rich_line.background:sub(#rich_line.background)
                         screen_buffer:blit(
-                            self.pos.x, y_pos, string.rep(" ", self.size.x),
+                            this_pos_x, y_pos, string.rep(" ", this_size_x),
                             nil,
                             bg
                         )
                     else
-                        screen_buffer:rectangle(self.pos.x, y_pos, self.size.x, 1, rich_line.background)
+                        screen_buffer:rectangle(this_pos_x, y_pos, this_size_x, 1, rich_line.background)
                     end
                 end
                 
@@ -1481,21 +1563,21 @@ gui_elements = {
                         local fg = rich_line.foreground:sub(line_visible_start, line_visible_end)
                         fg = #fg > 0 and fg or rich_line.foreground:sub(#rich_line.foreground)
                         screen_buffer:blit(
-                            self.pos.x, y_pos, visible_line,
+                            this_pos_x, y_pos, visible_line,
                             fg
                         )
                     else
-                        screen_buffer:write(self.pos.x, y_pos, visible_line, rich_line.foreground)
+                        screen_buffer:write(this_pos_x, y_pos, visible_line, rich_line.foreground)
                     end
                 else
-                    screen_buffer:write(self.pos.x, y_pos, visible_line, self.colors.foreground)
+                    screen_buffer:write(this_pos_x, y_pos, visible_line, self.colors.foreground)
                 end
             end
 
-            if self.cursor.visible and (rel_cursor_x >= 0) and (rel_cursor_x < self.size.x) and (rel_cursor_y >= 0) and (rel_cursor_y < self.size.y) then
+            if self.cursor.visible and (rel_cursor_x >= 0) and (rel_cursor_x < this_size_x) and (rel_cursor_y >= 0) and (rel_cursor_y < this_size_y) then
                 screen_buffer:write(
-                    rel_cursor_x + self.pos.x,
-                    rel_cursor_y + self.pos.y,
+                    rel_cursor_x + this_pos_x,
+                    rel_cursor_y + this_pos_y,
                     self.cursor.text,
                     self.colors.cursor_text, self.colors.cursor
                 )
@@ -1511,7 +1593,13 @@ gui_elements = {
                     self:focus(true, formatted_event)
                     local x = formatted_event.x - self.pos.x
                     local y = formatted_event.y - self.pos.y
-                    self:set_cursor(x + self.first_visible_char, y + self.first_visible_line)
+                    if self.border then
+                        if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x + 1, self.pos.y + 1, self.size.x - 2, self.size.y - 2) then
+                            self:set_cursor(x + self.first_visible_char - 1, y + self.first_visible_line - 1)
+                        end
+                    else
+                        self:set_cursor(x + self.first_visible_char, y + self.first_visible_line)
+                    end
                     
                     return true -- RETURNING TRUE DELETES THE EVENT
                 else
@@ -1722,14 +1810,21 @@ gui_elements = {
             local rel_cursor_x = cursor_x - self.first_visible_char
             local rel_cursor_y = cursor_y - self.first_visible_line
 
-            if rel_cursor_x >= self.size.x then
-                self.first_visible_char = self.first_visible_char + rel_cursor_x - self.size.x + 1
+            local this_size_x = self.size.x
+            local this_size_y = self.size.y
+            if self.border then
+                this_size_x = this_size_x - 2
+                this_size_y = this_size_y - 2
+            end
+
+            if rel_cursor_x >= this_size_x then
+                self.first_visible_char = self.first_visible_char + rel_cursor_x - this_size_x + 1
             elseif rel_cursor_x < 0 then
                 self.first_visible_char = self.first_visible_char + rel_cursor_x
             end
 
-            if rel_cursor_y >= self.size.y then
-                self.first_visible_line = self.first_visible_line + rel_cursor_y - self.size.y + 1
+            if rel_cursor_y >= this_size_y then
+                self.first_visible_line = self.first_visible_line + rel_cursor_y - this_size_y + 1
             elseif rel_cursor_y < 0 then
                 self.first_visible_line = self.first_visible_line + rel_cursor_y
             end
@@ -1825,6 +1920,7 @@ gui_elements = {
                 pos = math_utils.Vector2.new(x, y),
                 size = math_utils.Vector2.new(width, height),
                 can_drag = false,
+                border = false,
                 dragging = {
                     enabled = true,
                     from = math_utils.Vector2.new(1, 1)
@@ -1854,7 +1950,8 @@ gui_elements = {
                 elements = {},
                 colors = {
                     background = background,
-                    shadow = colors.black
+                    shadow = colors.black,
+                    border_color = colors.white
                 },
                 callbacks = {
                     onDraw = function () end,
@@ -1882,7 +1979,7 @@ gui_elements = {
                 )
             end
 
-            screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background)
+            screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background, self.border, self.colors.border_color)
 
             self:draw_elements(delta_time)
         end,
