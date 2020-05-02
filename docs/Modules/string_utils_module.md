@@ -7,26 +7,7 @@ This module has a **table that's called `magic_characters`** which is **used by 
 
 ## join
 
-*string* : **join**( *table* : **tbl**, *string* : **sep** )
-
-It **returns a string** which is **all the values of `tbl` concatenated and separated by `sep`**.
-
-**tbl** is the **table which contains all the values you want to concatenate**.
-
-**sep** is the **string that is going to be put between all concatenated values**.
-
-```lua
--- Create a table that has values in it (join does tostring() on every value before concatenating)
-local tbl = {"f", "o", "o", "b", "a", "r"}
-
--- Join tbl with two different separators
-local s1 = string_utils.join(tbl, "")
-local s2 = string_utils.join(tbl, ", ")
-
--- Print joined table
-print(s1) -- Prints "foobar"
-print(s2) -- Prints "f, o, o, b, a, r"
-```
+**COPY OF [`table.concat`](http://lua-users.org/wiki/TableLibraryTutorial)**.
 
 ## split
 

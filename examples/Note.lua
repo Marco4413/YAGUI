@@ -17,6 +17,7 @@ local EPS = 6
 local loop_stats = true
 
 local button_timeout = 0.5
+local SH_timeout = 0.5
 
 local cursor_char = string.char(149)
 local cursor_blinking_speed = 0.5
@@ -60,93 +61,92 @@ local LAYOUT = {}
 local words_highlight = {}
 
 local function add_to_highlight(tbl, col)
-    if not words_highlight[col] then words_highlight[col] = {}; end
-    for word, value in next, tbl do
-        words_highlight[col][word] = value
+    for key, word in next, tbl do
+        words_highlight[word] = col
     end
 end
 
 add_to_highlight(
     {
-        ["and"] = true,
-        ["break"] = true,
-        ["do"] = true,
-        ["else"] = true,
-        ["elseif"] = true,
-        ["end"] = true,
-        ["false"] = true,
-        ["for"] = true,
-        ["function"] = true,
-        ["if"] = true,
-        ["in"] = true,
-        ["local"] = true,
-        ["nil"] = true,
-        ["not"] = true,
-        ["or"] = true,
-        ["repeat"] = true,
-        ["return"] = true,
-        ["then"] = true,
-        ["true"] = true,
-        ["until"] = true,
-        ["while"] = true
+        "and",
+        "break",
+        "do",
+        "else",
+        "elseif",
+        "end",
+        "false",
+        "for",
+        "function",
+        "if",
+        "in",
+        "local",
+        "nil",
+        "not",
+        "or",
+        "repeat",
+        "return",
+        "then",
+        "true",
+        "until",
+        "while"
     }, keywords_highlight_color
 )
 add_to_highlight(
     {
-        ["bit"] = true,
-        ["colors"] = true,
-        ["colours"] = true,
-        ["commands"] = true,
-        ["coroutine"] = true,
-        ["disk"] = true,
-        ["fs"] = true,
-        ["gps"] = true,
-        ["help"] = true,
-        ["http"] = true,
-        ["io"] = true,
-        ["keys"] = true,
-        ["math"] = true,
-        ["multishell"] = true,
-        ["os"] = true,
-        ["paintutils"] = true,
-        ["parallel"] = true,
-        ["peripheral"] = true,
-        ["rednet"] = true,
-        ["redstone"] = true,
-        ["rs"] = true,
-        ["settings"] = true,
-        ["shell"] = true,
-        ["string"] = true,
-        ["table"] = true,
-        ["term"] = true,
-        ["textutils"] = true,
-        ["turtle"] = true,
-        ["pocket"] = true,
-        ["vector"] = true,
-        ["window"] = true,
-        ["YAGUI"] = true
+        "bit",
+        "colors",
+        "colours",
+        "commands",
+        "coroutine",
+        "disk",
+        "fs",
+        "gps",
+        "help",
+        "http",
+        "io",
+        "keys",
+        "math",
+        "multishell",
+        "os",
+        "paintutils",
+        "parallel",
+        "peripheral",
+        "rednet",
+        "redstone",
+        "rs",
+        "settings",
+        "shell",
+        "string",
+        "table",
+        "term",
+        "textutils",
+        "turtle",
+        "pocket",
+        "vector",
+        "window",
+        "YAGUI"
     }, API_highlight_color
 )
 add_to_highlight(
     {
-        ["info"] = true,
-        ["generic_utils"] = true,
-        ["string_utils"] = true,
-        ["math_utils"] = true,
-        ["table_utils"] = true,
-        ["color_utils"] = true,
-        ["event_utils"] = true,
-        ["setting_utils"] = true,
-        ["monitor_utils"] = true,
-        ["screen_buffer"] = true,
-        ["input"] = true,
-        ["gui_elements"] = true,
-        ["WSS"] = true,
-        ["wireless_screen_share"] = true,
-        ["FT"] = true,
-        ["file_transfer"] = true,
-        ["Loop"] = true,
-        ["self"] = true
+        "info",
+        "generic_utils",
+        "string_utils",
+        "math_utils",
+        "table_utils",
+        "color_utils",
+        "event_utils",
+        "setting_utils",
+        "monitor_utils",
+        "screen_buffer",
+        "input",
+        "gui_elements",
+        "WSS",
+        "wireless_screen_share",
+        "FT",
+        "file_transfer",
+        "Loop",
+        "self"
     }, YAGUI_highlight_color
 )
 
@@ -172,7 +172,7 @@ local lCursor   = YAGUI.gui_elements.Label(0, 0, "Cursor: (1; 1)", text_color)
 local bCompact  = YAGUI.gui_elements.Button(0, 0, 0, 0, "C", text_color, special_button_active_color, special_button_not_active_color)
 local mEditor   = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, editor_background)
 local lPath     = YAGUI.gui_elements.Label(0, 0, "/path/", text_color)
-local cSHL      = YAGUI.gui_elements.Clock(0.5)
+local cSHL      = YAGUI.gui_elements.Clock(SH_timeout)
 
 bCompact.timed.enabled = true
 bCompact.timed.clock.interval = button_timeout
@@ -369,14 +369,22 @@ end
 
 local syntax_highlight_cache = {}
 
+local function SH_sub(tbl, from)
+    for i=from + 1, #tbl do
+        tbl[i] = nil
+    end
+end
+local function SH_rep(tbl, char, times)
+    local tbl_len = #tbl
+    for i=tbl_len + 1, times + tbl_len do
+        tbl[i] = char
+    end
+end
+
 local function syntax_highlight(from, to)
     local text_paint = YAGUI.color_utils.colors[text_color]
     local comment_paint = YAGUI.color_utils.colors[comment_highlight_color]
     local string_paint = YAGUI.color_utils.colors[string_highlight_color]
-
-    local function replace_char(str, x, char)
-        return str:sub(0, x - 1)..char..str:sub(x + 1)
-    end
 
     from = from or mEditor.first_visible_line
     to = to or (mEditor.first_visible_line + mEditor.size.y - 1)
@@ -402,53 +410,54 @@ local function syntax_highlight(from, to)
         local line = mEditor.lines[y]
         if not line then break; end
 
-        local foreground = ""
+        local foreground = {}
 
         local words_in_line = YAGUI.string_utils.split(line, "[^%w_]")
         local x = 0
         for key, word in next, words_in_line do
-            for color, dictionary in next, words_highlight do
-                if dictionary[word] then
-                    foreground = foreground..string.rep(YAGUI.color_utils.colors[text_color], x - #foreground)..string.rep(YAGUI.color_utils.colors[color], #word)
-                end
+            local color = words_highlight[word]
+            if color then
+                SH_rep(foreground, YAGUI.color_utils.colors[text_color], x - #foreground)
+                SH_rep(foreground, YAGUI.color_utils.colors[color], #word)
             end
             
             x = x + #word + 1
         end
-        foreground = foreground..YAGUI.color_utils.colors[text_color]
+        foreground[#foreground + 1] = text_paint
 
 
         for char_key=1, #line do
+            if not foreground[char_key] then foreground[char_key] = text_paint; end
             local char = line:sub(char_key, char_key)
             if state == "code" then
                 if char == "\"" then
-                    foreground = replace_char(foreground, char_key, string_paint)
+                    foreground[char_key] = string_paint
                     if char_key ~= #line then
                         state = "string"
                         current_quote = "\""
                     end
                 elseif char == "'" then
-                    foreground = replace_char(foreground, char_key, string_paint)
+                    foreground[char_key] = string_paint
                     if char_key ~= #line then
                         state = "string"
                         current_quote = "'"
                     end
                 elseif line:sub(char_key, char_key + 1) == "[[" then
                     state = "long-string"
-                    foreground = replace_char(foreground, char_key, string_paint)
+                    foreground[char_key] = string_paint
                 elseif line:sub(char_key, char_key + 1) == "--" then
                     if line:sub(char_key, char_key + 3) == "--[[" then
                         state = "closed-comment"
-                        foreground = replace_char(foreground, char_key, comment_paint)
+                        foreground[char_key] = comment_paint
                     else
                         state = "comment"
-                        foreground = replace_char(foreground, char_key, comment_paint)
+                        foreground[char_key] = comment_paint
                     end
                 elseif char_key > #foreground then
-                    foreground = replace_char(foreground, char_key, text_paint)
+                    foreground[char_key] = text_paint
                 end
             elseif state == "string" then
-                foreground = replace_char(foreground, char_key, string_paint)
+                foreground[char_key] = string_paint
                 if char == "\\" then
                     if char_key == #line then
                         nested_state = "multi-line"
@@ -474,19 +483,19 @@ local function syntax_highlight(from, to)
                     nested_state = "none"
                 end
             elseif state == "long-string" then
-                foreground = replace_char(foreground, char_key, string_paint)
+                foreground[char_key] = string_paint
                 if line:sub(char_key, char_key + 1) == "]]" then
-                    foreground = replace_char(foreground, char_key + 1, string_paint)
+                    foreground[char_key + 1] = string_paint
                     state = "code"
                 end
             elseif state == "comment" then
-                foreground = foreground:sub(0, char_key - 1)
+                SH_sub(foreground, char_key - 1)
                 state = "code"
                 break
             elseif state == "closed-comment" then
-                foreground = replace_char(foreground, char_key, comment_paint)
+                foreground[char_key] = comment_paint
                 if line:sub(char_key, char_key + 1) == "]]" then
-                    foreground = replace_char(foreground, char_key + 1, comment_paint)
+                    foreground[char_key + 1] = comment_paint
                     state = "code"
                 end
             end
@@ -499,7 +508,7 @@ local function syntax_highlight(from, to)
             ["current_quote"] = current_quote
         }
 
-        mEditor.rich_text[y].foreground = foreground
+        mEditor.rich_text[y].foreground = table.concat(foreground)
     end
 end
 
@@ -526,12 +535,6 @@ local function open_notes(path)
         end
 
         file.close()
-    else
-        local file = fs.open(path, "w")
-
-        file.write("")
-
-        file.close()
     end
     mEditor:set_cursor(1, 1)
     
@@ -553,7 +556,7 @@ local function save_notes(path)
 
     local file = fs.open(path, "w")
 
-    file.write(YAGUI.string_utils.join(mEditor.lines, "\n"))
+    file.write(table.concat(mEditor.lines, "\n"))
 
     file.close()
 end
@@ -770,8 +773,8 @@ lMain:set_callback(
     YAGUI.ONCLOCK,
     function (self)
         lLines.text = string.format("Lines: %d", #mEditor.lines)
-        lCursor.text = "Cursor: "..tostring(mEditor.cursor.pos)
-        lPath.text = "/"..current_file_path
+        lCursor.text = table.concat({"Cursor: ", tostring(mEditor.cursor.pos)})
+        lPath.text = table.concat({"/", current_file_path})
     end
 )
 

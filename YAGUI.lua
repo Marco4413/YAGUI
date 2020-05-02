@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.30.1",
+    ver = "1.30.2",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -187,23 +187,15 @@ generic_utils = {
 -- STRING UTILS MODULE
 string_utils = {
     magic_characters = {"(", ")", ".", "%", "+", "-", "*", "?", "[", "]", "^", "$"},
-    -- JOINS A TABLE OF STRINGS INTO A STRING THAT HAS STRINGS SEPARATED BY THE SPECIFIED SEPARATOR
-    join = function (tbl, sep)
-        sep = sep or ""
-        local str = ""
-        for key=1, #tbl do
-            local value = tbl[key]
-            str = str..tostring(value)..(key < #tbl and sep or "")
-        end
-        return str
-    end,
+    -- CONCATENATES STRINGS IN A TABLE
+    join = table.concat,
     -- SPLITS STRING EVERY TIME SEPARATOR (PATTERN) IS FOUND
     split = function (str, sep)
         if not string.find(str, sep) then
             return {str}
         end
         local return_table = {}
-        local pattern = "(.-)"..sep.."()"
+        local pattern = table.concat({"(.-)", sep, "()"})
         local last_pos
         for this_match, pos in string.gfind(str, pattern) do
             table.insert(return_table, this_match)
@@ -251,7 +243,7 @@ string_utils = {
     -- ESCAPES ALL MAGIC CHARACTERS IN A STRING
     escape_magic_characters = function (str)
         for key, character in next, string_utils.magic_characters do
-            str = str:gsub("[%"..character.."]", '%%%'..character)
+            str = str:gsub(table.concat({"[%", character, "]"}), table.concat({"%%%", character}))
         end
         return str
     end,
@@ -278,7 +270,7 @@ string_utils = {
         decimal_digits = decimal_digits:reverse():gsub("0*(.*)", "%1"):reverse()
 
         if #decimal_digits > 0 then
-            return unit.."."..decimal_digits
+            return table.concat({unit, ".", decimal_digits})
         end
 
         return unit
@@ -338,7 +330,7 @@ math_utils = {
         -- RETURNS tostring(Vector1) WITH precision DECIMAL NUMBERS
         string = function (self, precision)
             if precision then
-                return string.format("(%."..tostring(precision).."f; %."..tostring(precision).."f)", self.x, self.y)
+                return string.format(table.concat({"(%.", precision, "f; %.", precision, "f)"}), self.x, self.y)
             else
                 return string.format("(%f; %f)", self.x, self.y)
             end
@@ -432,7 +424,7 @@ math_utils = {
         -- RETURNS tostring(Vector1) WITH precision DECIMAL NUMBERS
         string = function (self, precision)
             if precision then
-                return string.format("(%."..tostring(precision).."f; %."..tostring(precision).."f; %."..tostring(precision).."f)", self.x, self.y, self.z)
+                return string.format(table.concat({"(%.", precision, "f; %.", precision, "f; %.", precision, "f)"}), self.x, self.y, self.z)
             else
                 return string.format("(%f; %f; %f)", self.x, self.y, self.z)
             end
@@ -576,7 +568,7 @@ table_utils = {
 
         local function i_tbl_serialize(tbl, path)
             local this_indent = indent:rep(current_depth + 1)
-            local str_tbl = "{"..new_line
+            local str_tbl = table.concat({"{", new_line})
 
             local function add_tbl(tbl)
                 local tbl_length = #tbl
@@ -595,37 +587,37 @@ table_utils = {
                     
                     if key_type == "number" and key <= tbl_length and key == last_i + 1 then
                         last_i = key
-                        str_tbl = str_tbl..this_indent
+                        str_tbl = table.concat({str_tbl, this_indent})
                     else
-                        str_tbl = str_tbl..string.format("%s[%s]%s=%s", this_indent, key_string, space, space)
+                        str_tbl = table.concat({str_tbl, string.format("%s[%s]%s=%s", this_indent, key_string, space, space)})
                     end
 
                     if value_type == "table" then
                         if not next(value) then
-                            str_tbl = str_tbl.."{}"
+                            str_tbl = table.concat({str_tbl, "{}"})
                         elseif (depth <= -1) or (current_depth < depth) then
                             if found_tables[value] and not recursion then
-                                str_tbl = str_tbl..string.format("%q", found_tables[value])
+                                str_tbl = table.concat({str_tbl, string.format("%q", found_tables[value])})
                             else
-                                local this_path = path.."["..key_string.."]"
+                                local this_path = table.concat({path, "[", key_string, "]"})
                                 found_tables[value] = this_path
                                 current_depth = current_depth + 1
-                                str_tbl = str_tbl..i_tbl_serialize(value, this_path)
+                                str_tbl = table.concat({str_tbl, i_tbl_serialize(value, this_path)})
                                 current_depth = current_depth - 1
                             end
                         else
-                            str_tbl = str_tbl.."{}"
+                            str_tbl = table.concat({str_tbl, "{}"})
                         end
                     elseif (value_type == "string") or (value_type == "function") then
-                        str_tbl = str_tbl..string.format("%q", tostring(value))
+                        str_tbl = table.concat({str_tbl, string.format("%q", tostring(value))})
                     else
-                        str_tbl = str_tbl..string.format("%s", tostring(value))
+                        str_tbl = table.concat({str_tbl, string.format("%s", tostring(value))})
                     end
 
                     if next(tbl, key) then
-                        str_tbl = str_tbl..","..new_line
+                        str_tbl = table.concat({str_tbl, ",", new_line})
                     else
-                        str_tbl = str_tbl..new_line
+                        str_tbl = table.concat({str_tbl, new_line})
                     end
                 end
             end
@@ -634,12 +626,12 @@ table_utils = {
             if serialise_metatables and metatable then
                 add_tbl(metatable)
                 if next(tbl) then
-                    str_tbl = str_tbl:sub(1, #str_tbl - #new_line)..","..str_tbl:sub(#str_tbl - #new_line + 1)
+                    str_tbl = table.concat({str_tbl:sub(1, #str_tbl - #new_line), ",", str_tbl:sub(#str_tbl - #new_line + 1)})
                 end
             end
             
             add_tbl(tbl)
-            str_tbl = str_tbl..indent:rep(current_depth).."}"
+            str_tbl = table.concat({str_tbl, indent:rep(current_depth), "}"})
             return str_tbl
         end
         
@@ -839,7 +831,7 @@ monitor_utils = {
     end,
     -- PRINTS STRINGS ON SPECIFIED MONITOR WITH SPECIFIED FOREGROUND AND BACKGROUND
     better_print = function (monitor, foreground, background, ...)
-        local strings = string_utils.join({...}, "")
+        local strings = table.concat({...})
         local old_foreground = monitor.getTextColor()
         local old_background = monitor.getBackgroundColor()
 
@@ -944,15 +936,15 @@ local screen_buffer = {
             
             local width, height = screen.getSize()
             for y=1, height do
-                local row_text, row_foreground, row_background = "", "", ""
+                local row_text, row_foreground, row_background = {}, {}, {}
                 for x=1, width do
                     local pixel = buffer:get_pixel(x, y)
-                    row_text = row_text..pixel.char
-                    row_foreground = row_foreground..color_utils.colors[pixel.foreground]
-                    row_background = row_background..color_utils.colors[pixel.background]
+                    row_text[#row_text + 1] = pixel.char
+                    row_foreground[#row_foreground + 1] = color_utils.colors[pixel.foreground]
+                    row_background[#row_background + 1] = color_utils.colors[pixel.background]
                 end
                 screen.setCursorPos(1, y)
-                screen.blit(row_text, row_foreground, row_background)
+                screen.blit(table.concat(row_text), table.concat(row_foreground), table.concat(row_background))
             end
             screen.setCursorPos(old_x, old_y)
         end
@@ -1436,7 +1428,7 @@ gui_elements = {
             screen_buffer:rectangle(self.pos.x + filled_progress_width, self.pos.y, self.size.x - filled_progress_width, self.size.y, self.colors.unfilled_background)
 
             if self.value.draw_percentage then
-                local percentage_text = string_utils.format_number(value_percentage * 100, self.value.percentage_precision).."%"
+                local percentage_text = table.concat({string_utils.format_number(value_percentage * 100, self.value.percentage_precision), "%"})
                 local text_x = (self.size.x - #percentage_text) / 2 + self.pos.x
                 local text_y = (self.size.y - 1) / 2 + self.pos.y
                 screen_buffer:write(text_x, text_y, percentage_text, self.colors.foreground)
@@ -1634,7 +1626,7 @@ gui_elements = {
                             local old_x = self.cursor.pos.x
 
                             self:set_cursor(1, self.cursor.pos.y - 1)
-                            self:write(this_line.."\n"..prev_line)
+                            self:write(table.concat({this_line, "\n", prev_line}))
                             self:set_cursor(old_x, self.cursor.pos.y - 1)
                         end
                         return true
@@ -1652,7 +1644,7 @@ gui_elements = {
                         local old_x = self.cursor.pos.x
 
                         self:set_cursor(1, self.cursor.pos.y)
-                        self:write(next_line.."\n"..this_line)
+                        self:write(table.concat({next_line, "\n", this_line}))
                         self:set_cursor(old_x, self.cursor.pos.y)
                         return true
 
@@ -1701,7 +1693,7 @@ gui_elements = {
                                 self:set_cursor(cursor_x, cursor_y)
                             end
                         else
-                            local new_line = line:sub(1, self.cursor.pos.x - 2)..line:sub(self.cursor.pos.x)
+                            local new_line = table.concat({line:sub(1, self.cursor.pos.x - 2), line:sub(self.cursor.pos.x)})
                             self.lines[self.cursor.pos.y] = new_line
                             self:set_cursor(self.cursor.pos.x - 1, self.cursor.pos.y)
                             self.callbacks.onWrite(self, new_line, {new_line})
@@ -1714,7 +1706,7 @@ gui_elements = {
                         local line_end = line:sub(self.cursor.pos.x)
 
                         if #line_end > 0 then
-                            local new_line = line:sub(1, self.cursor.pos.x - 1)..line:sub(self.cursor.pos.x + 1)
+                            local new_line = table.concat({line:sub(1, self.cursor.pos.x - 1), line:sub(self.cursor.pos.x + 1)})
                             self.lines[self.cursor.pos.y] = new_line
                             self.callbacks.onWrite(self, new_line, {new_line})
                         else
@@ -1733,7 +1725,7 @@ gui_elements = {
                     elseif formatted_event.key == const.KEY_ENTER then
                         local current_line_to_cursor = self.lines[self.cursor.pos.y]:sub(0, self.cursor.pos.x - 1)
                         local spaces = current_line_to_cursor:gsub("(%s*).*", "%1")
-                        self:write("\n"..spaces)
+                        self:write(table.concat({"\n", spaces}))
                         return true
                     
                     
@@ -1834,17 +1826,17 @@ gui_elements = {
         end,
         -- WRITES TEXT WHERE THE CURSOR IS
         write = function (self, ...)
-            local text = string_utils.join({...}, "")
+            local text = table.concat({...})
             local lines = string_utils.split_by_char(text, "\n")
             self:set_cursor(self.cursor.pos.x, self.cursor.pos.y, true)
 
             if #self.whitelist > 0 then
-                local pattern = "[^"..string_utils.escape_magic_characters(string_utils.join(self.whitelist, "")).."]"
+                local pattern = table.concat({"[^", string_utils.escape_magic_characters(table.concat(self.whitelist)), "]"})
                 for key, line in next, lines do
                     lines[key] = line:gsub(pattern, "")
                 end
             elseif #self.blacklist > 0 then
-                local pattern = "["..string_utils.escape_magic_characters(string_utils.join(self.blacklist, "")).."]"
+                local pattern = table.concat({"[", string_utils.escape_magic_characters(table.concat(self.blacklist)), "]"})
                 for key, line in next, lines do
                     lines[key] = line:gsub(pattern, "")
                 end
@@ -1870,9 +1862,9 @@ gui_elements = {
                             last_line = last_line:sub(1, self.limits.x - #line_end)
                         end
 
-                        self.lines[self.cursor.pos.y] = line_start..line
+                        self.lines[self.cursor.pos.y] = table.concat({line_start, line})
 
-                        table.insert(self.lines, self.cursor.pos.y + 1, last_line..line_end)
+                        table.insert(self.lines, self.cursor.pos.y + 1, table.concat({last_line, line_end}))
 
                         self:set_cursor(#last_line + 1, self.cursor.pos.y + 1)
                     elseif line_key == #lines then
@@ -1894,15 +1886,15 @@ gui_elements = {
                 if self.limits.x > 0 then
                     lines[1] = lines[1]:sub(1, self.limits.x - (#line_start + #line_end))
                 end
-                self.lines[self.cursor.pos.y] = line_start..lines[1]..line_end
+                self.lines[self.cursor.pos.y] = table.concat({line_start, lines[1], line_end})
                 self:set_cursor(self.cursor.pos.x + #lines[1], self.cursor.pos.y)
             end
             self.callbacks.onWrite(self, text, lines)
         end,
         print = function (self, ...)
-            local text = string_utils.join({...}, "")
+            local text = table.concat({...})
             local new_line = #self.lines > 0 and "\n" or ""
-            self:write(new_line..text)
+            self:write(table.concat({new_line, text}))
         end,
         clear = function (self)
             self.lines = {}
@@ -2504,8 +2496,8 @@ Loop = {
             const.ONCLOCK,
             function (self, formatted_event)
                 self.stats:update_pos()
-                self.stats.elements.FPS_label.text = tostring(self.stats.FPS).." FPS"
-                self.stats.elements.EPS_label.text = tostring(self.stats.EPS).." EPS"
+                self.stats.elements.FPS_label.text = table.concat({self.stats.FPS, " FPS"})
+                self.stats.elements.EPS_label.text = table.concat({self.stats.EPS, " EPS"})
                 self.stats.FPS, self.stats.EPS = self.stats.Frames, self.stats.Events
                 self.stats.Frames, self.stats.Events = 0, 0
             end
