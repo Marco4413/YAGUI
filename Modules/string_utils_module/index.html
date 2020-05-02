@@ -168,22 +168,7 @@
 <p>Contains all <strong>functions that are helpful when dealing with strings</strong>.</p>
 <p>This module has a <strong>table that's called <code>magic_characters</code></strong> which is <strong>used by the <a href="#escape_magic_characters"><code>escape_magic_characters</code></a> function</strong> to know what characters to escape, <strong>you shouldn't change it unless other magic_characters are added and the library isn't updated yet</strong>.</p>
 <h2 id="join">join</h2>
-<p><em>string</em> : <strong>join</strong>( <em>table</em> : <strong>tbl</strong>, <em>string</em> : <strong>sep</strong> )</p>
-<p>It <strong>returns a string</strong> which is <strong>all the values of <code>tbl</code> concatenated and separated by <code>sep</code></strong>.</p>
-<p><strong>tbl</strong> is the <strong>table which contains all the values you want to concatenate</strong>.</p>
-<p><strong>sep</strong> is the <strong>string that is going to be put between all concatenated values</strong>.</p>
-<pre><code class="lua">-- Create a table that has values in it (join does tostring() on every value before concatenating)
-local tbl = {&quot;f&quot;, &quot;o&quot;, &quot;o&quot;, &quot;b&quot;, &quot;a&quot;, &quot;r&quot;}
-
--- Join tbl with two different separators
-local s1 = string_utils.join(tbl, &quot;&quot;)
-local s2 = string_utils.join(tbl, &quot;, &quot;)
-
--- Print joined table
-print(s1) -- Prints &quot;foobar&quot;
-print(s2) -- Prints &quot;f, o, o, b, a, r&quot;
-</code></pre>
-
+<p><strong>COPY OF <a href="http://lua-users.org/wiki/TableLibraryTutorial"><code>table.concat</code></a></strong>.</p>
 <h2 id="split">split</h2>
 <p><em>table</em> : <strong>split</strong>( <em>string</em> : <strong>str</strong>, <em>string</em> : <strong>sep</strong> )</p>
 <p>It <strong>returns a table</strong> which <strong>contains all characters in <code>str</code> separated by <code>sep</code> except for <code>sep</code></strong>.</p>
