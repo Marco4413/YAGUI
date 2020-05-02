@@ -266,7 +266,7 @@ local function generate_layout()
             lLines   = function () return 9, 1; end,
             lCursor  = function () return w - 5, 1, YAGUI.ALIGN_RIGHT; end,
             bCompact = function () return w, 1, 1, 1; end,
-            mEditor  = function () return 1, 2, w, h - 2; end,
+            mEditor  = function () return 2, 2, w - 1, h - 2; end,
             lPath    = function () return 1, h; end,
 
             bFile     = function () return 1, 1, 4, 1; end,
@@ -295,7 +295,7 @@ local function generate_layout()
         [ YAGUI.TURTLE ] = {},
         [ YAGUI.POCKET ] = {
             lCursor  = function () return 1, h - 1, YAGUI.ALIGN_LEFT; end,
-            mEditor  = function () return 1, 2, w, h - 3; end,
+            mEditor  = function () return 2, 2, w - 1, h - 3; end,
             lPath    = function () return 1, h; end,
 
             lInputTip   = function () return 3, math.floor(h / 2 + 2), "You can press\nCONTROL to cancel."; end,
@@ -791,6 +791,18 @@ lMain:set_callback(
             bGoto.callbacks.onPress(bGoto, event)
         elseif YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTALT, YAGUI.KEY_R) then
             bRun.callbacks.onTimeout(bRun, event)
+        elseif  YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTSHIFT, YAGUI.KEY_B, YAGUI.KEY_S) then
+            local screenshot = YAGUI.screen_buffer:frame_to_nft(1, 1, term.getSize())
+            local file = fs.open("/Note-Screenshot.nftb", "wb")
+            for i=1, #screenshot do
+                local char = screenshot:sub(i, i)
+                file.write(string.byte(char))
+            end
+            file.close()
+        elseif  YAGUI.input:are_keys_pressed(true, YAGUI.KEY_LEFTSHIFT, YAGUI.KEY_S) then
+            local file = fs.open("/Note-Screenshot.nft", "w")
+            file.write(YAGUI.screen_buffer:frame_to_nft(1, 1, term.getSize()))
+            file.close()
         elseif (not mEditor.focussed) then
             if YAGUI.input:are_keys_pressed(false, YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFT) then
                 mEditor.first_visible_char = math.max(1, mEditor.first_visible_char - 1)

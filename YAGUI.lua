@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.30.2",
+    ver = "1.31",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -106,6 +106,11 @@ local drawing_characters = {
     BOTTOMRIGHT = string.char(133),
     MIDDLELEFT  = string.char(132),
     MIDDLERIGHT = string.char(136)
+}
+-- This is used by the library to encode and decode nft files
+local nft = {
+    BG = string.char(30),
+    FG = string.char(31)
 }
 
 -- DEFINING ALL UTILITIES HERE TO BE ABLE TO ACCESS THEM EVERYWHERE
@@ -1038,6 +1043,110 @@ local screen_buffer = {
                 end
             end
         end
+    end,
+    -- Draws a nfp image on the screen buffer (Learn more about a nfp image here https://github.com/oeed/CraftOS-Standards/blob/master/standards/4-paint.md):
+    --  x is the x pos on the screen where you want to draw it
+    --  y is the y pos on the screen where you want to draw it
+    --  img is the string that you get by reading the image file
+    --  CROP ARGUMENTS (NOT NECESSARY):
+    --    img_x is the starting x pos in img (default: 1)
+    --    img_y is the starting y pos in img (default: 1)
+    --    img_width is the width of the rectangle that is going to be taken starting from img_x,img_y in img   (default: the length of the current row)
+    --    img_height is the height of the rectangle that is going to be taken starting from img_x,img_y in img (default: the height of the image)
+    nfp_image = function (self, x, y, img, img_x, img_y, img_width, img_height)
+        local rows = string_utils.split_by_char(img, "\n")
+        img_x, img_y, img_width, img_height = img_x or 1, img_y or 1, img_width or -1, img_height or #rows
+        for rel_y=1, img_height do
+            local row = rows[img_y + rel_y - 1]
+            if not row then break; end
+
+            for rel_x=1, (img_width == -1 and #row) or (img_width <= #row and img_width) or #row do
+                local color = color_utils.paint[row:sub(img_x + rel_x - 1, img_x + rel_x - 1)]
+                if color then
+                    self.buffer:set_pixel(x + rel_x - 1, y + rel_y - 1, " ", color, color)
+                end
+            end
+        end
+    end,
+    -- Draws a nft image on the screen buffer (Learn more about a nft image here https://github.com/oeed/CraftOS-Standards/blob/master/standards/6-nft.md):
+    --  x is the x pos on the screen where you want to draw it
+    --  y is the y pos on the screen where you want to draw it
+    --  img is the string that you get by reading the image file
+    --  CROP ARGUMENTS (NOT NECESSARY):
+    --    img_x is the starting x pos in img (default: 1)
+    --    img_y is the starting y pos in img (default: 1)
+    --    img_width is the width of the rectangle that is going to be taken starting from img_x,img_y in img   (default: the length of the current row)
+    --    img_height is the height of the rectangle that is going to be taken starting from img_x,img_y in img (default: the height of the image)
+    nft_image = function (self, x, y, img, img_x, img_y, img_width, img_height)
+        local rows = string_utils.split_by_char(img, "\n")
+        img_x, img_y, img_width, img_height = img_x or 1, img_y or 1, img_width or -1, img_height or #rows
+        for rel_y=1, img_height do
+            local row = rows[img_y + rel_y - 1]
+            if not row then break; end
+
+            local rel_x, getting_bg, getting_fg, bg, fg = 1, false, false
+            img_width = img_width == -1 and #row or img_width
+            for i=1, #row do
+                local char = row:sub(i, i)
+                if rel_x > img_width then
+                    break
+                elseif getting_bg then
+                    bg = color_utils.paint[char]
+                    getting_bg = false
+                elseif getting_fg then
+                    fg = color_utils.paint[char]
+                    getting_fg = false
+                elseif char == nft.BG then
+                    getting_bg = true
+                elseif char == nft.FG then
+                    getting_fg = true
+                elseif rel_x >= img_x then
+                    if char == " " then
+                        self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - 1, char, nil, bg)
+                    else
+                        self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - 1, char, fg, bg)
+                    end
+                    rel_x = rel_x + 1
+                else
+                    rel_x = rel_x + 1
+                end
+            end
+        end
+    end,
+    -- Returns a string which is screen_buffer.frame converted into nft format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/6-nft.md):
+    --  x is the starting x pos in the screen buffer
+    --  y is the starting y pos in the screen buffer
+    --  img_width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
+    --  img_height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
+    frame_to_nft = function (self, x, y, width, height)
+        local nft = {}
+        for rel_y=1, height do
+            local row = {}
+            local last_bg, last_fg
+            for rel_x=1, width do
+                local pixel = self.frame.pixels[x] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
+                    char = " ",
+                    foreground = self.frame.background,
+                    background = self.frame.background
+                }
+
+                if pixel.background ~= last_bg then
+                    row[#row + 1] = nft.BG
+                    row[#row + 1] = color_utils.colors[pixel.background]
+                    last_bg = pixel.background
+                end
+
+                if pixel.foreground ~= last_fg then
+                    row[#row + 1] = nft.FG
+                    row[#row + 1] = color_utils.colors[pixel.foreground]
+                    last_fg = pixel.foreground
+                end
+
+                row[#row + 1] = pixel.char
+            end
+            nft[#nft + 1] = table.concat(row)
+        end
+        return table.concat(nft, "\n")
     end,
     -- DRAWS A LINE ON THE SCREEN
     line = function (self, x1, y1, x2, y2, color) -- SOURCE: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
@@ -2069,11 +2178,10 @@ gui_elements = {
         drag = function (self, x, y)
             if self.dragging.enabled then
                 local old_pos = self.pos:duplicate()
-                local delta_drag = math_utils.Vector2.new(
+                self.pos = self.pos + math_utils.Vector2.new(
                     x - self.dragging.from.x,
                     y - self.dragging.from.y
                 )
-                self.pos = self.pos + delta_drag
                 self.dragging.from = math_utils.Vector2.new(x, y)
 
                 self.callbacks.onDrag(self, old_pos.x, old_pos.y)
