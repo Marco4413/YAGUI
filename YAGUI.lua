@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.31",
+    ver = "1.31.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1054,17 +1054,21 @@ local screen_buffer = {
     --    img_width is the width of the rectangle that is going to be taken starting from img_x,img_y in img   (default: the length of the current row)
     --    img_height is the height of the rectangle that is going to be taken starting from img_x,img_y in img (default: the height of the image)
     nfp_image = function (self, x, y, img, img_x, img_y, img_width, img_height)
-        local rows = string_utils.split_by_char(img, "\n")
-        img_x, img_y, img_width, img_height = img_x or 1, img_y or 1, img_width or -1, img_height or #rows
-        for rel_y=1, img_height do
-            local row = rows[img_y + rel_y - 1]
-            if not row then break; end
-
-            for rel_x=1, (img_width == -1 and #row) or (img_width <= #row and img_width) or #row do
-                local color = color_utils.paint[row:sub(img_x + rel_x - 1, img_x + rel_x - 1)]
-                if color then
-                    self.buffer:set_pixel(x + rel_x - 1, y + rel_y - 1, " ", color, color)
+        img_x, img_y = img_x or 1, img_y or 1
+        local rel_x, rel_y = 1, 1
+        for i=1, #img do
+            if img_height and rel_y >= img_height + img_y then break; end
+            local char = img:sub(i, i)
+            if char == "\n" then
+                rel_x, rel_y = 1, rel_y + 1
+            else
+                if rel_y >= img_y and rel_x >= img_x and ((not img_width) or rel_x < img_width + img_x) then
+                    local color = color_utils.paint[char]
+                    if color then
+                        self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - img_y, " ", color, color)
+                    end
                 end
+                rel_x = rel_x + 1
             end
         end
     end,
@@ -1078,38 +1082,28 @@ local screen_buffer = {
     --    img_width is the width of the rectangle that is going to be taken starting from img_x,img_y in img   (default: the length of the current row)
     --    img_height is the height of the rectangle that is going to be taken starting from img_x,img_y in img (default: the height of the image)
     nft_image = function (self, x, y, img, img_x, img_y, img_width, img_height)
-        local rows = string_utils.split_by_char(img, "\n")
-        img_x, img_y, img_width, img_height = img_x or 1, img_y or 1, img_width or -1, img_height or #rows
-        for rel_y=1, img_height do
-            local row = rows[img_y + rel_y - 1]
-            if not row then break; end
-
-            local rel_x, getting_bg, getting_fg, bg, fg = 1, false, false
-            img_width = img_width == -1 and #row or img_width
-            for i=1, #row do
-                local char = row:sub(i, i)
-                if rel_x > img_width then
-                    break
-                elseif getting_bg then
-                    bg = color_utils.paint[char]
-                    getting_bg = false
-                elseif getting_fg then
-                    fg = color_utils.paint[char]
-                    getting_fg = false
-                elseif char == nft.BG then
-                    getting_bg = true
-                elseif char == nft.FG then
-                    getting_fg = true
-                elseif rel_x >= img_x then
-                    if char == " " then
-                        self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - 1, char, nil, bg)
-                    else
-                        self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - 1, char, fg, bg)
-                    end
-                    rel_x = rel_x + 1
-                else
-                    rel_x = rel_x + 1
+        img_x, img_y = img_x or 1, img_y or 1
+        local rel_x, rel_y, get_bg, get_fg, bg, fg = 1, 1
+        for i=1, #img do
+            if img_height and rel_y >= img_height + img_y then break; end
+            local char = img:sub(i, i)
+            if get_bg then
+                bg = color_utils.paint[char]
+                get_bg = false
+            elseif get_fg then
+                fg = color_utils.paint[char]
+                get_fg = false
+            elseif char == nft.BG then
+                get_bg = true
+            elseif char == nft.FG then
+                get_fg = true
+            elseif char == "\n" then
+                rel_x, rel_y, get_bg, get_fg, bg, fg = 1, rel_y + 1
+            else
+                if rel_y >= img_y and rel_x >= img_x and ((not img_width) or rel_x < img_width + img_x) then
+                    self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - img_y, char, fg, bg)
                 end
+                rel_x = rel_x + 1
             end
         end
     end,
