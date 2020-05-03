@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.31.1",
+    ver = "1.32",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1106,6 +1106,27 @@ local screen_buffer = {
                 rel_x = rel_x + 1
             end
         end
+    end,
+    -- NOTE: TO MAKE SCREENSHOTS CONSIDER USING THE NFT FORMAT (They support text)
+    -- Returns a string which is screen_buffer.frame converted into nfp format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/4-paint.md):
+    --  x is the starting x pos in the screen buffer
+    --  y is the starting y pos in the screen buffer
+    --  img_width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
+    --  img_height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
+    frame_to_nfp = function (self, x, y, width, height)
+        local nfp = {}
+        for rel_y=1, height do
+            local row = {}
+            for rel_x=1, width do
+                local pixel = self.frame.pixels[x] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
+                    background = self.frame.background
+                }
+
+                row[#row + 1] = color_utils.colors[pixel.inverted and pixel.foreground or pixel.background]
+            end
+            nfp[#nfp + 1] = table.concat(row)
+        end
+        return table.concat(nfp, "\n")
     end,
     -- Returns a string which is screen_buffer.frame converted into nft format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/6-nft.md):
     --  x is the starting x pos in the screen buffer
