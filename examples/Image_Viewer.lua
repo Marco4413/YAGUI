@@ -29,7 +29,7 @@ if tArgs[1] == "help" or #tArgs == 0 then
 end
 
 if #tArgs < 2 then
-    YAGUI.monitor_utils.better_print(term, colors.red, nil, "Not enough arguments: 2 must be provided.")
+    YAGUI.monitor_utils.better_print(term, colors.red, nil, "Not enough arguments: At least 2 must be provided.")
     print_usage()
     return
 end
@@ -92,7 +92,7 @@ local x, y, img_x, img_y, width, height = tonumber(tArgs[4]) or 1, tonumber(tArg
 local loop = YAGUI.Loop(20, 6)
 loop.options.raw_mode = true
 loop:set_callback(
-    YAGUI.ONCLOCK,
+    YAGUI.ONDRAW,
     function (self)
         draw_function(YAGUI.screen_buffer, x, y, img, img_x, img_y, width, height)
     end

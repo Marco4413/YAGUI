@@ -770,7 +770,7 @@ mEditor:set_callback(
 )
 
 lMain:set_callback(
-    YAGUI.ONCLOCK,
+    YAGUI.ONDRAW,
     function (self)
         lLines.text = string.format("Lines: %d", #mEditor.lines)
         lCursor.text = table.concat({"Cursor: ", tostring(mEditor.cursor.pos)})
@@ -982,8 +982,8 @@ lInput:set_elements({lInputTitle, mInput, lInputTip, WSS})
 lOverWrite:set_elements({wOverWrite, WSS})
 
 for key, loop in next, loops do
-    loop.stats.elements.FPS_label.text_alignment = YAGUI.ALIGN_RIGHT
-    loop.stats.elements.EPS_label.text_alignment = YAGUI.ALIGN_RIGHT
+    loop.stats.FPS_label.text_alignment = YAGUI.ALIGN_RIGHT
+    loop.stats.EPS_label.text_alignment = YAGUI.ALIGN_RIGHT
     loop.stats:show(loop_stats)
     loop.options.raw_mode = true
     loop.options.stop_on_terminate = false

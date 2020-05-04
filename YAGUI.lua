@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.32",
+    ver = "1.33",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -110,7 +110,9 @@ local drawing_characters = {
 -- This is used by the library to encode and decode nft files
 local nft = {
     BG = string.char(30),
-    FG = string.char(31)
+    FG = string.char(31),
+    UP_ARROW = string.char(24),
+    DOWN_ARROW = string.char(25)
 }
 
 -- DEFINING ALL UTILITIES HERE TO BE ABLE TO ACCESS THEM EVERYWHERE
@@ -1114,7 +1116,7 @@ local screen_buffer = {
     --  img_width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
     --  img_height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
     frame_to_nfp = function (self, x, y, width, height)
-        local nfp = {}
+        local image = {}
         for rel_y=1, height do
             local row = {}
             for rel_x=1, width do
@@ -1124,9 +1126,9 @@ local screen_buffer = {
 
                 row[#row + 1] = color_utils.colors[pixel.inverted and pixel.foreground or pixel.background]
             end
-            nfp[#nfp + 1] = table.concat(row)
+            image[#image + 1] = table.concat(row)
         end
-        return table.concat(nfp, "\n")
+        return table.concat(image, "\n")
     end,
     -- Returns a string which is screen_buffer.frame converted into nft format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/6-nft.md):
     --  x is the starting x pos in the screen buffer
@@ -1134,7 +1136,7 @@ local screen_buffer = {
     --  img_width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
     --  img_height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
     frame_to_nft = function (self, x, y, width, height)
-        local nft = {}
+        local image = {}
         for rel_y=1, height do
             local row = {}
             local last_bg, last_fg
@@ -1157,11 +1159,11 @@ local screen_buffer = {
                     last_fg = pixel.foreground
                 end
 
-                row[#row + 1] = pixel.char
+                row[#row + 1] = pixel.char == nft.BG and nft.UP_ARROW or pixel.char == nft.FG and nft.DOWN_ARROW or pixel.char
             end
-            nft[#nft + 1] = table.concat(row)
+            image[#image + 1] = table.concat(row)
         end
-        return table.concat(nft, "\n")
+        return table.concat(image, "\n")
     end,
     -- DRAWS A LINE ON THE SCREEN
     line = function (self, x1, y1, x2, y2, color) -- SOURCE: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
@@ -1346,9 +1348,11 @@ gui_elements = {
         -- GIVES EVENT TO CLOCK
         event = function (self, formatted_event)
             if not self.enabled then self:reset_timer(); return; end
-            if os.clock() >= self.clock + self.interval then
+            local this_time = os.clock()
+            if this_time >= self.clock + self.interval then
+                local delta_time = this_time - self.clock
                 self:reset_timer()
-                self.callbacks.onClock(self, formatted_event)
+                self.callbacks.onClock(self, formatted_event, delta_time)
                 if self.oneshot then self:stop() end
             end
         end,
@@ -2588,16 +2592,14 @@ Loop = {
             },
             stats = {
                 pos = math_utils.Vector2.new(1, 1),
-                elements = nil,
                 show = function (self, state)
-                    self.elements.FPS_label.hidden = not state
-                    self.elements.EPS_label.hidden = not state
+                    self.FPS_label.hidden = not state
+                    self.EPS_label.hidden = not state
                 end,
                 update_pos = function (self)
-                    self.elements.FPS_label.pos = self.pos
-                    self.elements.EPS_label.pos = self.pos + math_utils.Vector2.DOWN
+                    self.FPS_label.pos = self.pos
+                    self.EPS_label.pos = self.pos + math_utils.Vector2.DOWN
                 end,
-                Frames = 0,
                 Events = 0,
                 FPS = 0,
                 EPS = 0
@@ -2606,23 +2608,21 @@ Loop = {
                 onStart = function () end,
                 onStop = function () end,
                 onDraw = function () end,
-                onClock = function () end,
                 onEvent = function () end
             }
         }
         -- Set references to stats in clock
         newLoop.elements.loop.stats_clock.stats = newLoop.stats
         -- Set a reference to loop elements in stats table
-        newLoop.stats.elements = newLoop.elements.loop
+        newLoop.stats.FPS_label = newLoop.elements.loop.FPS_label
+        newLoop.stats.EPS_label = newLoop.elements.loop.EPS_label
         -- Set stats_clock callback
         newLoop.elements.loop.stats_clock:set_callback(
             const.ONCLOCK,
-            function (self, formatted_event)
+            function (self, formatted_event, delta_time)
                 self.stats:update_pos()
-                self.stats.elements.FPS_label.text = table.concat({self.stats.FPS, " FPS"})
-                self.stats.elements.EPS_label.text = table.concat({self.stats.EPS, " EPS"})
-                self.stats.FPS, self.stats.EPS = self.stats.Frames, self.stats.Events
-                self.stats.Frames, self.stats.Events = 0, 0
+                self.stats.FPS_label.text = table.concat({math.floor(self.stats.FPS + 0.5), " FPS"})
+                self.stats.EPS_label.text = table.concat({math.floor(self.stats.EPS + 0.5), " EPS"})
             end
         )
         newLoop.stats:show(false)
@@ -2630,9 +2630,13 @@ Loop = {
         newLoop.elements.loop.clock.Loop = newLoop
         newLoop.elements.loop.clock:set_callback(
             const.ONCLOCK,
-            function (self, formatted_event)
-                self.Loop.callbacks.onClock(self.Loop, formatted_event)
-                self.Loop:draw_elements(1 / self.Loop.stats.FPS)
+            function (self, formatted_event, delta_time, delta_err)
+                self.Loop.stats.FPS = 1 / delta_time
+                self.Loop.stats.EPS = self.Loop.stats.Events / delta_time
+                self.Loop.stats.Events = 0
+                
+                self.Loop:draw_elements(delta_time)
+                
                 self.interval = 1 / self.Loop.options.FPS_target
             end
         )
@@ -2680,8 +2684,6 @@ Loop = {
 
         screen_buffer:draw()
         screen_buffer.screens = old_screens
-
-        self.stats.Frames = self.stats.Frames + 1
     end,
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
     event_elements = function (self, formatted_event)
@@ -2734,8 +2736,6 @@ Loop = {
         end
 
         event_table(self.elements.low_priority)
-
-        self.stats.Events = self.stats.Events + 1
     end,
     -- STARTS THE LOOP
     start = function (self)
@@ -2755,6 +2755,8 @@ Loop = {
 
             input:manage_event(formatted_event)
             self:event_elements(formatted_event)
+
+            self.stats.Events = self.stats.Events + 1
 
             os.cancelTimer(timer)
         end
