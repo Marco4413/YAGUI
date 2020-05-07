@@ -29,6 +29,7 @@ All event **constants that have to do with the name of an event**:
 * **TOUCH**
 * **MOUSEUP**
 * **MOUSEDRAG**
+* **MOUSEMOVE**
 * **MOUSESCROLL**
 * **CHAR**
 * **KEY**
@@ -76,6 +77,7 @@ All **constants that will help you to set objects' callbacks** through [`generic
 * **ONDRAG**
 * **ONRESIZE**
 * **ONPASTE**
+* **ONHOVER**
 
 ### Objects
 

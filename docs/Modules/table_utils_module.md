@@ -174,3 +174,33 @@ print(
     tbl["foo bar"][2]
 )
 ```
+
+## better_remove
+
+*nil* : **better_remove**( *table* : **tbl**, *number* : **...** )
+
+**Removes keys `...` in `tbl`** (`tbl` must be an array and `...` must be sorted).
+
+**tbl** the **table where you want to remove the keys**.
+
+**...** the **keys to remove from `tbl`**.
+
+```lua
+-- Creating a table
+local tbl = {
+    10, 20, 30, 40, 50
+}
+
+-- Print the table before removing any key
+print(
+    table_utils.serialise(tbl, -1, true, false, false, false, "", " ")
+)
+
+-- Remove keys from table
+table_utils.better_remove(tbl, 1, 3, 5)
+
+-- Print the table after keys were removed
+print(
+    table_utils.serialise(tbl, -1, true, false, false, false, "", " ")
+)
+```

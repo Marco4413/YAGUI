@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.33",
+    ver = "1.34",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -30,6 +30,7 @@ local const = {
     TOUCH = "screen_touch",
     MOUSEUP = "mouse_up",
     MOUSEDRAG = "mouse_drag",
+    MOUSEMOVE = "mouse_move",
     MOUSESCROLL = "mouse_scroll",
     CHAR = "char",
     KEY = "key",
@@ -74,6 +75,7 @@ local const = {
     ONDRAG = 19,
     ONRESIZE = 20,
     ONPASTE = 21,
+    ONHOVER = 22,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -670,6 +672,18 @@ table_utils = {
         local old_value = table_with_key[key_to_change]
         table_with_key[key_to_change] = value
         return old_value
+    end,
+    better_remove = function (tbl, ...)
+        local indices = {...}
+        local delta = 0
+        for j=1, #indices do
+            local index = indices[j] - delta
+            tbl[index] = nil
+            for i=index, (indices[j + 1] and indices[j + 1] - delta + 1 or #tbl - 1) do
+                tbl[i], tbl[i + 1] = tbl[i + 1]
+            end
+            delta = delta + 1
+        end
     end
 }
 
@@ -713,7 +727,7 @@ end
 -- EVENT UTILS MODULE
 event_utils = {
     -- USED TO CHECK IF AN AREA OF THE SCREEN WAS PRESSED
-    is_area_pressed = function (press_x, press_y, x, y, width, height)
+    in_area = function (press_x, press_y, x, y, width, height)
         if press_x >= x and press_x < x + width then
             if press_y >= y and press_y < y + height then
                 return true
@@ -743,6 +757,11 @@ event_utils = {
             event.y = event_table[4]
         elseif event.name == "mouse_drag" then
             event.name = const.MOUSEDRAG
+            event.button = event_table[2]
+            event.x = event_table[3]
+            event.y = event_table[4]
+        elseif event.name == "mouse_move" then
+            event.name = const.MOUSEMOVE
             event.button = event_table[2]
             event.x = event_table[3]
             event.y = event_table[4]
@@ -855,7 +874,6 @@ monitor_utils = {
         monitor.clear()
         monitor.setCursorPos(1, 1)
     end
-
 }
 
 -- SCREEN BUFFER MODULE
@@ -1416,12 +1434,14 @@ gui_elements = {
     },
     Button = {
         -- RETURNS NEW BUTTON
-        new = function (x, y, width, height, text, foreground, active_background, unactive_background)
+        new = function (x, y, width, height, text, foreground, active_background, unactive_background, hover_background)
             local newButton = {
                 draw_priority = const.LOW_PRIORITY,
                 focussed = false,
                 hidden = false,
+                hoverable = hover_background and true or false,
                 active = false,
+                hovered = false,
                 shortcut_once = true,
                 shortcut = {},
                 text_alignment = const.ALIGN_CENTER,
@@ -1435,6 +1455,7 @@ gui_elements = {
                 },
                 colors = {
                     foreground = foreground,
+                    hover_background = hover_background,
                     active_background = active_background,
                     unactive_background = unactive_background,
                     border_color = colors.white
@@ -1443,7 +1464,8 @@ gui_elements = {
                     onDraw = function () end,
                     onPress = function () end,
                     onFailedPress = function () end,
-                    onTimeout = function () end
+                    onTimeout = function () end,
+                    onHover = function () end
                 }
             }
             newButton.timed.clock.binded_button = newButton
@@ -1466,6 +1488,8 @@ gui_elements = {
             self.callbacks.onDraw(self, delta_time)
             if self.active then 
                 screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.active_background, self.border, self.colors.border_color)
+            elseif self.hovered then
+                screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.hover_background, self.border, self.colors.border_color)
             else
                 screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.unactive_background, self.border, self.colors.border_color)
             end
@@ -1490,7 +1514,7 @@ gui_elements = {
         event = function (self, formatted_event)
             if self.hidden then return false; end
             if formatted_event.name == const.TOUCH then
-                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self:press(formatted_event)
                     return true -- RETURNING TRUE DELETES THE EVENT
                 else
@@ -1498,6 +1522,27 @@ gui_elements = {
                 end
             elseif input:are_keys_pressed(self.shortcut_once, table.unpack(self.shortcut)) then
                 self:press(formatted_event)
+            elseif self.hoverable then
+                if formatted_event.name == const.MOUSEMOVE or formatted_event.name == const.MOUSEDRAG then
+                    if ((not formatted_event.x) or not formatted_event.y) then
+                        if self.hovered then
+                            self.hovered = false
+                            self.callbacks.onHover(self, formatted_event)
+                        end
+                    elseif event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                        if not self.hovered then
+                            self.hovered = true
+                            self.callbacks.onHover(self, formatted_event)
+                        end
+                        return true
+                    elseif self.hovered then
+                        self.hovered = false
+                        self.callbacks.onHover(self, formatted_event)
+                    end
+                elseif self.hovered and formatted_event.name == const.DELETED then
+                    self.hovered = false
+                    self.callbacks.onHover(self, formatted_event)
+                end
             end
             if self.timed.enabled then self.timed.clock:event(formatted_event); end
         end,
@@ -1566,7 +1611,7 @@ gui_elements = {
         event = function (self, formatted_event)
             if self.hidden then return false; end
             if formatted_event.name == const.TOUCH then
-                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self.callbacks.onPress(self, formatted_event)
                 end
             end
@@ -1708,13 +1753,13 @@ gui_elements = {
             if self.hidden then return false; end
             if not self.editable then return false; end
             if formatted_event.name == const.TOUCH then
-                if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self.callbacks.onPress(self, formatted_event)
                     self:focus(true, formatted_event)
                     local x = formatted_event.x - self.pos.x
                     local y = formatted_event.y - self.pos.y
                     if self.border then
-                        if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x + 1, self.pos.y + 1, self.size.x - 2, self.size.y - 2) then
+                        if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x + 1, self.pos.y + 1, self.size.x - 2, self.size.y - 2) then
                             self:set_cursor(x + self.first_visible_char - 1, y + self.first_visible_line - 1)
                         end
                     else
@@ -2109,7 +2154,7 @@ gui_elements = {
             local delete_event = self:event_elements(formatted_event)
             if not delete_event then
                 if formatted_event.name == const.TOUCH then
-                    if event_utils.is_area_pressed(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                    if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                         self.can_drag = false
                         if self.resizing.enabled then
                             local resizing = true
@@ -2272,7 +2317,7 @@ gui_elements = {
         -- GIVES EVENT TO ALL WINDOW'S ELEMENTS
         event_elements = function (self, formatted_event)
             local this_event = formatted_event
-            if this_event.name == const.TOUCH then
+            if this_event.x and this_event.y then
                 this_event = event_utils.format_event_table(this_event.raw)
                 this_event.x, this_event.y = this_event.x - self.pos.x + 1, this_event.y - self.pos.y + 1
             end
@@ -2284,7 +2329,7 @@ gui_elements = {
                     local this_delete_event = element:event(this_event)
                     delete_event = delete_event or this_delete_event
                     if this_delete_event then
-                        this_event = {name = const.DELETED}
+                        this_event = {name = const.DELETED, deleted = formatted_event}
                     end
                 end
             end
@@ -2690,13 +2735,13 @@ Loop = {
         local function event_table(tbl)
             for key, element in next, tbl do
                 if element.event then
-                    if element:event(formatted_event) then formatted_event = {name = const.DELETED}; end
+                    if element:event(formatted_event) then formatted_event = {name = const.DELETED, deleted = formatted_event}; end
                 end
             end
         end
 
         if self.callbacks.onEvent(self, formatted_event) then
-            formatted_event = {name = const.DELETED}
+            formatted_event = {name = const.DELETED, deleted = formatted_event}
         end
 
         if self.options.stop_on_terminate and formatted_event.name == const.TERMINATE then self:stop(); return; end
@@ -2710,7 +2755,7 @@ Loop = {
                 end
             end
             if not is_monitor_whitelisted then
-                formatted_event = {name = const.DELETED}
+                formatted_event = {name = const.DELETED, deleted = formatted_event}
             end
         end
         
@@ -2721,7 +2766,7 @@ Loop = {
             if element.event then
                 local focus = element:event(formatted_event)
                 if focus then
-                    formatted_event = {name = const.DELETED}
+                    formatted_event = {name = const.DELETED, deleted = formatted_event}
                     if self.elements.high_priority ~= element then
                         table.insert(high_focussed, {element = element, key = key})
                     end
@@ -2827,6 +2872,8 @@ local objects_methods = {
             self.callbacks.onResize = callback
         elseif event == const.ONPASTE then
             self.callbacks.onPaste = callback
+        elseif event == const.ONHOVER then
+            self.callbacks.onHover = callback
         end
     end
 }

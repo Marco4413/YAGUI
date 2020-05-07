@@ -30,7 +30,11 @@ local editor_background = colors.black
 local background_color = colors.gray
 local lighter_background_color = colors.lightGray
 
+-- PINK IS CONVERTED TO RGB: 119, 119, 119
+local hover_color = colors.pink
+
 local special_button_active_color = colors.green
+local special_button_hover_color = colors.orange
 local special_button_not_active_color = colors.red
 
 local keywords_highlight_color = colors.yellow
@@ -41,10 +45,18 @@ local comment_highlight_color = colors.green
 local string_highlight_color = colors.red
 
 local shadows = true
+local memo_borders = true
 
 local syntax_highlight_enabled = true
 
 -- END OF SETTINGS
+
+local native_palette = {}
+for key, value in next, colors do
+    if type(value) == "number" then
+        native_palette[value] = {term.getPaletteColor(value)}
+    end
+end
 
 local default_path = default_name..default_extension
 local current_file_path = shell.resolve(default_path)
@@ -169,7 +181,7 @@ local WSS = YAGUI.WSS(WSS_broadcast_interval)
 -- Creating main loop elements
 local lLines    = YAGUI.gui_elements.Label(0, 0, "Lines: 0", text_color)
 local lCursor   = YAGUI.gui_elements.Label(0, 0, "Cursor: (1; 1)", text_color)
-local bCompact  = YAGUI.gui_elements.Button(0, 0, 0, 0, "C", text_color, special_button_active_color, special_button_not_active_color)
+local bCompact  = YAGUI.gui_elements.Button(0, 0, 0, 0, "C", text_color, special_button_active_color, special_button_not_active_color, special_button_hover_color)
 local mEditor   = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, editor_background)
 local lPath     = YAGUI.gui_elements.Label(0, 0, "/path/", text_color)
 local cSHL      = YAGUI.gui_elements.Clock(SH_timeout)
@@ -183,22 +195,22 @@ mEditor.cursor.blink.interval = cursor_blinking_speed
 mEditor.colors.cursor = cursor_background_color
 mEditor.colors.cursor_text = cursor_color
 
-mEditor.border = true
+mEditor.border = memo_borders
 mEditor.colors.border_color = background_color
 
 cSHL.oneshot = true
 
 -- Creating elements that will make File menu
-local bFile     = YAGUI.gui_elements.Button(0, 0, 0, 0, "File", text_color, lighter_background_color, background_color)
+local bFile     = YAGUI.gui_elements.Button(0, 0, 0, 0, "File", text_color, lighter_background_color, background_color, hover_color)
 local wFileMenu = YAGUI.gui_elements.Window(0, 0, 0, 0, background_color, shadows)
-local bNewOpen  = YAGUI.gui_elements.Button(0, 0, 0, 0, "New/Open", text_color, lighter_background_color, background_color)
-local bSave     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Save"    , text_color, lighter_background_color, background_color)
-local bSaveAs   = YAGUI.gui_elements.Button(0, 0, 0, 0, "SaveAs"  , text_color, lighter_background_color, background_color)
-local bDelete   = YAGUI.gui_elements.Button(0, 0, 0, 0, "Delete"  , text_color, lighter_background_color, background_color)
-local bGoto     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Goto"    , text_color, lighter_background_color, background_color)
-local bRun      = YAGUI.gui_elements.Button(0, 0, 0, 0, "Run"     , text_color, lighter_background_color, background_color)
-local bSHL      = YAGUI.gui_elements.Button(0, 0, 0, 0, "SyntaxHL", text_color, lighter_background_color, background_color)
-local bQuit     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Exit"    , text_color, special_button_active_color, special_button_not_active_color)
+local bNewOpen  = YAGUI.gui_elements.Button(0, 0, 0, 0, "New/Open", text_color, lighter_background_color, background_color, hover_color)
+local bSave     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Save"    , text_color, lighter_background_color, background_color, hover_color)
+local bSaveAs   = YAGUI.gui_elements.Button(0, 0, 0, 0, "SaveAs"  , text_color, lighter_background_color, background_color, hover_color)
+local bDelete   = YAGUI.gui_elements.Button(0, 0, 0, 0, "Delete"  , text_color, lighter_background_color, background_color, hover_color)
+local bGoto     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Goto"    , text_color, lighter_background_color, background_color, hover_color)
+local bRun      = YAGUI.gui_elements.Button(0, 0, 0, 0, "Run"     , text_color, lighter_background_color, background_color, hover_color)
+local bSHL      = YAGUI.gui_elements.Button(0, 0, 0, 0, "SyntaxHL", text_color, lighter_background_color, background_color, hover_color)
+local bQuit     = YAGUI.gui_elements.Button(0, 0, 0, 0, "Exit"    , text_color, special_button_active_color, special_button_not_active_color, special_button_hover_color)
 
 wFileMenu.draw_priority = YAGUI.LOW_PRIORITY
 wFileMenu.hidden = true
@@ -235,15 +247,15 @@ mInput.cursor.blink.interval = cursor_blinking_speed
 mInput.colors.cursor = cursor_background_color
 mInput.colors.cursor_text = cursor_color
 
-mInput.border = true
+mInput.border = memo_borders
 mInput.colors.border_color = background_color
 
 
 -- Creating elements for OverWrite loop
 local wOverWrite = YAGUI.gui_elements.Window(0, 0, 0, 0, lighter_background_color, shadows)
 local lOW        = YAGUI.gui_elements.Label(0, 0, "Do you want\nto overwrite?", text_color)
-local bOWAccept  = YAGUI.gui_elements.Button(0, 0, 0, 0, "Yes", text_color, background_color, lighter_background_color)
-local bOWReject  = YAGUI.gui_elements.Button(0, 0, 0, 0, "No", text_color, background_color, lighter_background_color)
+local bOWAccept  = YAGUI.gui_elements.Button(0, 0, 0, 0, "Yes", text_color, background_color, lighter_background_color, hover_color)
+local bOWReject  = YAGUI.gui_elements.Button(0, 0, 0, 0, "No", text_color, background_color, lighter_background_color, hover_color)
 
 wOverWrite:set_elements({lOW, bOWAccept, bOWReject})
 
@@ -281,7 +293,7 @@ local function generate_layout()
             bQuit     = function () return 1, 8, 10, 1; end,
 
             lInputTitle = function () return 3, math.floor(h / 2 - 1); end,
-            mInput      = function () return 1, math.floor(h / 2) - 1, w, 3; end,
+            mInput      = function () return 1 + (memo_borders and 0 or 1), math.floor(h / 2) + (memo_borders and -1 or 0), w - (memo_borders and 0 or 2), 3 - (memo_borders and 0 or 2); end,
             lInputTip   = function () return 3, math.floor(h / 2 + 2), "You can press CONTROL to cancel."; end,
 
             wOverWrite = function () return math.floor(w / 2 - 7), math.floor(h / 2 - 3), 15, 6; end,
@@ -355,6 +367,9 @@ end
 local function clear_all()
     for key, monitor in next, lMain.monitors do
         YAGUI.monitor_utils.better_clear(monitor)
+        for color, rgb in next, native_palette do
+            monitor.setPaletteColor(color, rgb[1], rgb[2], rgb[3])
+        end
     end
 end
 
@@ -989,6 +1004,11 @@ for key, loop in next, loops do
     loop.options.stop_on_terminate = false
 end
 lMain.options.stop_on_terminate = true
+
+-- Setting up palette
+for key, monitor in next, lMain.monitors do
+    monitor.setPaletteColor(colors.pink, 0.467, 0.467, 0.467)
+end
 
 -- Starting main loop
 lMain:start()
