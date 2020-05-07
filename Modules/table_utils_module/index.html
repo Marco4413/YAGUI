@@ -153,6 +153,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#better_remove" class="nav-link">better_remove</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -284,6 +288,30 @@ local old = table_utils.set(&quot;Foo Bar&quot;, tbl, {&quot;foo bar&quot;, 2})
 print(
     old,
     tbl[&quot;foo bar&quot;][2]
+)
+</code></pre>
+
+<h2 id="better_remove">better_remove</h2>
+<p><em>nil</em> : <strong>better_remove</strong>( <em>table</em> : <strong>tbl</strong>, <em>number</em> : <strong>...</strong> )</p>
+<p><strong>Removes keys <code>...</code> in <code>tbl</code></strong> (<code>tbl</code> must be an array and <code>...</code> must be sorted).</p>
+<p><strong>tbl</strong> the <strong>table where you want to remove the keys</strong>.</p>
+<p><strong>...</strong> the <strong>keys to remove from <code>tbl</code></strong>.</p>
+<pre><code class="lua">-- Creating a table
+local tbl = {
+    10, 20, 30, 40, 50
+}
+
+-- Print the table before removing any key
+print(
+    table_utils.serialise(tbl, -1, true, false, false, false, &quot;&quot;, &quot; &quot;)
+)
+
+-- Remove keys from table
+table_utils.better_remove(tbl, 1, 3, 5)
+
+-- Print the table after keys were removed
+print(
+    table_utils.serialise(tbl, -1, true, false, false, false, &quot;&quot;, &quot; &quot;)
 )
 </code></pre></div>
             </div>
