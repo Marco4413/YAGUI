@@ -39,6 +39,7 @@ All event **constants that have to do with the name of an event**:
 * **MODEM**
 * **TERMINATE**
 * **TERMRESIZE**
+* **COROUTINE**
 * **DELETED**
 
 #### Inputs

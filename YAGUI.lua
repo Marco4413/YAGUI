@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.34",
+    ver = "1.35",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -40,6 +40,7 @@ local const = {
     MODEM = "modem_message",
     TERMINATE = "terminate",
     TERMRESIZE = "term_resize",
+    COROUTINE = "coroutine",
     DELETED = "DELETED",
     NONE = "NONE",
     ALL = "ALL",
@@ -585,10 +586,10 @@ table_utils = {
                 for key, value in next, tbl do
                     local key_type = type(key)
                     local key_string
-                    if (key_type == "string") or (key_type == "table") then
-                        key_string = string.format("%q", tostring(key))
-                    else
+                    if (key_type == "number") or (key_type == "boolean") or (key_type == "nil") then
                         key_string = tostring(key)
+                    else
+                        key_string = string.format("%q", tostring(key))
                     end
 
                     if not serialise_index and (key == "__index") then value = {}; end
@@ -617,10 +618,10 @@ table_utils = {
                         else
                             str_tbl = table.concat({str_tbl, "{}"})
                         end
-                    elseif (value_type == "string") or (value_type == "function") then
-                        str_tbl = table.concat({str_tbl, string.format("%q", tostring(value))})
-                    else
+                    elseif (value_type == "number") or (value_type == "boolean") or (value_type == "nil") then
                         str_tbl = table.concat({str_tbl, string.format("%s", tostring(value))})
+                    else
+                        str_tbl = table.concat({str_tbl, string.format("%q", tostring(value))})
                     end
 
                     if next(tbl, key) then
@@ -808,6 +809,20 @@ event_utils = {
             event.name = const.TERMINATE
         elseif event.name == "term_resize" then
             event.name = const.TERMRESIZE
+        elseif event.name == "coroutine" then
+            event.name = const.COROUTINE
+            event.thread = event_table[2]
+            event.status = event_table[3]
+            event.ok = event_table[4]
+            local i = 5
+            if not event.ok then
+                event.error = event_table[5]
+                i = i + 1
+            end
+            event.returned = {}
+            for i=i, #event_table do
+                event.returned[#event.returned + 1] = event_table[i]
+            end
         else
             event.parameters = {}
             for key=2, #event_table do
@@ -2625,6 +2640,7 @@ Loop = {
             monitors = {
                 terminal = term
             },
+            threads = {},
             elements = {
                 high_priority = {},
                 low_priority = {},
@@ -2675,10 +2691,24 @@ Loop = {
         newLoop.elements.loop.clock.Loop = newLoop
         newLoop.elements.loop.clock:set_callback(
             const.ONCLOCK,
-            function (self, formatted_event, delta_time, delta_err)
+            function (self, formatted_event, delta_time)
                 self.Loop.stats.FPS = 1 / delta_time
                 self.Loop.stats.EPS = self.Loop.stats.Events / delta_time
                 self.Loop.stats.Events = 0
+
+                if #self.Loop.threads > 0 then
+                    local dead_threads = {}
+                    for i=1, #self.Loop.threads do
+                        local thread = self.Loop.threads[i]
+                        if coroutine.status(thread) == "dead" then
+                            dead_threads[#dead_threads + 1] = i
+                        else
+                            local returns = {coroutine.resume(thread, self.Loop, delta_time)}
+                            os.queueEvent("coroutine", thread, coroutine.status(thread), table.unpack(returns))
+                        end
+                    end
+                    if #dead_threads > 0 then table_utils.better_remove(self.Loop.threads, table.unpack(dead_threads)); end
+                end
                 
                 self.Loop:draw_elements(delta_time)
                 
