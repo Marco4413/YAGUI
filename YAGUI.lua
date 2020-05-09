@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.35",
+    ver = "1.35.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -676,14 +676,18 @@ table_utils = {
     end,
     better_remove = function (tbl, ...)
         local indices = {...}
-        local delta = 0
-        for j=1, #indices do
-            local index = indices[j] - delta
-            tbl[index] = nil
-            for i=index, (indices[j + 1] and indices[j + 1] - delta + 1 or #tbl - 1) do
-                tbl[i], tbl[i + 1] = tbl[i + 1]
+        local removed = #indices
+        for i=1, #indices do
+            tbl[indices[i]] = nil
+        end
+        local j, nils = 1, {}
+        for i=1, #tbl + removed do
+            if tbl[i] == nil then
+                nils[#nils + 1] = i
+            elseif #nils > 0 then
+                tbl[nils[j]], nils[#nils + 1], tbl[i] = tbl[i], i
+                j = j + 1
             end
-            delta = delta + 1
         end
     end
 }

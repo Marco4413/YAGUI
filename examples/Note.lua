@@ -293,7 +293,7 @@ local function generate_layout()
             bQuit     = function () return 1, 8, 10, 1; end,
 
             lInputTitle = function () return 3, math.floor(h / 2 - 1); end,
-            mInput      = function () return 1 + (memo_borders and 0 or 1), math.floor(h / 2) + (memo_borders and -1 or 0), w - (memo_borders and 0 or 2), 3 - (memo_borders and 0 or 2); end,
+            mInput      = function () return 2 + (memo_borders and 0 or 1), math.floor(h / 2) + (memo_borders and -1 or 0), w - 2 - (memo_borders and 0 or 2), 3 - (memo_borders and 0 or 2); end,
             lInputTip   = function () return 3, math.floor(h / 2 + 2), "You can press CONTROL to cancel."; end,
 
             wOverWrite = function () return math.floor(w / 2 - 7), math.floor(h / 2 - 3), 15, 6; end,
