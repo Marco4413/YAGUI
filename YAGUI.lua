@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.35.1",
+    ver = "1.36",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1221,7 +1221,7 @@ local screen_buffer = {
             local y = y1
     
             for x=x1, x2, dir do
-                self:point(x, y, color) 
+                self.buffer:set_pixel(x, y, " ", color, color)
                 if D > 0 then
                     y = y + yi
                     D = D - 2 * dx
@@ -1247,7 +1247,7 @@ local screen_buffer = {
             local x = x1
     
             for y=y1, y2, dir do
-                self:point(x, y, color)
+                self.buffer:set_pixel(x, y, " ", color, color)
                 if D > 0 then
                     x = x + xi
                     D = D - 2 * dy
@@ -1275,36 +1275,38 @@ local screen_buffer = {
     
         local r2 = radius * radius
     
-        self:point(xCenter         , yCenter + radius, color)
-        self:point(xCenter         , yCenter - radius, color)
-        self:point(xCenter + radius, yCenter         , color)
-        self:point(xCenter - radius, yCenter         , color)
+        self.buffer:set_pixel(xCenter         , yCenter + radius, " ", color, color)
+        self.buffer:set_pixel(xCenter         , yCenter - radius, " ", color, color)
+        self.buffer:set_pixel(xCenter + radius, yCenter         , " ", color, color)
+        self.buffer:set_pixel(xCenter - radius, yCenter         , " ", color, color)
     
         local x = 1
         local y = math.floor(math.sqrt(r2 - 1) + 0.5)
     
         while x < y do
-            self:point(xCenter + x, yCenter + y, color)
-            self:point(xCenter + x, yCenter - y, color)
-            self:point(xCenter - x, yCenter + y, color)
-            self:point(xCenter - x, yCenter - y, color)
-            self:point(xCenter + y, yCenter + x, color)
-            self:point(xCenter + y, yCenter - x, color)
-            self:point(xCenter - y, yCenter + x, color)
-            self:point(xCenter - y, yCenter - x, color)
+            self.buffer:set_pixel(xCenter + x, yCenter + y, " ", color, color)
+            self.buffer:set_pixel(xCenter + x, yCenter - y, " ", color, color)
+            self.buffer:set_pixel(xCenter - x, yCenter + y, " ", color, color)
+            self.buffer:set_pixel(xCenter - x, yCenter - y, " ", color, color)
+            self.buffer:set_pixel(xCenter + y, yCenter + x, " ", color, color)
+            self.buffer:set_pixel(xCenter + y, yCenter - x, " ", color, color)
+            self.buffer:set_pixel(xCenter - y, yCenter + x, " ", color, color)
+            self.buffer:set_pixel(xCenter - y, yCenter - x, " ", color, color)
     
             x = x + 1
             y = math.floor(math.sqrt(r2 - x * x) + 0.5)
         end
     
         if x == y then
-            self:point(xCenter + x, yCenter + y, color)
-            self:point(xCenter + x, yCenter - y, color)
-            self:point(xCenter - x, yCenter + y, color)
-            self:point(xCenter - x, yCenter - y, color)
+            self.buffer:set_pixel(xCenter + x, yCenter + y, " ", color, color)
+            self.buffer:set_pixel(xCenter + x, yCenter - y, " ", color, color)
+            self.buffer:set_pixel(xCenter - x, yCenter + y, " ", color, color)
+            self.buffer:set_pixel(xCenter - x, yCenter - y, " ", color, color)
         end
     end
 }
+-- Making the buffer of screen_buffer usable as a metatable
+screen_buffer.buffer.__index = screen_buffer.buffer
 
 -- INPUT MODULE
 -- Usually managed by loops
@@ -1431,7 +1433,7 @@ gui_elements = {
         -- DRAWS LABEL
         draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self, delta_time)
+            if self.callbacks.onDraw(self, delta_time) then return; end
 
             
             local lines = string_utils.split_by_char(self.text, "\n")
@@ -1504,7 +1506,7 @@ gui_elements = {
         -- DRAWS BUTTON
         draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self, delta_time)
+            if self.callbacks.onDraw(self, delta_time) then return; end
             if self.active then 
                 screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.active_background, self.border, self.colors.border_color)
             elseif self.hovered then
@@ -1612,7 +1614,7 @@ gui_elements = {
         -- DRAWS PROGRESSBAR
         draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self, delta_time)
+            if self.callbacks.onDraw(self, delta_time) then return; end
             local value_percentage = math_utils.map(self.value.current, self.value.min, self.value.max, 0, 1, true)
             
             local filled_progress_width = self.size.x * value_percentage
@@ -1699,7 +1701,7 @@ gui_elements = {
         -- DRAWS MEMO
         draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self, delta_time)
+            if self.callbacks.onDraw(self, delta_time) then return; end
             
             screen_buffer:rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y, self.colors.background, self.border, self.colors.border_color)
             
@@ -2152,7 +2154,7 @@ gui_elements = {
         -- DRAWS THE WINDOW
         draw = function (self, delta_time)
             if self.hidden then return; end
-            self.callbacks.onDraw(self, delta_time)
+            if self.callbacks.onDraw(self, delta_time) then return; end
             if self.shadow.enabled then
                 screen_buffer:rectangle(
                     self.pos.x + self.shadow.offset.x,
@@ -2355,6 +2357,48 @@ gui_elements = {
 
             return delete_event
         end
+    },
+    -- It's basically the same as screen_buffer, but it's a gui element
+    Canvas = {
+        new = function (x, y, width, height)
+            local newCanvas = {
+                draw_priority = const.LOW_PRIORITY,
+                hidden = false,
+                pos = math_utils.Vector2.new(x, y),
+                size = math_utils.Vector2.new(width, height),
+                buffer =  {
+                    background = colors.black,
+                    pixels = {}
+                },
+                callbacks = {
+                    onDraw = function () end
+                }
+            }
+            setmetatable(newCanvas.buffer, screen_buffer.buffer)
+            setmetatable(newCanvas, gui_elements.Canvas)
+            return newCanvas
+        end,
+        draw = function (self)
+            if self.hidden then return; end
+            if self.callbacks.onDraw(self, delta_time) then return; end
+
+            for y=1, self.size.y do
+                for x=1, self.size.x do
+                    local pixel = self.buffer:get_pixel(x, y)
+                    if pixel.inverted then
+                        screen_buffer.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.background, pixel.foreground, true)
+                    else
+                        screen_buffer.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.foreground, pixel.background)
+                    end
+                end
+            end
+        end,
+        to_nfp = function (self, ...)
+            return screen_buffer.frame_to_nfp({frame = self.buffer}, ...)
+        end,
+        to_nft = function (self, ...)
+            return screen_buffer.frame_to_nft({frame = self.buffer}, ...)
+        end
     }
 }
 
@@ -2364,6 +2408,19 @@ gui_elements.Button.__index = gui_elements.Button
 gui_elements.Progressbar.__index = gui_elements.Progressbar
 gui_elements.Memo.__index = gui_elements.Memo
 gui_elements.Window.__index = gui_elements.Window
+
+-- Copying screen_buffer functions
+for key, func in next, screen_buffer do
+    if (
+        type(func) == "function" and        -- Make sure that's a function (We don't want to reference tables)
+        (not gui_elements.Canvas[key]) and  -- Make sure it wasn't overridden
+        (not key:find("set_")) and          -- It shouldn't be a function that sets something (monitors, ...)
+        (not key:find("frame"))             -- It also shouldn't be related to screen_buffer.frame (not a thing in Canvases)
+    ) then
+        gui_elements.Canvas[key] = func
+    end
+end
+gui_elements.Canvas.__index = gui_elements.Canvas
 
 -- WSS MODULE
 local WSS = {}
@@ -2411,7 +2468,7 @@ WSS = {
     end,
     draw = function (self, delta_time)
         if not self.enabled then return false; end
-        self.callbacks.onDraw(self, delta_time)
+        if self.callbacks.onDraw(self, delta_time) then return; end
 
         if self.mode == const.USER then
             if self.buffer and self.buffer.background and self.buffer.pixels then
@@ -2749,7 +2806,7 @@ Loop = {
             end
         end
 
-        self.callbacks.onDraw(self, delta_time)
+        if self.callbacks.onDraw(self, delta_time) then return; end
         local old_screens = screen_buffer.screens
         screen_buffer.screens = self.monitors
 
