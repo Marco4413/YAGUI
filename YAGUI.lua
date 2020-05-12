@@ -16,11 +16,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.36",
+    ver = "1.37",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
-    copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
+    copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
+    nfp = "1.0.0",
+    nft = "1.0.0"
 }
 
 -- CONSTANTS MODULE
@@ -109,13 +111,6 @@ local drawing_characters = {
     BOTTOMRIGHT = string.char(133),
     MIDDLELEFT  = string.char(132),
     MIDDLERIGHT = string.char(136)
-}
--- This is used by the library to encode and decode nft files
-local nft = {
-    BG = string.char(30),
-    FG = string.char(31),
-    UP_ARROW = string.char(24),
-    DOWN_ARROW = string.char(25)
 }
 
 -- DEFINING ALL UTILITIES HERE TO BE ABLE TO ACCESS THEM EVERYWHERE
@@ -895,6 +890,97 @@ monitor_utils = {
     end
 }
 
+-- Used by screen_buffer functions to draw stuff on the screen
+local internal_draw = {
+    lineLow = function (sb, x1, y1, x2, y2, color)
+        local dir = 1
+        if x1 > x2 then dir = -1; end
+
+        local dx = x2 - x1
+        local dy = y2 - y1
+        local yi = 1
+
+        if dy < 0 then
+            yi = -1
+            dy = -dy
+        end
+
+        local D = 2 * dy - dx
+        local y = y1
+
+        for x=x1, x2, dir do
+            sb.buffer:set_pixel(x, y, " ", color, color)
+            if D > 0 then
+                y = y + yi
+                D = D - 2 * dx
+            end
+            D = D + 2 * dy
+        end
+    end,
+    lineHigh = function (sb, x1, y1, x2, y2, color)
+        local dir = 1
+        if y1 > y2 then dir = -1; end
+
+        local dx = x2 - x1
+        local dy = y2 - y1
+        local xi = 1
+
+        if dx < 0 then
+            xi = -1
+            dx = -dx
+        end
+
+        local D = 2 * dx - dy
+        local x = x1
+
+        for y=y1, y2, dir do
+            sb.buffer:set_pixel(x, y, " ", color, color)
+            if D > 0 then
+                x = x + xi
+                D = D - 2 * dy
+            end
+            D = D + 2 * dx
+        end
+    end,
+    get_rect_char = function (x, y, w, h)
+        if h == 1 then
+            if w == 1 then
+                return drawing_characters.MIDDLE, true
+            else
+                if x == 1 then
+                    return drawing_characters.MIDDLERIGHT, true
+                elseif x == w then
+                    return drawing_characters.MIDDLELEFT, true
+                else
+                    return drawing_characters.MIDDLE, true
+                end
+            end
+        elseif y == 1 then
+            if x == 1 then
+                return drawing_characters.TOPLEFT, false
+            elseif x == w then
+                return drawing_characters.TOPRIGHT, true
+            else
+                return drawing_characters.TOP, false
+            end
+        elseif y == h then
+            if x == 1 then
+                return drawing_characters.BOTTOMLEFT, true
+            elseif x == w then
+                return drawing_characters.BOTTOMRIGHT, true
+            else
+                return drawing_characters.BOTTOM, true
+            end
+        elseif x == 1 then
+            return drawing_characters.LEFT, false
+        elseif x == w then
+            return drawing_characters.RIGHT, true
+        else
+            return " ", false
+        end
+    end
+}
+
 -- SCREEN BUFFER MODULE
 local screen_buffer = {
     -- CONTAINS THE LAST DRAWN FRAME
@@ -1034,51 +1120,40 @@ local screen_buffer = {
         end
     end,
     -- DRAWS A RECTANGLE ON THE SCREEN
-    rectangle = function (self, x, y, width, height, color, border, border_color)
-        if border then
-            for rel_x=0, width - 1 do
-                for rel_y=0, height - 1 do
-                    if height == 1 then
-                        if width == 1 then
-                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLE, border_color, color, true)
-                        else
-                            if rel_x == 0 then
-                                self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLERIGHT, border_color, color, true)
-                            elseif rel_x == width - 1 then
-                                self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLELEFT, border_color, color, true)
-                            else
-                                self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.MIDDLE, border_color, color, true)
-                            end
-                        end
-                    elseif rel_y == 0 then
-                        if rel_x == 0 then
-                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.TOPLEFT, border_color, color)
-                        elseif rel_x == width - 1 then
-                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.TOPRIGHT, border_color, color, true)
-                        else
-                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.TOP, border_color, color)
-                        end
-                    elseif rel_y == height - 1 then
-                        if rel_x == 0 then
-                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.BOTTOMLEFT, border_color, color, true)
-                        elseif rel_x == width - 1 then
-                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.BOTTOMRIGHT, border_color, color, true)
-                        else
-                            self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.BOTTOM, border_color, color, true)
-                        end
-                    elseif rel_x == 0 then
-                        self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.LEFT, border_color, color)
-                    elseif rel_x == width - 1 then
-                        self.buffer:set_pixel(x + rel_x, y + rel_y, drawing_characters.RIGHT, border_color, color, true)
-                    else
-                        self.buffer:set_pixel(x + rel_x, y + rel_y, " ", color, color)
-                    end
+    rectangle = function (self, x, y, width, height, color, border, border_color, hollow)
+        if hollow then
+            for x_off=1, width do
+                if border then
+                    local char, inverted = internal_draw.get_rect_char(x_off, 1, width, height)
+                    self.buffer:set_pixel(x + x_off - 1, y, char, border_color, color, inverted)
+                    char, inverted = internal_draw.get_rect_char(x_off, height, width, height)
+                    self.buffer:set_pixel(x + x_off - 1, y + height - 1, char, border_color, color, inverted)
+                else
+                    self.buffer:set_pixel(x + x_off - 1, y, " ", color, color)
+                    self.buffer:set_pixel(x + x_off - 1, y + height - 1, " ", color, color)
+                end
+            end
+            
+            for y_off=2, height - 1 do
+                if border then
+                    local char, inverted = internal_draw.get_rect_char(1, y_off, width, height)
+                    self.buffer:set_pixel(x, y + y_off - 1, char, border_color, color, inverted)
+                    char, inverted = internal_draw.get_rect_char(width, y_off, width, height)
+                    self.buffer:set_pixel(x + width - 1, y + y_off - 1, char, border_color, color, inverted)
+                else
+                    self.buffer:set_pixel(x, y + y_off - 1, " ", color, color)
+                    self.buffer:set_pixel(x + width - 1, y + y_off - 1, " ", color, color)
                 end
             end
         else
-            for rel_x=0, width - 1 do
-                for rel_y=0, height - 1 do
-                    self.buffer:set_pixel(x + rel_x, y + rel_y, " ", color, color)
+            for x_off=1, width do
+                for y_off=1, height do
+                    if border then
+                        local char, inverted = internal_draw.get_rect_char(x_off, y_off, width, height)
+                        self.buffer:set_pixel(x + x_off - 1, y + y_off - 1, char, border_color, color, inverted)
+                    else
+                        self.buffer:set_pixel(x + x_off - 1, y + y_off - 1, " ", color, color)
+                    end
                 end
             end
         end
@@ -1132,9 +1207,9 @@ local screen_buffer = {
             elseif get_fg then
                 fg = color_utils.paint[char]
                 get_fg = false
-            elseif char == nft.BG then
+            elseif char == "\30" then
                 get_bg = true
-            elseif char == nft.FG then
+            elseif char == "\31" then
                 get_fg = true
             elseif char == "\n" then
                 rel_x, rel_y, get_bg, get_fg, bg, fg = 1, rel_y + 1
@@ -1152,16 +1227,21 @@ local screen_buffer = {
     --  y is the starting y pos in the screen buffer
     --  img_width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
     --  img_height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
-    frame_to_nfp = function (self, x, y, width, height)
+    frame_to_nfp = function (self, x, y, width, height, transparent)
         local image = {}
         for rel_y=1, height do
             local row = {}
+            local last_x = 1
             for rel_x=1, width do
-                local pixel = self.frame.pixels[x] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
-                    background = self.frame.background
+                local pixel = self.frame.pixels[x + rel_x - 1] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
+                    background = transparent and " " or self.frame.background
                 }
 
-                row[#row + 1] = color_utils.colors[pixel.inverted and pixel.foreground or pixel.background]
+                if pixel.background ~= " " then
+                    row[#row + 1] = string.rep(" ", rel_x - last_x - 1)
+                    row[#row + 1] = color_utils.colors[pixel.inverted and pixel.foreground or pixel.background] or " "
+                    last_x = rel_x
+                end
             end
             image[#image + 1] = table.concat(row)
         end
@@ -1178,25 +1258,25 @@ local screen_buffer = {
             local row = {}
             local last_bg, last_fg
             for rel_x=1, width do
-                local pixel = self.frame.pixels[x] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
+                local pixel = self.frame.pixels[x + rel_x - 1] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
                     char = " ",
                     foreground = self.frame.background,
                     background = self.frame.background
                 }
 
                 if pixel.background ~= last_bg then
-                    row[#row + 1] = nft.BG
+                    row[#row + 1] = "\30"
                     row[#row + 1] = color_utils.colors[pixel.background]
                     last_bg = pixel.background
                 end
 
                 if pixel.foreground ~= last_fg then
-                    row[#row + 1] = nft.FG
+                    row[#row + 1] = "\31"
                     row[#row + 1] = color_utils.colors[pixel.foreground]
                     last_fg = pixel.foreground
                 end
 
-                row[#row + 1] = pixel.char == nft.BG and nft.UP_ARROW or pixel.char == nft.FG and nft.DOWN_ARROW or pixel.char
+                row[#row + 1] = pixel.char == "\30" and "\24" or pixel.char == "\31" and "\25" or pixel.char
             end
             image[#image + 1] = table.concat(row)
         end
@@ -1204,104 +1284,69 @@ local screen_buffer = {
     end,
     -- DRAWS A LINE ON THE SCREEN
     line = function (self, x1, y1, x2, y2, color) -- SOURCE: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-        local function lineLow(x1, y1, x2, y2)
-            local dir = 1
-            if x1 > x2 then dir = -1; end
-    
-            local dx = x2 - x1
-            local dy = y2 - y1
-            local yi = 1
-    
-            if dy < 0 then
-                yi = -1
-                dy = -dy
-            end
-    
-            local D = 2 * dy - dx
-            local y = y1
-    
-            for x=x1, x2, dir do
-                self.buffer:set_pixel(x, y, " ", color, color)
-                if D > 0 then
-                    y = y + yi
-                    D = D - 2 * dx
-                end
-                D = D + 2 * dy
-            end
-        end
-    
-        local function lineHigh(x1, y1, x2, y2)
-            local dir = 1
-            if y1 > y2 then dir = -1; end
-    
-            local dx = x2 - x1
-            local dy = y2 - y1
-            local xi = 1
-    
-            if dx < 0 then
-                xi = -1
-                dx = -dx
-            end
-    
-            local D = 2 * dx - dy
-            local x = x1
-    
-            for y=y1, y2, dir do
-                self.buffer:set_pixel(x, y, " ", color, color)
-                if D > 0 then
-                    x = x + xi
-                    D = D - 2 * dy
-                end
-                D = D + 2 * dx
-            end
-        end
-    
         if math.abs(y2 - y1) < math.abs(x2 - x1) then
             if x1 > x2 then
-                lineLow(x2, y2, x1, y1)
+                internal_draw.lineLow(self, x2, y2, x1, y1, color)
             else
-                lineLow(x1, y1, x2, y2)
+                internal_draw.lineLow(self, x1, y1, x2, y2, color)
             end
         else
             if y1 > y2 then
-                lineHigh(x2, y2, x1, y1)
+                internal_draw.lineHigh(self, x2, y2, x1, y1, color)
             else
-                lineHigh(x1, y1, x2, y2)
+                internal_draw.lineHigh(self, x1, y1, x2, y2, color)
             end
         end
     end,
     -- DRAWS A CIRCLE ON THE SCREEN
-    circle = function (self, xCenter, yCenter, radius, color) -- SOURCE: http://groups.csail.mit.edu/graphics/classes/6.837/F98/Lecture6/circle.html
+    circle = function (self, xCenter, yCenter, radius, color, hollow) -- SOURCE: http://groups.csail.mit.edu/graphics/classes/6.837/F98/Lecture6/circle.html
     
         local r2 = radius * radius
-    
-        self.buffer:set_pixel(xCenter         , yCenter + radius, " ", color, color)
-        self.buffer:set_pixel(xCenter         , yCenter - radius, " ", color, color)
-        self.buffer:set_pixel(xCenter + radius, yCenter         , " ", color, color)
-        self.buffer:set_pixel(xCenter - radius, yCenter         , " ", color, color)
+        
+        if hollow then
+            self.buffer:set_pixel(xCenter         , yCenter + radius, " ", color, color)
+            self.buffer:set_pixel(xCenter         , yCenter - radius, " ", color, color)
+            self.buffer:set_pixel(xCenter + radius, yCenter         , " ", color, color)
+            self.buffer:set_pixel(xCenter - radius, yCenter         , " ", color, color)
+        else
+            self:line(xCenter, yCenter + radius, xCenter, yCenter - radius, color)
+            self:line(xCenter + radius, yCenter, xCenter - radius, yCenter, color)
+        end
     
         local x = 1
         local y = math.floor(math.sqrt(r2 - 1) + 0.5)
     
         while x < y do
-            self.buffer:set_pixel(xCenter + x, yCenter + y, " ", color, color)
-            self.buffer:set_pixel(xCenter + x, yCenter - y, " ", color, color)
-            self.buffer:set_pixel(xCenter - x, yCenter + y, " ", color, color)
-            self.buffer:set_pixel(xCenter - x, yCenter - y, " ", color, color)
-            self.buffer:set_pixel(xCenter + y, yCenter + x, " ", color, color)
-            self.buffer:set_pixel(xCenter + y, yCenter - x, " ", color, color)
-            self.buffer:set_pixel(xCenter - y, yCenter + x, " ", color, color)
-            self.buffer:set_pixel(xCenter - y, yCenter - x, " ", color, color)
+            if hollow then
+                self.buffer:set_pixel(xCenter + x, yCenter + y, " ", color, color)
+                self.buffer:set_pixel(xCenter + x, yCenter - y, " ", color, color)
+                self.buffer:set_pixel(xCenter - x, yCenter + y, " ", color, color)
+                self.buffer:set_pixel(xCenter - x, yCenter - y, " ", color, color)
+                self.buffer:set_pixel(xCenter + y, yCenter + x, " ", color, color)
+                self.buffer:set_pixel(xCenter + y, yCenter - x, " ", color, color)
+                self.buffer:set_pixel(xCenter - y, yCenter + x, " ", color, color)
+                self.buffer:set_pixel(xCenter - y, yCenter - x, " ", color, color)
+            else
+                self:line(xCenter + x, yCenter + y, xCenter + x, yCenter - y, color)
+                self:line(xCenter - x, yCenter + y, xCenter - x, yCenter - y, color)
+                self:line(xCenter + y, yCenter + x, xCenter + y, yCenter - x, color)
+                self:line(xCenter - y, yCenter + x, xCenter - y, yCenter - x, color)
+            end
     
             x = x + 1
             y = math.floor(math.sqrt(r2 - x * x) + 0.5)
         end
     
         if x == y then
-            self.buffer:set_pixel(xCenter + x, yCenter + y, " ", color, color)
-            self.buffer:set_pixel(xCenter + x, yCenter - y, " ", color, color)
-            self.buffer:set_pixel(xCenter - x, yCenter + y, " ", color, color)
-            self.buffer:set_pixel(xCenter - x, yCenter - y, " ", color, color)
+            if hollow then
+                self.buffer:set_pixel(xCenter + x, yCenter + y, " ", color, color)
+                self.buffer:set_pixel(xCenter + x, yCenter - y, " ", color, color)
+                self.buffer:set_pixel(xCenter - x, yCenter + y, " ", color, color)
+                self.buffer:set_pixel(xCenter - x, yCenter - y, " ", color, color)
+            else
+                self:line(xCenter + x, yCenter + y, xCenter + x, yCenter - y, color)
+                self:line(xCenter - x, yCenter + y, xCenter - x, yCenter - y, color)
+            end
         end
     end
 }
@@ -2143,6 +2188,7 @@ gui_elements = {
                     onDraw = function () end,
                     onPress = function () end,
                     onFailedPress = function () end,
+                    onEvent = function () end,
                     onFocus = function () end,
                     onDrag = function () end,
                     onResize = function () end
@@ -2172,6 +2218,7 @@ gui_elements = {
         -- GIVES EVENT TO WINDOW
         event = function (self, formatted_event)
             if self.hidden then return false; end
+            if self.callbacks.onEvent(self, formatted_event) then return true; end
             local delete_event = self:event_elements(formatted_event)
             if not delete_event then
                 if formatted_event.name == const.TOUCH then
@@ -2366,6 +2413,7 @@ gui_elements = {
                 hidden = false,
                 pos = math_utils.Vector2.new(x, y),
                 size = math_utils.Vector2.new(width, height),
+                transparent = false,
                 buffer =  {
                     background = colors.black,
                     pixels = {}
@@ -2382,13 +2430,34 @@ gui_elements = {
             if self.hidden then return; end
             if self.callbacks.onDraw(self, delta_time) then return; end
 
-            for y=1, self.size.y do
+            self:cast(screen_buffer)
+        end,
+        cast = function (self, other)
+            if self.transparent then
+                -- This should be faster than the other method
                 for x=1, self.size.x do
-                    local pixel = self.buffer:get_pixel(x, y)
-                    if pixel.inverted then
-                        screen_buffer.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.background, pixel.foreground, true)
-                    else
-                        screen_buffer.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.foreground, pixel.background)
+                    if self.buffer.pixels[x] then
+                        for y=1, self.size.y do
+                            local pixel = self.buffer.pixels[x][y]
+                            if pixel then
+                                if pixel.inverted then
+                                    other.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.background, pixel.foreground, true)
+                                else
+                                    other.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.foreground, pixel.background)
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                for y=1, self.size.y do
+                    for x=1, self.size.x do
+                        local pixel = self.buffer:get_pixel(x, y)
+                        if pixel.inverted then
+                            other.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.background, pixel.foreground, true)
+                        else
+                            other.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.foreground, pixel.background)
+                        end
                     end
                 end
             end

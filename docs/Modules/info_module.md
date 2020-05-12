@@ -12,6 +12,8 @@ This module/table contains **all informations about the library**.
 |    website    | string |
 | documentation | string |
 |   copyright   | string |
+|      nfp      | string |
+|      nft      | string |
 
 ### ver : string
 
@@ -32,3 +34,11 @@ This string contains the **URL** to the **library's documentation**.
 ### copyright : string
 
 This string contains the **library's copyright notice**.
+
+### nfp : string
+
+This is the **version of [nfp files](https://github.com/oeed/CraftOS-Standards/blob/master/standards/4-paint.md) that is supported by the library**.
+
+### nft : string
+
+This is the **version of [nft files](https://github.com/oeed/CraftOS-Standards/blob/master/standards/6-nft.md) that is supported by the library**.
