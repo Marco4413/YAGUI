@@ -14,9 +14,9 @@ local PROGRAMS = {
         PATH = '/WSS_Client.lua'
     },
     {
-        NAME = 'FT_Receiver',
-        URL = master..'examples/FT_Receiver.lua',
-        PATH = '/FT_Receiver.lua'
+        NAME = 'HPainter',
+        URL = master..'examples/HPainter.lua',
+        PATH = '/HPainter.lua'
     },
     {
         NAME = 'Note',

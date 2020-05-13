@@ -64,6 +64,42 @@ local paintCanvas = YAGUI.gui_elements.Canvas(1, 1, w, h)
 if fs.exists(path) then paintCanvas:nfp_image(1, 1, open_binary(path)); end
 paintCanvas.transparent = true
 
+paintCanvas.scroll_horizontal = function (self, ammount)
+    if ammount ~= 0 then
+        local min, max
+        for k in next, self.buffer.pixels do
+            min, max = math.min(min or k, k), math.max(max or k, k)
+        end
+
+        if min and max then
+            local is_high = ammount > 0
+            for x=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
+                self.buffer.pixels[x + ammount], self.buffer.pixels[x] = self.buffer.pixels[x]
+            end
+        end
+    end
+end
+
+paintCanvas.scroll_vertical = function (self, ammount)
+    if ammount ~= 0 then
+        local min, max
+        for _, col in next, self.buffer.pixels do
+            for k in next, col do
+                min, max = math.min(min or k, k), math.max(max or k, k)
+            end
+        end
+
+        if min and max then
+            local is_high = ammount > 0
+            for x, col in next, self.buffer.pixels do
+                for y=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
+                    col[y + ammount], col[y] = col[y]
+                end
+            end
+        end
+    end
+end
+
 -- Setting up the brush
 local brush = {
     Canvas = YAGUI.gui_elements.Canvas(1, 1, w, h),
@@ -260,7 +296,7 @@ do
     end
 end
 
-local paletteWindow = YAGUI.gui_elements.Window(1, 1, palette_button_width + 2, #palette + 2, colors.lightGray)
+local paletteWindow = YAGUI.gui_elements.Window(2, 2, palette_button_width + 2, #palette + 2, colors.lightGray)
 paletteWindow.resizing.enabled = false
 paletteWindow.border, paletteWindow.colors.border_color = true, colors.red
 paletteWindow:set_elements(palette)
@@ -296,6 +332,7 @@ do
                 end
             end
         )
+        button.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI["KEY_" .. brush_type:sub(1,1):upper()]}
         brush.elements[#brush.elements + 1] = button
     end
 
@@ -305,7 +342,7 @@ do
 end
 
 local brushesWindow = YAGUI.gui_elements.Window(1, 1, brush_button_width + 2, #brush.elements + 2, colors.lightGray)
-brushesWindow.pos.x, brushesWindow.pos.y = w - brushesWindow.size.x + 1, h - brushesWindow.size.y + 1
+brushesWindow.pos.x, brushesWindow.pos.y = w - brushesWindow.size.x, h - brushesWindow.size.y
 brushesWindow.resizing.enabled = false
 brushesWindow.border, brushesWindow.colors.border_color = true, colors.red
 brushesWindow:set_elements(brush.elements)
@@ -334,6 +371,7 @@ do
                 end
             end
         )
+        button.shortcut = {YAGUI.KEY_LEFTSHIFT, YAGUI["KEY_" .. bool:sub(1,1):upper()]}
         button.active = brush[bool]
         brush_settings[#brush_settings + 1] = button
     end
@@ -344,7 +382,7 @@ do
 end
 
 local brushSettingsWindow = YAGUI.gui_elements.Window(1, 1, brush_settings_width + 2, #brush_settings + 2, colors.lightGray)
-brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = w - brushSettingsWindow.size.x + 1, 1
+brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = w - brushSettingsWindow.size.x, 2
 brushSettingsWindow.resizing.enabled = false
 brushSettingsWindow.border, brushSettingsWindow.colors.border_color = true, colors.red
 brushSettingsWindow:set_elements(brush_settings)
@@ -373,6 +411,14 @@ clSaveSaving:set_callback(
     end
 )
 
+local function toggle_GUI()
+    local state = paletteWindow.hidden
+    paletteWindow.hidden = not state
+    brushesWindow.hidden = not state
+    brushSettingsWindow.hidden = not state
+    lSave.hidden = not state
+end
+
 -- Setting uo main loop
 local loop = YAGUI.Loop(20, 6)
 loop.options.raw_mode = true
@@ -392,6 +438,16 @@ loop:set_callback(
                 lSave.colors.foreground = colors.green
                 clSaveSaving:reset_timer()
                 clSaveSaving:start()
+            elseif event.key == YAGUI.KEY_H then
+                toggle_GUI()
+            elseif event.key == YAGUI.KEY_RIGHT then
+                paintCanvas:scroll_horizontal(1)
+            elseif event.key == YAGUI.KEY_LEFT then
+                paintCanvas:scroll_horizontal(-1)
+            elseif event.key == YAGUI.KEY_UP then
+                paintCanvas:scroll_vertical(-1)
+            elseif event.key == YAGUI.KEY_DOWN then
+                paintCanvas:scroll_vertical(1)
             end
         end
     end

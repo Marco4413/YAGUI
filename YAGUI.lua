@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.37",
+    ver = "1.37.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1231,19 +1231,18 @@ local screen_buffer = {
         local image = {}
         for rel_y=1, height do
             local row = {}
-            local last_x = 1
+            local last_x = 0
             for rel_x=1, width do
                 local pixel = self.frame.pixels[x + rel_x - 1] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
                     background = transparent and " " or self.frame.background
                 }
 
-                if pixel.background ~= " " then
-                    row[#row + 1] = string.rep(" ", rel_x - last_x - 1)
-                    row[#row + 1] = color_utils.colors[pixel.inverted and pixel.foreground or pixel.background] or " "
-                    last_x = rel_x
-                end
+                local color = color_utils.colors[pixel.inverted and pixel.foreground or pixel.background] or " "
+                row[#row + 1] = color
+                
+                if color ~= " " then last_x = rel_x; end
             end
-            image[#image + 1] = table.concat(row)
+            image[#image + 1] = table.concat(row):sub(0, last_x)
         end
         return table.concat(image, "\n")
     end,
