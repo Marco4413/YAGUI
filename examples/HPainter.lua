@@ -59,6 +59,19 @@ local function format_button_text(text)
     return table.concat({text:sub(1, 1):upper(), text:sub(2)})
 end
 
+-- Setting up background
+local backgroundCanvas = YAGUI.gui_elements.Canvas(1, 1, w, h)
+
+backgroundCanvas.init = function (self)
+    for y=1, h do
+        self:write(1, y, string.rep("\127", w), colors.gray)
+    end
+end
+backgroundCanvas.transparent = true
+backgroundCanvas.hidden = true
+
+backgroundCanvas:init()
+
 -- Setting up the Canvas
 local paintCanvas = YAGUI.gui_elements.Canvas(1, 1, w, h)
 if fs.exists(path) then paintCanvas:nfp_image(1, 1, open_binary(path)); end
@@ -269,7 +282,13 @@ brush.Canvas:set_callback(
         elseif brush.type == "fill" then
             if brush.extra ~= pos1 then
                 self:clear()
-                self:fill(paintCanvas, pos1.x, pos1.y, brush.erasing and paintCanvas.buffer.background or brush.color)
+                if brush.erasing then
+                    if paintCanvas.buffer:is_pixel_custom(pos1.x, pos1.y) then
+                        self:fill(paintCanvas, pos1.x, pos1.y, paintCanvas.buffer.background)
+                    end
+                else
+                    self:fill(paintCanvas, pos1.x, pos1.y, brush.color)
+                end
                 brush.extra = pos1:duplicate()
             end
         end
@@ -400,6 +419,7 @@ brushesWindow:set_callback(YAGUI.ONEVENT, eliminate_drag_artifacts)
 brushSettingsWindow:set_callback(YAGUI.ONEVENT, eliminate_drag_artifacts)
 
 -- Setting up Label
+local lGrid = YAGUI.gui_elements.Label(1, h - 1, "Press G to toggle GRID", colors.white)
 local lSave = YAGUI.gui_elements.Label(1, h, "Press S to save: \"" .. path .. "\"", colors.white)
 local clSaveSaving = YAGUI.gui_elements.Clock(1)
 clSaveSaving.oneshot = true
@@ -422,16 +442,22 @@ end
 -- Setting uo main loop
 local loop = YAGUI.Loop(20, 6)
 loop.options.raw_mode = true
-loop:set_elements({brushSettingsWindow, brushesWindow, paletteWindow, lSave, brush.Canvas, paintCanvas, clSaveSaving})
+loop:set_elements({brushSettingsWindow, brushesWindow, paletteWindow, lGrid, lSave, brush.Canvas, paintCanvas, backgroundCanvas, clSaveSaving})
 
 loop:set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         if event.name == YAGUI.TERMRESIZE then
             w, h = term.getSize()
-            brush.Canvas.size.x, paintCanvas.size.x = w, w
-            brush.Canvas.size.y, paintCanvas.size.y = h, h
+            paletteWindow.pos.x, paletteWindow.pos.y = 2, 2
+            brushesWindow.pos.x, brushesWindow.pos.y = w - brushesWindow.size.x, h - brushesWindow.size.y
+            brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = w - brushSettingsWindow.size.x, 2
+
+            brush.Canvas.size.x, paintCanvas.size.x, backgroundCanvas.size.x = w, w, w
+            brush.Canvas.size.y, paintCanvas.size.y, backgroundCanvas.size.y = h, h, h
+            lGrid.pos.y = h - 1
             lSave.pos.y = h
+            backgroundCanvas:init()
         elseif event.name == YAGUI.KEY then
             if event.key == YAGUI.KEY_S then
                 save_binary(path, paintCanvas:to_nfp(1, 1, paintCanvas.size.x, paintCanvas.size.y, true))
@@ -440,6 +466,8 @@ loop:set_callback(
                 clSaveSaving:start()
             elseif event.key == YAGUI.KEY_H then
                 toggle_GUI()
+            elseif event.key == YAGUI.KEY_G then
+                backgroundCanvas.hidden = not backgroundCanvas.hidden
             elseif event.key == YAGUI.KEY_RIGHT then
                 paintCanvas:scroll_horizontal(1)
             elseif event.key == YAGUI.KEY_LEFT then
