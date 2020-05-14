@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.38",
+    ver = "1.38.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1241,23 +1241,25 @@ local screen_buffer = {
     frame_to_nfp = function (self, transparent, x, y, width, height)
         local image = {}
 
-        local real_x, real_y, real_width, real_height = 1, 1, 1, 1
-        if not (x or y or width or height) then
+        local real_x1, real_y1, real_x2, real_y2 = 1, 1, 1, 1
+        if not (x and y and width and height) then
             for x in next, self.frame.pixels do
-                real_x = math.min(real_x, x)
-                real_width = math.max(real_width, x)
+                real_x1 = math.min(real_x1, x)
+                real_x2 = math.max(real_x2, x)
                 for y in next, self.frame.pixels[x] do
-                    real_y = math.min(real_y, y)
-                    real_height = math.max(real_height, y)
+                    real_y1 = math.min(real_y1, y)
+                    real_y2 = math.max(real_y2, y)
                 end
             end
         end
 
-        for y=y or real_y, height or real_height do
+        x, y = x or real_x1, y or real_y1
+
+        for y=y, height and y + height - 1 or real_y2 do
             local row = {}
 
             local i, last_color_at = 1, 0
-            for x=x or real_x, width or real_width do
+            for x=x, width and x + width - 1 or real_x2 do
                 local pixel = transparent and (not self.frame:is_pixel_custom(x, y)) and {} or self.frame:get_pixel(x, y)
 
                 local color = color_utils.colors[pixel.background] or " "
