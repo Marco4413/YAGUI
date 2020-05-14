@@ -6,9 +6,12 @@ if not fs.exists(YAGUI_PATH) then printError("Couldn't find YAGUI in path: \""..
 local YAGUI = dofile(YAGUI_PATH)
 -- End of AUTO-GENERATED code
 
-local path = ...
+local main_monitor = term
+
+local tArgs = {...}
+local path = table.remove(tArgs, 1)
 if (not path) or fs.isDir(shell.resolve(path)) then
-    YAGUI.monitor_utils.better_print(term, colors.green, nil, "HPainter <PATH>")
+    YAGUI.monitor_utils.better_print(term, colors.green, nil, "HPainter <PATH> [MONITORS]")
     return
 end
 
@@ -49,7 +52,7 @@ local function save_binary(path, content)
 end
 
 local Vector2 = YAGUI.math_utils.Vector2
-local w, h = term.getSize()
+local w, h = main_monitor.getSize()
 
 local function get_sorted_xy(v1, v2)
     return v1.x < v2.x and v1.x or v2.x, v1.y < v2.y and v1.y or v2.y, v1.x > v2.x and v1.x or v2.x, v1.y > v2.y and v1.y or v2.y
@@ -67,7 +70,6 @@ backgroundCanvas.init = function (self)
         self:write(1, y, string.rep("\127", w), colors.gray)
     end
 end
-backgroundCanvas.transparent = true
 backgroundCanvas.hidden = true
 
 backgroundCanvas:init()
@@ -133,6 +135,7 @@ brush.reset_pos = function (self)
 end
 
 brush.Canvas.transparent = true
+brush.Canvas.buffer.background = "nil"
 
 brush.Canvas.change_color = function (self, color)
     for key, col in next, self.buffer.pixels do
@@ -143,25 +146,24 @@ brush.Canvas.change_color = function (self, color)
 end
 
 brush.Canvas.erase = function (self, other)
-    for x=1, self.size.x do
-        for y=1, self.size.y do
-            if self.buffer:is_pixel_custom(x, y) then
-                if other.buffer.pixels[x] then
-                    other.buffer.pixels[x][y] = nil
-                end
-            end
+    for x in next, self.buffer.pixels do
+        for y in next, self.buffer.pixels[x] do
+            other.buffer:remove_pixel(x, y)
         end
     end
 end
 
 brush.Canvas.fill = function (self, target_canvas, x, y, replacement_color)
     if not YAGUI.event_utils.in_area(x, y, self.pos.x, self.pos.y, self.size.x, self.size.y) then return; end
-    target_canvas:cast(self)
-    local pixel = self.buffer:get_pixel(x, y)
-    local target_color = pixel.background
-    if target_color == replacement_color then return; end
-    if pixel.background ~= target_color then return; end
+    
+    local pixel = target_canvas.buffer:get_pixel(x, y)
+    local target_color = target_canvas.buffer:is_pixel_custom(x, y) and pixel.background or "nil"
+    replacement_color = replacement_color or "nil"
 
+    --if pixel.background ~= target_color then return; end
+    if target_color == replacement_color then return; end
+    
+    target_canvas:cast(self)
     local changed = {}
     self.buffer:set_pixel(x, y, " ", replacement_color, replacement_color)
     changed[x] = {}; changed[x][y] = replacement_color
@@ -210,7 +212,11 @@ brush.Canvas.fill = function (self, target_canvas, x, y, replacement_color)
 
     for x, col in next, changed do
         for y, color in next, col do
-            self.buffer:set_pixel(x, y, " ", color, color)
+            self.buffer:set_pixel(
+                x, y, " ",
+                color == "nil" and target_canvas.buffer.background or color,
+                color == "nil" and target_canvas.buffer.background or color
+            )
         end
     end
 end
@@ -283,9 +289,7 @@ brush.Canvas:set_callback(
             if brush.extra ~= pos1 then
                 self:clear()
                 if brush.erasing then
-                    if paintCanvas.buffer:is_pixel_custom(pos1.x, pos1.y) then
-                        self:fill(paintCanvas, pos1.x, pos1.y, paintCanvas.buffer.background)
-                    end
+                    self:fill(paintCanvas, pos1.x, pos1.y, nil)
                 else
                     self:fill(paintCanvas, pos1.x, pos1.y, brush.color)
                 end
@@ -301,11 +305,15 @@ local palette = {}
 do
     for _, color in next, colors do
         if type(color) == "number" then
-            local button = YAGUI.gui_elements.Button(2, #palette + 2, palette_button_width, 1, "", color, color, color)
+            local button = YAGUI.gui_elements.Button(color == brush.color and 3 or 2, #palette + 2, palette_button_width, 1, "", color, color, color)
             button:set_callback(
                 YAGUI.ONPRESS,
                 function (self)
                     self.active = false
+                    for key, button in next, palette do
+                        button.pos.x = 2
+                    end
+                    self.pos.x = 3
                     brush.color = self.colors.foreground
                     if not brush.erasing then brush.Canvas:change_color(self.colors.foreground); end
                 end
@@ -442,13 +450,14 @@ end
 -- Setting uo main loop
 local loop = YAGUI.Loop(20, 6)
 loop.options.raw_mode = true
+loop:set_monitors({"terminal", table.unpack(tArgs)})
 loop:set_elements({brushSettingsWindow, brushesWindow, paletteWindow, lGrid, lSave, brush.Canvas, paintCanvas, backgroundCanvas, clSaveSaving})
 
 loop:set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         if event.name == YAGUI.TERMRESIZE then
-            w, h = term.getSize()
+            w, h = main_monitor.getSize()
             paletteWindow.pos.x, paletteWindow.pos.y = 2, 2
             brushesWindow.pos.x, brushesWindow.pos.y = w - brushesWindow.size.x, h - brushesWindow.size.y
             brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = w - brushSettingsWindow.size.x, 2
@@ -460,7 +469,7 @@ loop:set_callback(
             backgroundCanvas:init()
         elseif event.name == YAGUI.KEY then
             if event.key == YAGUI.KEY_S then
-                save_binary(path, paintCanvas:to_nfp(1, 1, paintCanvas.size.x, paintCanvas.size.y, true))
+                save_binary(path, paintCanvas:to_nfp(true))
                 lSave.colors.foreground = colors.green
                 clSaveSaving:reset_timer()
                 clSaveSaving:start()
@@ -483,4 +492,6 @@ loop:set_callback(
 
 loop:start()
 
-YAGUI.monitor_utils.better_clear(term)
+for key, monitor in next, loop.monitors do
+    YAGUI.monitor_utils.better_clear(monitor)
+end

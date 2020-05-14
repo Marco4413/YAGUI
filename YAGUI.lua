@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.37.1",
+    ver = "1.38",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -978,26 +978,8 @@ local internal_draw = {
         else
             return " ", false
         end
-    end
-}
-
--- SCREEN BUFFER MODULE
-local screen_buffer = {
-    -- CONTAINS THE LAST DRAWN FRAME
-    frame = {
-        pixels = {},
-        background = nil
-    },
-    -- TABLE THAT CONTAINS ALL SCREENS THAT THE BUFFER SHOULD DRAW TO
-    screens = {
-        terminal = term
-    },
-    -- BUFFER WILL BE CLEARED AFTER HAVING CALLED THE DRAW FUNCTION
-    clear_after_draw = true,
-    -- BUFFER STORES ALL PIXELS
+    end,
     buffer = {
-        pixels = {},
-        background = colors.black,
         -- CHECKS IF SPECIFIED PIXEL WAS CREATED WITH "set_pixel" FUNCTION
         is_pixel_custom = function (self, x, y)
             if self.pixels[x] then
@@ -1039,10 +1021,33 @@ local screen_buffer = {
             if not self.pixels[x] then self.pixels[x] = {}; end
             self.pixels[x][y] = pixel
         end,
+        remove_pixel = function (self, x, y)
+            if self:is_pixel_custom(x, y) then self.pixels[x][y] = nil; end
+        end,
         -- CLEARS PIXELS TABLE
         clear = function (self)
             self.pixels = {}
         end
+    }
+}
+
+-- SCREEN BUFFER MODULE
+local screen_buffer = {
+    -- CONTAINS THE LAST DRAWN FRAME
+    frame = {
+        pixels = {},
+        background = nil
+    },
+    -- TABLE THAT CONTAINS ALL SCREENS THAT THE BUFFER SHOULD DRAW TO
+    screens = {
+        terminal = term
+    },
+    -- BUFFER WILL BE CLEARED AFTER CALLING DRAW FUNCTION
+    clear_after_draw = true,
+    -- BUFFER STORES ALL PIXELS
+    buffer = {
+        pixels = {},
+        background = colors.black
     },
     -- SETS ALL SCREENS IN screen_names AS SCREENS WHERE THE BUFFER IS GOING TO DRAW TO
     set_screens = function (self, screen_names)
@@ -1058,23 +1063,27 @@ local screen_buffer = {
     end,
     -- DRAWS SCREEN BUFFER
     draw = function (self)
-        local screens = self.screens
-        local buffer = self.buffer
-        
-        for screen_name, screen in next, screens do
+        local rows = {}
+        for screen_name, screen in next, self.screens do
             local old_x, old_y = screen.getCursorPos()
             
             local width, height = screen.getSize()
             for y=1, height do
                 local row_text, row_foreground, row_background = {}, {}, {}
-                for x=1, width do
-                    local pixel = buffer:get_pixel(x, y)
+                for x=rows[y] and #rows[y].text + 1 or 1, width do
+                    local pixel = self.buffer:get_pixel(x, y)
                     row_text[#row_text + 1] = pixel.char
                     row_foreground[#row_foreground + 1] = color_utils.colors[pixel.foreground]
                     row_background[#row_background + 1] = color_utils.colors[pixel.background]
                 end
+                
+                rows[y] = {
+                    text = table.concat({rows[y] and rows[y].text or "", table.concat(row_text)}),
+                    fg = table.concat({rows[y] and rows[y].fg or "", table.concat(row_foreground)}),
+                    bg = table.concat({rows[y] and rows[y].bg or "", table.concat(row_background)})
+                }
                 screen.setCursorPos(1, y)
-                screen.blit(table.concat(row_text), table.concat(row_foreground), table.concat(row_background))
+                screen.blit(rows[y].text:sub(0, width), rows[y].fg:sub(0, width), rows[y].bg:sub(0, width))
             end
             screen.setCursorPos(old_x, old_y)
         end
@@ -1221,36 +1230,52 @@ local screen_buffer = {
             end
         end
     end,
-    -- NOTE: TO MAKE SCREENSHOTS CONSIDER USING THE NFT FORMAT (They support text)
+    -- NOTE: TO MAKE SCREENSHOTS CONSIDER USING THE NFT FORMAT (It supports text)
     -- Returns a string which is screen_buffer.frame converted into nfp format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/4-paint.md):
-    --  x is the starting x pos in the screen buffer
-    --  y is the starting y pos in the screen buffer
-    --  img_width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
-    --  img_height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
-    frame_to_nfp = function (self, x, y, width, height, transparent)
+    --  transparent is whether or not transparency should count
+    --  CROP ARGUMENTS (NOT NECESSARY):
+    --    x is the starting x pos in the screen buffer (default: The first x in the frame)
+    --    y is the starting y pos in the screen buffer (default: The first y in the frame)
+    --    width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer   (default: The width of the frame)
+    --    height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer (default: The height of the frame)
+    frame_to_nfp = function (self, transparent, x, y, width, height)
         local image = {}
-        for rel_y=1, height do
-            local row = {}
-            local last_x = 0
-            for rel_x=1, width do
-                local pixel = self.frame.pixels[x + rel_x - 1] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
-                    background = transparent and " " or self.frame.background
-                }
 
-                local color = color_utils.colors[pixel.inverted and pixel.foreground or pixel.background] or " "
+        local real_x, real_y, real_width, real_height = 1, 1, 1, 1
+        if not (x or y or width or height) then
+            for x in next, self.frame.pixels do
+                real_x = math.min(real_x, x)
+                real_width = math.max(real_width, x)
+                for y in next, self.frame.pixels[x] do
+                    real_y = math.min(real_y, y)
+                    real_height = math.max(real_height, y)
+                end
+            end
+        end
+
+        for y=y or real_y, height or real_height do
+            local row = {}
+
+            local i, last_color_at = 1, 0
+            for x=x or real_x, width or real_width do
+                local pixel = transparent and (not self.frame:is_pixel_custom(x, y)) and {} or self.frame:get_pixel(x, y)
+
+                local color = color_utils.colors[pixel.background] or " "
                 row[#row + 1] = color
                 
-                if color ~= " " then last_x = rel_x; end
+                if color ~= " " then last_color_at = i; end
+                i = i + 1
             end
-            image[#image + 1] = table.concat(row):sub(0, last_x)
+
+            image[#image + 1] = table.concat(row):sub(0, last_color_at)
         end
         return table.concat(image, "\n")
     end,
     -- Returns a string which is screen_buffer.frame converted into nft format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/6-nft.md):
     --  x is the starting x pos in the screen buffer
     --  y is the starting y pos in the screen buffer
-    --  img_width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
-    --  img_height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
+    --  width is the width of the rectangle that is going to be taken starting from x,y in the screen buffer
+    --  height is the height of the rectangle that is going to be taken starting from x,y in the screen buffer
     frame_to_nft = function (self, x, y, width, height)
         local image = {}
         for rel_y=1, height do
@@ -1350,7 +1375,9 @@ local screen_buffer = {
     end
 }
 -- Making the buffer of screen_buffer usable as a metatable
-screen_buffer.buffer.__index = screen_buffer.buffer
+screen_buffer.buffer.__index = internal_draw.buffer
+setmetatable(screen_buffer.buffer, screen_buffer.buffer)
+setmetatable(screen_buffer.frame, screen_buffer.buffer)
 
 -- INPUT MODULE
 -- Usually managed by loops
