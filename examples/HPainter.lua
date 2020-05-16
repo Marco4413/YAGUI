@@ -6,8 +6,6 @@ if not fs.exists(YAGUI_PATH) then printError("Couldn't find YAGUI in path: \""..
 local YAGUI = dofile(YAGUI_PATH)
 -- End of AUTO-GENERATED code
 
-local main_monitor = term
-
 local tArgs = {...}
 local path = table.remove(tArgs, 1)
 if (not path) or fs.isDir(shell.resolve(path)) then
@@ -52,7 +50,7 @@ local function save_binary(path, content)
 end
 
 local Vector2 = YAGUI.math_utils.Vector2
-local w, h = main_monitor.getSize()
+local term_w, term_h = term.getSize()
 
 local function get_sorted_xy(v1, v2)
     return v1.x < v2.x and v1.x or v2.x, v1.y < v2.y and v1.y or v2.y, v1.x > v2.x and v1.x or v2.x, v1.y > v2.y and v1.y or v2.y
@@ -62,20 +60,27 @@ local function format_button_text(text)
     return table.concat({text:sub(1, 1):upper(), text:sub(2)})
 end
 
--- Setting up background
-local backgroundCanvas = YAGUI.gui_elements.Canvas(1, 1, w, h)
+-- Setting up background presets
+local grid = {
+    state = true,
+    [true] = {
+        char = "\127",
+        foreground = colors.gray,
+        background = colors.black,
+        inverted = false
+    },
+    [false] = {
+        char = " ",
+        foreground = colors.black,
+        background = colors.black,
+        inverted = false
+    }
+}
 
-backgroundCanvas.init = function (self)
-    for y=1, h do
-        self:write(1, y, string.rep("\127", w), colors.gray)
-    end
-end
-backgroundCanvas.hidden = true
-
-backgroundCanvas:init()
+YAGUI.screen_buffer.buffer.background = grid[grid.state]
 
 -- Setting up the Canvas
-local paintCanvas = YAGUI.gui_elements.Canvas(1, 1, w, h)
+local paintCanvas = YAGUI.gui_elements.Canvas(1, 1, term_w, term_h)
 if fs.exists(path) then paintCanvas:nfp_image(1, 1, open_binary(path)); end
 paintCanvas.transparent = true
 
@@ -117,7 +122,7 @@ end
 
 -- Setting up the brush
 local brush = {
-    Canvas = YAGUI.gui_elements.Canvas(1, 1, w, h),
+    Canvas = YAGUI.gui_elements.Canvas(1, 1, term_w, term_h),
     type = "point",
     color = colors.blue,
     filled = false,
@@ -135,7 +140,7 @@ brush.reset_pos = function (self)
 end
 
 brush.Canvas.transparent = true
-brush.Canvas.buffer.background = "nil"
+brush.Canvas.buffer.background.background = "nil"
 
 brush.Canvas.change_color = function (self, color)
     for key, col in next, self.buffer.pixels do
@@ -253,12 +258,12 @@ brush.Canvas:set_callback(
             if brush.center then
                 self:clear()
                 local x_off, y_off = (pos1.x - pos2.x) / 2, (pos1.y - pos2.y) / 2
-                self:point(pos2.x + x_off, pos2.y + y_off, brush.erasing and paintCanvas.buffer.background or brush.color)
+                self:point(pos2.x + x_off, pos2.y + y_off, brush.erasing and paintCanvas.buffer.background.background or brush.color)
             else
                 if brush.extra then
                     pos1 = brush.extra - brush.Canvas.pos + Vector2.ONE
                 end
-                self:line(pos1.x, pos1.y, pos2.x, pos2.y, brush.erasing and paintCanvas.buffer.background or brush.color)
+                self:line(pos1.x, pos1.y, pos2.x, pos2.y, brush.erasing and paintCanvas.buffer.background.background or brush.color)
                 brush.extra = brush.end_pos:duplicate()
             end
         elseif brush.type == "rectangle" then
@@ -266,14 +271,14 @@ brush.Canvas:set_callback(
             if brush.center then
                 local distance = pos2 - pos1
                 distance.x, distance.y = math.abs(distance.x), math.abs(distance.y)
-                self:rectangle(pos1.x - distance.x, pos1.y - distance.y, distance.x * 2 + 1, distance.y * 2 + 1, brush.erasing and paintCanvas.buffer.background or brush.color, false, nil, not brush.filled)
+                self:rectangle(pos1.x - distance.x, pos1.y - distance.y, distance.x * 2 + 1, distance.y * 2 + 1, brush.erasing and paintCanvas.buffer.background.background or brush.color, false, nil, not brush.filled)
             else
                 local x1, y1, x2, y2 = get_sorted_xy(pos1, pos2)
-                self:rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1, brush.erasing and paintCanvas.buffer.background or brush.color, false, nil, not brush.filled)
+                self:rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1, brush.erasing and paintCanvas.buffer.background.background or brush.color, false, nil, not brush.filled)
             end
         elseif brush.type == "line" then
             self:clear()
-            self:line(pos1.x, pos1.y, pos2.x, pos2.y, brush.erasing and paintCanvas.buffer.background or brush.color)
+            self:line(pos1.x, pos1.y, pos2.x, pos2.y, brush.erasing and paintCanvas.buffer.background.background or brush.color)
         elseif brush.type == "circle" then
             self:clear()
             local distance = pos2 - pos1
@@ -284,7 +289,7 @@ brush.Canvas:set_callback(
                 radius = math.floor(distance:length() / 2 + 0.5)
                 x_off, y_off = (pos1.x - pos2.x) / -2, (pos1.y - pos2.y) / -2
             end
-            self:circle(pos1.x + x_off, pos1.y + y_off, radius, brush.erasing and paintCanvas.buffer.background or brush.color, not brush.filled)
+            self:circle(pos1.x + x_off, pos1.y + y_off, radius, brush.erasing and paintCanvas.buffer.background.background or brush.color, not brush.filled)
         elseif brush.type == "fill" then
             if brush.extra ~= pos1 then
                 self:clear()
@@ -369,7 +374,7 @@ do
 end
 
 local brushesWindow = YAGUI.gui_elements.Window(1, 1, brush_button_width + 2, #brush.elements + 2, colors.lightGray)
-brushesWindow.pos.x, brushesWindow.pos.y = w - brushesWindow.size.x, h - brushesWindow.size.y
+brushesWindow.pos.x, brushesWindow.pos.y = term_w - brushesWindow.size.x, term_h - brushesWindow.size.y
 brushesWindow.resizing.enabled = false
 brushesWindow.border, brushesWindow.colors.border_color = true, colors.red
 brushesWindow:set_elements(brush.elements)
@@ -392,7 +397,7 @@ do
             function (self)
                 brush[self.text:lower()] = self.active
                 if brush.erasing then
-                    brush.Canvas:change_color(paintCanvas.buffer.background)
+                    brush.Canvas:change_color(paintCanvas.buffer.background.background)
                 else
                     brush.Canvas:change_color(brush.color)
                 end
@@ -409,7 +414,7 @@ do
 end
 
 local brushSettingsWindow = YAGUI.gui_elements.Window(1, 1, brush_settings_width + 2, #brush_settings + 2, colors.lightGray)
-brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = w - brushSettingsWindow.size.x, 2
+brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = term_w - brushSettingsWindow.size.x, 2
 brushSettingsWindow.resizing.enabled = false
 brushSettingsWindow.border, brushSettingsWindow.colors.border_color = true, colors.red
 brushSettingsWindow:set_elements(brush_settings)
@@ -427,8 +432,8 @@ brushesWindow:set_callback(YAGUI.ONEVENT, eliminate_drag_artifacts)
 brushSettingsWindow:set_callback(YAGUI.ONEVENT, eliminate_drag_artifacts)
 
 -- Setting up Label
-local lGrid = YAGUI.gui_elements.Label(1, h - 1, "Press G to toggle GRID", colors.white)
-local lSave = YAGUI.gui_elements.Label(1, h, "Press S to save: \"" .. path .. "\"", colors.white)
+local lGrid = YAGUI.gui_elements.Label(1, term_h - 1, "Press G to toggle GRID", colors.white)
+local lSave = YAGUI.gui_elements.Label(1, term_h, "Press S to save: \"" .. path .. "\"", colors.white)
 local clSaveSaving = YAGUI.gui_elements.Clock(1)
 clSaveSaving.oneshot = true
 
@@ -451,40 +456,71 @@ end
 local loop = YAGUI.Loop(20, 6)
 loop.options.raw_mode = true
 loop:set_monitors({"terminal", table.unpack(tArgs)})
-loop:set_elements({brushSettingsWindow, brushesWindow, paletteWindow, lGrid, lSave, brush.Canvas, paintCanvas, backgroundCanvas, clSaveSaving})
+loop:set_elements({brushSettingsWindow, brushesWindow, paletteWindow, lGrid, lSave, brush.Canvas, paintCanvas, clSaveSaving})
+
+local function get_monitor_size()
+    local w, h = 0, 0
+    for name, monitor in next, loop.monitors do
+        local this_w, this_h = monitor.getSize()
+        w, h = math.max(w, this_w), math.max(h, this_h)
+    end
+    return w, h
+end
+
+local function resize_canvas()
+    local global_w, global_h = get_monitor_size()
+    brush.Canvas.size.x, paintCanvas.size.x = global_w, global_w
+    brush.Canvas.size.y, paintCanvas.size.y = global_h, global_h
+    lGrid.pos.y = global_h - 1
+    lSave.pos.y = global_h
+end
+
+local function resize_all()
+    term_w, term_h = term.getSize()
+    paletteWindow.pos.x, paletteWindow.pos.y = 2, 2
+    brushesWindow.pos.x, brushesWindow.pos.y = term_w - brushesWindow.size.x, term_h - brushesWindow.size.y
+    brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = term_w - brushSettingsWindow.size.x, 2
+
+    resize_canvas()
+end
+
+resize_all()
 
 loop:set_callback(
     YAGUI.ONEVENT,
     function (self, event)
         if event.name == YAGUI.TERMRESIZE then
-            w, h = main_monitor.getSize()
-            paletteWindow.pos.x, paletteWindow.pos.y = 2, 2
-            brushesWindow.pos.x, brushesWindow.pos.y = w - brushesWindow.size.x, h - brushesWindow.size.y
-            brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = w - brushSettingsWindow.size.x, 2
-
-            brush.Canvas.size.x, paintCanvas.size.x, backgroundCanvas.size.x = w, w, w
-            brush.Canvas.size.y, paintCanvas.size.y, backgroundCanvas.size.y = h, h, h
-            lGrid.pos.y = h - 1
-            lSave.pos.y = h
-            backgroundCanvas:init()
+            resize_all()
+            return true
         elseif event.name == YAGUI.KEY then
             if event.key == YAGUI.KEY_S then
                 save_binary(path, paintCanvas:to_nfp(true))
                 lSave.colors.foreground = colors.green
                 clSaveSaving:reset_timer()
                 clSaveSaving:start()
+                return true
             elseif event.key == YAGUI.KEY_H then
                 toggle_GUI()
+                return true
             elseif event.key == YAGUI.KEY_G then
-                backgroundCanvas.hidden = not backgroundCanvas.hidden
+                grid.state = not grid.state
+                YAGUI.screen_buffer.buffer.background = grid[grid.state]
+                return true
+            elseif event.key == YAGUI.KEY_R then
+                resize_canvas()
+                return true
             elseif event.key == YAGUI.KEY_RIGHT then
                 paintCanvas:scroll_horizontal(1)
+                return true
             elseif event.key == YAGUI.KEY_LEFT then
                 paintCanvas:scroll_horizontal(-1)
+                return true
             elseif event.key == YAGUI.KEY_UP then
                 paintCanvas:scroll_vertical(-1)
+                return true
             elseif event.key == YAGUI.KEY_DOWN then
                 paintCanvas:scroll_vertical(1)
+                return true
             end
         end
     end

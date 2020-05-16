@@ -43,7 +43,12 @@ local lMain = YAGUI.Loop(20, 6)
 WSS:set_callback(
     YAGUI.ONDISCONNECT,
     function (self)
-        YAGUI.screen_buffer.buffer.background = colors.black
+        YAGUI.screen_buffer.buffer.background = {
+            char = " ",
+            foreground = colors.black,
+            background = colors.black,
+            inverted = false
+        }
         lStatus.text = "Host Disconnected"
     end
 )

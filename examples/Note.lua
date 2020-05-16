@@ -63,7 +63,8 @@ local current_file_path = shell.resolve(default_path)
 local numbers = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}
 local tArgs = {...}
 
-YAGUI.screen_buffer.buffer.background = background_color
+YAGUI.screen_buffer.buffer.background.background = background_color
+YAGUI.screen_buffer.buffer.background.foreground = background_color
 
 -- Layout is only used to be able to make this program compatible with all computers (pockets, turtles and normal computers)
 --  It has nothing to do with YAGUI

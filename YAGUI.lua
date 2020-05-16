@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.38.1",
+    ver = "1.39",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -994,10 +994,10 @@ local internal_draw = {
         get_pixel = function (self, x, y)
             if self:is_pixel_custom(x, y) then return self.pixels[x][y]; end
             return {
-                char = " ",
-                foreground = self.background,
-                background = self.background,
-                inverted = false
+                char = self.background.char,
+                foreground = self.background.foreground,
+                background = self.background.background,
+                inverted = self.background.inverted
             }
         end,
         -- SETS PROPERTIES FOR A PIXEL SO IT ISN'T A "DEFAULT PIXEL" ANYMORE
@@ -1047,7 +1047,12 @@ local screen_buffer = {
     -- BUFFER STORES ALL PIXELS
     buffer = {
         pixels = {},
-        background = colors.black
+        background = {
+            char = " ",
+            foreground = colors.black,
+            background = colors.black,
+            inverted = false
+        }
     },
     -- SETS ALL SCREENS IN screen_names AS SCREENS WHERE THE BUFFER IS GOING TO DRAW TO
     set_screens = function (self, screen_names)
@@ -1614,8 +1619,10 @@ gui_elements = {
                 else
                     self.callbacks.onFailedPress(self, formatted_event)
                 end
-            elseif input:are_keys_pressed(self.shortcut_once, table.unpack(self.shortcut)) then
-                self:press(formatted_event)
+            elseif event.name == const.KEY then
+                if input:are_keys_pressed(self.shortcut_once, table.unpack(self.shortcut)) then
+                    self:press(formatted_event)
+                end
             elseif self.hoverable then
                 if formatted_event.name == const.MOUSEMOVE or formatted_event.name == const.MOUSEDRAG then
                     if ((not formatted_event.x) or not formatted_event.y) then
@@ -2443,8 +2450,13 @@ gui_elements = {
                 size = math_utils.Vector2.new(width, height),
                 transparent = false,
                 buffer =  {
-                    background = colors.black,
-                    pixels = {}
+                    pixels = {},
+                    background = {
+                        char = " ",
+                        foreground = colors.black,
+                        background = colors.black,
+                        inverted = false
+                    }
                 },
                 callbacks = {
                     onDraw = function () end
@@ -2592,7 +2604,7 @@ WSS = {
                         self.users[formatted_event.from] = nil
                         return_value = true
                         self.callbacks.onDisconnect(self, formatted_event)
-                    elseif self.events_whitelist[msg.name or "nil"] and self.users[formatted_event.from] and type(msg) == "table" then
+                    elseif type(msg) == "table" and self.events_whitelist[msg.name] and self.users[formatted_event.from] then
                         if msg.raw then os.queueEvent(table.unpack(msg.raw)); end
                         return_value = true
                     end
@@ -2616,7 +2628,7 @@ WSS = {
             if formatted_event.name == const.TOUCH then
                 return_value = true
             end
-            if self.events_whitelist[tostring(formatted_event.name)] then
+            if self.events_whitelist[formatted_event.name] then
                 rednet.send(self.host_id, formatted_event, self.protocol)
                 return_value = true
             end
