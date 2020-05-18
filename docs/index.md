@@ -1,4 +1,4 @@
-# Welcome to YAGUI Documentation v0.14.2
+# Welcome to YAGUI Documentation v0.14.3
 
 ![](../img/logo.png)
 

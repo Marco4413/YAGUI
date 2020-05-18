@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.39",
+    ver = "1.40",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -79,6 +79,7 @@ local const = {
     ONRESIZE = 20,
     ONPASTE = 21,
     ONHOVER = 22,
+    ONRELEASE = 23,
     MOUSE_LEFT = 1,
     MOUSE_RIGHT = 2,
     MOUSE_MIDDLE = 3,
@@ -645,13 +646,6 @@ table_utils = {
     -- Just copies of unserialise functions in textutils
     unserialise = textutils.unserialise,
     unserialize = textutils.unserialize,
-    better_unpack = function (tbl, i, max_i)
-        i = i or 1
-        max_i = max_i or #tbl
-        if i <= max_i then
-            return tbl[i], table_utils.better_unpack(tbl, i + 1, max_i)
-        end
-    end,
     get = function (tbl, ...)
         local path = {...}
         local current_value = tbl
@@ -737,7 +731,7 @@ event_utils = {
     end,
     -- USED TO FORMAT "RAW_EVENTS"
     -- RAW_EVENTS = {os.pullEvent()}
-    format_event_table = function (event_table)
+    format_event = function (event_table)
         local event = {}
         event.name = event_table[1]
         if event.name == "timer" then
@@ -830,6 +824,12 @@ event_utils = {
         end
         event.raw = event_table
         return event
+    end,
+    delete_event = function (formatted_event)
+        if formatted_event.name ~= const.DELETED then
+            return {name = const.DELETED, deleted = formatted_event}
+        end
+        return formatted_event
     end
 }
 
@@ -1099,6 +1099,7 @@ local screen_buffer = {
     end,
     -- DRAWS A POINT ON THE SCREEN
     point = function (self, x, y, color)
+        if not color then return; end
         self.buffer:set_pixel(x, y, " ", color, color)
     end,
     -- WRITES TEXT ON THE SCREEN
@@ -1135,6 +1136,13 @@ local screen_buffer = {
     end,
     -- DRAWS A RECTANGLE ON THE SCREEN
     rectangle = function (self, x, y, width, height, color, border, border_color, hollow)
+        if not color then
+            if border and border_color then
+                hollow = true
+            else
+                return
+            end
+        end
         if hollow then
             for x_off=1, width do
                 if border then
@@ -1235,7 +1243,7 @@ local screen_buffer = {
             end
         end
     end,
-    -- NOTE: TO MAKE SCREENSHOTS CONSIDER USING THE NFT FORMAT (It supports text)
+    -- NOTE: TO MAKE SCREENSHOTS CONSIDER USING THE NFT FORMAT (It supports text, it doesn't support transparency tho)
     -- Returns a string which is screen_buffer.frame converted into nfp format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/4-paint.md):
     --  transparent is whether or not transparency should count
     --  CROP ARGUMENTS (NOT NECESSARY):
@@ -1315,6 +1323,7 @@ local screen_buffer = {
     end,
     -- DRAWS A LINE ON THE SCREEN
     line = function (self, x1, y1, x2, y2, color) -- SOURCE: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+        if not color then return; end
         if math.abs(y2 - y1) < math.abs(x2 - x1) then
             if x1 > x2 then
                 internal_draw.lineLow(self, x2, y2, x1, y1, color)
@@ -1331,6 +1340,7 @@ local screen_buffer = {
     end,
     -- DRAWS A CIRCLE ON THE SCREEN
     circle = function (self, xCenter, yCenter, radius, color, hollow) -- SOURCE: http://groups.csail.mit.edu/graphics/classes/6.837/F98/Lecture6/circle.html
+        if not color then return; end
     
         local r2 = radius * radius
         
@@ -1548,6 +1558,7 @@ gui_elements = {
                 pos = math_utils.Vector2.new(x, y),
                 size = math_utils.Vector2.new(width, height),
                 border = false,
+                hold = false,
                 timed = {
                     enabled = false,
                     clock = gui_elements.Clock.new(0.5)
@@ -1564,7 +1575,8 @@ gui_elements = {
                     onPress = function () end,
                     onFailedPress = function () end,
                     onTimeout = function () end,
-                    onHover = function () end
+                    onHover = function () end,
+                    onRelease = function () end
                 }
             }
             newButton.timed.clock.binded_button = newButton
@@ -1615,11 +1627,11 @@ gui_elements = {
             if formatted_event.name == const.TOUCH then
                 if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
                     self:press(formatted_event)
-                    return true -- RETURNING TRUE DELETES THE EVENT
+                    return true
                 else
                     self.callbacks.onFailedPress(self, formatted_event)
                 end
-            elseif event.name == const.KEY then
+            elseif formatted_event.name == const.KEY then
                 if input:are_keys_pressed(self.shortcut_once, table.unpack(self.shortcut)) then
                     self:press(formatted_event)
                 end
@@ -1645,10 +1657,28 @@ gui_elements = {
                     self.callbacks.onHover(self, formatted_event)
                 end
             end
-            if self.timed.enabled then self.timed.clock:event(formatted_event); end
+            
+            if self.hold then
+                local event = formatted_event.name == const.DELETED and formatted_event.deleted or formatted_event
+                if event.name == const.MOUSEUP then
+                    if self.active then
+                        self.active = false
+                        if event_utils.in_area(event.x, event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                            self.callbacks.onRelease(self, formatted_event)
+                        end
+                    end
+                end
+            elseif self.timed.enabled then
+                self.timed.clock:event(formatted_event)
+            end
         end,
         press = function (self, formatted_event)
-            if self.timed.enabled then
+            if self.hold then
+                if not self.active then
+                    self.active = true
+                    self.callbacks.onPress(self, formatted_event)
+                end
+            elseif self.timed.enabled then
                 self.timed.clock:start()
                 if not self.active then
                     self.active = true
@@ -1867,7 +1897,7 @@ gui_elements = {
                         self:set_cursor(x + self.first_visible_char, y + self.first_visible_line)
                     end
                     
-                    return true -- RETURNING TRUE DELETES THE EVENT
+                    return true
                 else
                     self.callbacks.onFailedPress(self, formatted_event)
                     self:focus(false, formatted_event)
@@ -2419,25 +2449,28 @@ gui_elements = {
         end,
         -- GIVES EVENT TO ALL WINDOW'S ELEMENTS
         event_elements = function (self, formatted_event)
-            local this_event = formatted_event
-            if this_event.x and this_event.y then
-                this_event = event_utils.format_event_table(this_event.raw)
-                this_event.x, this_event.y = this_event.x - self.pos.x + 1, this_event.y - self.pos.y + 1
+            if formatted_event.name == const.DELETED then
+                if formatted_event.deleted.x and formatted_event.deleted.y then
+                    local deleted = event_utils.format_event(formatted_event.deleted.raw)
+                    deleted.x, deleted.y = deleted.x - self.pos.x + 1, deleted.y - self.pos.y + 1
+                    formatted_event = event_utils.delete_event(deleted)
+                end
+            else
+                if formatted_event.x and formatted_event.y then
+                    formatted_event = event_utils.format_event(formatted_event.raw)
+                    formatted_event.x, formatted_event.y = formatted_event.x - self.pos.x + 1, formatted_event.y - self.pos.y + 1
+                end
             end
-
-            local delete_event = false
             
             for key, element in next, self.elements do
                 if element.event then
-                    local this_delete_event = element:event(this_event)
-                    delete_event = delete_event or this_delete_event
-                    if this_delete_event then
-                        this_event = {name = const.DELETED, deleted = formatted_event}
+                    if element:event(formatted_event) then
+                        formatted_event = event_utils.delete_event(formatted_event)
                     end
                 end
             end
 
-            return delete_event
+            return formatted_event.name == const.DELETED
         end
     },
     -- It's basically the same as screen_buffer, but it's a gui element
@@ -2935,27 +2968,25 @@ Loop = {
         local function event_table(tbl)
             for key, element in next, tbl do
                 if element.event then
-                    if element:event(formatted_event) then formatted_event = {name = const.DELETED, deleted = formatted_event}; end
+                    if element:event(formatted_event) then formatted_event = event_utils.delete_event(formatted_event); end
                 end
             end
         end
 
         if self.callbacks.onEvent(self, formatted_event) then
-            formatted_event = {name = const.DELETED, deleted = formatted_event}
+            formatted_event = event_utils.delete_event(formatted_event)
         end
 
         if self.options.stop_on_terminate and formatted_event.name == const.TERMINATE then self:stop(); return; end
         
         if formatted_event.name == const.TOUCH then
-            local is_monitor_whitelisted = false
-            for monitor_name, monitor in next, self.monitors do
-                if formatted_event.from == monitor_name then
-                    is_monitor_whitelisted = true
-                    break
+            local is_monitor_whitelisted = self.monitors[formatted_event.from] and true or false
+            if is_monitor_whitelisted then
+                if formatted_event.raw[1] == "monitor_touch" then
+                    os.queueEvent("mouse_up", 1, formatted_event.x, formatted_event.y)
                 end
-            end
-            if not is_monitor_whitelisted then
-                formatted_event = {name = const.DELETED, deleted = formatted_event}
+            else
+                formatted_event = event_utils.delete_event(formatted_event)
             end
         end
         
@@ -2966,7 +2997,7 @@ Loop = {
             if element.event then
                 local focus = element:event(formatted_event)
                 if focus then
-                    formatted_event = {name = const.DELETED, deleted = formatted_event}
+                    formatted_event = event_utils.delete_event(formatted_event)
                     if self.elements.high_priority ~= element then
                         table.insert(high_focussed, {element = element, key = key})
                     end
@@ -2996,7 +3027,7 @@ Loop = {
             else
                 raw_event = {os.pullEvent()}
             end
-            local formatted_event = event_utils.format_event_table(raw_event)
+            local formatted_event = event_utils.format_event(raw_event)
 
             input:manage_event(formatted_event)
             self:event_elements(formatted_event)
@@ -3074,6 +3105,8 @@ local objects_methods = {
             self.callbacks.onPaste = callback
         elseif event == const.ONHOVER then
             self.callbacks.onHover = callback
+        elseif event == const.ONRELEASE then
+            self.callbacks.onRelease = callback
         end
     end
 }

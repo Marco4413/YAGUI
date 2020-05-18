@@ -16,7 +16,6 @@ local FPS = 20
 local EPS = 6
 local loop_stats = true
 
-local button_timeout = 0.5
 local SH_timeout = 0.5
 
 local cursor_char = string.char(149)
@@ -187,8 +186,7 @@ local mEditor   = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, editor_backgro
 local lPath     = YAGUI.gui_elements.Label(0, 0, "/path/", text_color)
 local cSHL      = YAGUI.gui_elements.Clock(SH_timeout)
 
-bCompact.timed.enabled = true
-bCompact.timed.clock.interval = button_timeout
+bCompact.hold = true
 bCompact.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFTSHIFT, YAGUI.KEY_C}
 
 mEditor.cursor.text = cursor_char
@@ -219,20 +217,13 @@ wFileMenu.dragging.enabled = false
 wFileMenu.resizing.enabled = false
 wFileMenu:set_elements({bNewOpen, bSave, bSaveAs, bDelete, bGoto, bRun, bSHL, bQuit})
 
-bNewOpen.timed.enabled = true
-bNewOpen.timed.clock.interval = button_timeout / 2
-bSave.timed.enabled = true
-bSave.timed.clock.interval = button_timeout
-bSaveAs.timed.enabled = true
-bSaveAs.timed.clock.interval = button_timeout / 2
-bDelete.timed.enabled = true
-bDelete.timed.clock.interval = button_timeout
-bGoto.timed.enabled = true
-bGoto.timed.clock.interval = button_timeout / 2
-bRun.timed.enabled = true
-bRun.timed.clock.interval = button_timeout
-bQuit.timed.enabled = true
-bQuit.timed.clock.interval = button_timeout
+bNewOpen.hold = true
+bSave.hold = true
+bSaveAs.hold = true
+bDelete.hold = true
+bGoto.hold = true
+bRun.hold = true
+bQuit.hold = true
 
 bFile.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_TAB}
 bSHL.active = syntax_highlight_enabled
@@ -260,10 +251,8 @@ local bOWReject  = YAGUI.gui_elements.Button(0, 0, 0, 0, "No", text_color, backg
 
 wOverWrite:set_elements({lOW, bOWAccept, bOWReject})
 
-bOWAccept.timed.enabled = true
-bOWAccept.timed.clock.interval = button_timeout
-bOWReject.timed.enabled = true
-bOWReject.timed.clock.interval = button_timeout
+bOWAccept.hold = true
+bOWReject.hold = true
 
 bOWAccept.shortcut = {YAGUI.KEY_Y}
 bOWReject.shortcut = {YAGUI.KEY_N}
@@ -606,7 +595,7 @@ wFileMenu:set_callback(
 )
 
 bNewOpen:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         lInputTitle.text = " New File / Open File "
         mInput.bound = self
@@ -623,14 +612,14 @@ bNewOpen.callbacks.onActionComplete = function (path)
 end
 
 bSave:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         save_notes(current_file_path)
     end
 )
 
 bSaveAs:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         lInputTitle.text = " Save File As "
         mInput.bound = self
@@ -654,7 +643,7 @@ bSaveAs.callbacks.onOverWrite = function ()
 end
 
 bDelete:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         if fs.isReadOnly(current_file_path) then return; end
         fs.delete(current_file_path)
@@ -662,7 +651,7 @@ bDelete:set_callback(
 )
 
 bGoto:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         lInputTitle.text = " Go to Line "
         mInput.bound = self
@@ -675,7 +664,7 @@ bGoto.callbacks.onActionComplete = function (line)
 end
 
 bRun:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         save_notes(current_file_path)
         local tab = shell.openTab(current_file_path)
@@ -696,7 +685,7 @@ bSHL:set_callback(
 )
 
 bQuit:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         lMain:stop()
     end
@@ -704,7 +693,7 @@ bQuit:set_callback(
 
 -- Callbacks for loop lMain
 bCompact:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         local lines_to_remove = {}
         for i=1, #mEditor.lines do
@@ -903,7 +892,7 @@ wOverWrite:set_callback(
 )
 
 bOWAccept:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         self.bound.callbacks.onOverWrite()
         self.bound = nil
@@ -912,7 +901,7 @@ bOWAccept:set_callback(
 )
 
 bOWReject:set_callback(
-    YAGUI.ONTIMEOUT,
+    YAGUI.ONRELEASE,
     function (self)
         lOverWrite:stop()
     end

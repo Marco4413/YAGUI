@@ -93,31 +93,6 @@ print(s_tbl)
 
 **COPY OF [`textutils.unserialise`](https://computercraft.info/wiki/Textutils.unserialize)**.
 
-## better_unpack
-
-*...* :  **better_unpack**( *table* : **tbl**, *number* : **i**, *number* : **max_i** )
-
-**Returns all the values in `tbl` from `i` to `max_i`**.
-
-**tbl** is the **table to be unpacked**.
-
-**i** is the **starting index** (1 by default).
-
-**max_i** is the **last index** (`#tbl` by default).
-
-```lua
--- Creating a table
-local tbl = {
-    1, 6, 3,
-    ["foo bar"] = 23
-}
-
--- Printing unpacked tbl starting from index 2
-print(
-    table_utils.better_unpack(tbl, 2)
-)
-```
-
 ## get
 
 *any* : **get**( *table* : **tbl**, *any* : **...** )

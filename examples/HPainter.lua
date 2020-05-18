@@ -125,6 +125,8 @@ local brush = {
     Canvas = YAGUI.gui_elements.Canvas(1, 1, term_w, term_h),
     type = "point",
     color = colors.blue,
+    text = "",
+    listen_text = false,
     filled = false,
     erasing = false,
     center = false,
@@ -140,7 +142,7 @@ brush.reset_pos = function (self)
 end
 
 brush.Canvas.transparent = true
-brush.Canvas.buffer.background.background = "nil"
+brush.Canvas.buffer.background.background = nil
 
 brush.Canvas.change_color = function (self, color)
     for key, col in next, self.buffer.pixels do
@@ -167,6 +169,9 @@ brush.Canvas.fill = function (self, target_canvas, x, y, replacement_color)
 
     --if pixel.background ~= target_color then return; end
     if target_color == replacement_color then return; end
+
+    local old_bg = self.buffer.background.background
+    self.buffer.background.background = "nil"
     
     target_canvas:cast(self)
     local changed = {}
@@ -214,6 +219,7 @@ brush.Canvas.fill = function (self, target_canvas, x, y, replacement_color)
     end
 
     self.buffer.pixels = {}
+    self.buffer.background.background = old_bg
 
     for x, col in next, changed do
         for y, color in next, col do
@@ -233,6 +239,7 @@ brush.Canvas.event = function (self, event)
         brush.origin.x, brush.origin.y = event.x, event.y
         brush.end_pos.x, brush.end_pos.y = event.x, event.y
         brush.extra = nil
+        brush.listen_text = false
         return true
     elseif event.name == YAGUI.MOUSEDRAG then
         brush.end_pos.x, brush.end_pos.y = event.x, event.y
@@ -246,7 +253,24 @@ brush.Canvas.event = function (self, event)
         self:clear()
         brush:reset_pos()
         brush.extra = nil
+        brush.text = ""
+        brush.listen_text = false
         return true
+    elseif brush.listen_text then
+        if event.name == YAGUI.CHAR then
+            brush.text = table.concat({brush.text, event.char})
+            return true
+        elseif event.name == YAGUI.KEY then
+            if event.key == YAGUI.KEY_BACKSPACE then
+                brush.text = brush.text:sub(0, #brush.text - 1)
+                return true
+            elseif event.key == YAGUI.KEY_DELETE then
+                brush.text = ""
+                return true
+            end
+        elseif event.name == YAGUI.PASTE then
+            brush.text = table.concat({brush.text, event.paste})
+        end
     end
 end
 
@@ -299,6 +323,12 @@ brush.Canvas:set_callback(
                     self:fill(paintCanvas, pos1.x, pos1.y, brush.color)
                 end
                 brush.extra = pos1:duplicate()
+            end
+        elseif brush.type == "text" then
+            self:clear()
+            if not brush.listen_text then brush.listen_text = true; end
+            if #brush.text > 0 then
+                self:write(pos1.x, pos1.y, brush.text, brush.color)
             end
         end
     end
@@ -359,6 +389,7 @@ do
                     brush.type = self.text:lower()
                     brush.Canvas:clear()
                     brush.extra = nil
+                    brush.listen_text = false
                 else
                     self.active = true
                 end
@@ -492,7 +523,7 @@ loop:set_callback(
         if event.name == YAGUI.TERMRESIZE then
             resize_all()
             return true
-        elseif event.name == YAGUI.KEY then
+        elseif (not brush.listen_text) and event.name == YAGUI.KEY then
             if event.key == YAGUI.KEY_S then
                 save_binary(path, paintCanvas:to_nfp(true))
                 lSave.colors.foreground = colors.green
