@@ -141,10 +141,6 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#better_unpack" class="nav-link">better_unpack</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
             <li class="nav-item" data-level="2"><a href="#get" class="nav-link">get</a>
               <ul class="nav flex-column">
               </ul>
@@ -229,24 +225,6 @@ print(s_tbl)
 
 <h2 id="unserialise">unserialise</h2>
 <p><strong>COPY OF <a href="https://computercraft.info/wiki/Textutils.unserialize"><code>textutils.unserialise</code></a></strong>.</p>
-<h2 id="better_unpack">better_unpack</h2>
-<p><em>...</em> :  <strong>better_unpack</strong>( <em>table</em> : <strong>tbl</strong>, <em>number</em> : <strong>i</strong>, <em>number</em> : <strong>max_i</strong> )</p>
-<p><strong>Returns all the values in <code>tbl</code> from <code>i</code> to <code>max_i</code></strong>.</p>
-<p><strong>tbl</strong> is the <strong>table to be unpacked</strong>.</p>
-<p><strong>i</strong> is the <strong>starting index</strong> (1 by default).</p>
-<p><strong>max_i</strong> is the <strong>last index</strong> (<code>#tbl</code> by default).</p>
-<pre><code class="lua">-- Creating a table
-local tbl = {
-    1, 6, 3,
-    [&quot;foo bar&quot;] = 23
-}
-
--- Printing unpacked tbl starting from index 2
-print(
-    table_utils.better_unpack(tbl, 2)
-)
-</code></pre>
-
 <h2 id="get">get</h2>
 <p><em>any</em> : <strong>get</strong>( <em>table</em> : <strong>tbl</strong>, <em>any</em> : <strong>...</strong> )</p>
 <p><strong>Returns the value going through the keys <code>...</code> in <code>tbl</code></strong> (e.g. <code>{...} = {1, 2}</code> then it will <code>return tbl[1][2]</code>).</p>
