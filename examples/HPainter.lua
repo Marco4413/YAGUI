@@ -49,6 +49,18 @@ local function save_binary(path, content)
     file.close()
 end
 
+local function append_table(tbl1, tbl2)
+    for i=1, #tbl2 do
+        tbl1[#tbl1 + 1] = tbl2[i]
+    end
+end
+
+local function hide_elements(tbl, val)
+    for key, element in next, tbl do
+        element.hidden = val
+    end
+end
+
 local Vector2 = YAGUI.math_utils.Vector2
 local term_w, term_h = term.getSize()
 
@@ -86,37 +98,23 @@ paintCanvas.transparent = true
 
 paintCanvas.scroll_horizontal = function (self, ammount)
     if ammount ~= 0 then
-        local min, max
-        for _, row in next, self.buffer.pixels do
-            for k in next, row do
-                min, max = math.min(min or k, k), math.max(max or k, k)
+        for y, row in next, self.buffer.pixels do
+            local new_row = {}
+            for x, pix in next, row do
+                new_row[x + ammount] = row[x]
             end
-        end
-
-        if min and max then
-            local is_high = ammount > 0
-            for y, row in next, self.buffer.pixels do
-                for x=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
-                    row[x + ammount], row[x] = row[x]
-                end
-            end
+            self.buffer.pixels[y] = new_row
         end
     end
 end
 
 paintCanvas.scroll_vertical = function (self, ammount)
     if ammount ~= 0 then
-        local min, max
-        for k in next, self.buffer.pixels do
-            min, max = math.min(min or k, k), math.max(max or k, k)
+        local new_rows = {}
+        for y, row in next, self.buffer.pixels do
+            new_rows[y + ammount] = row
         end
-
-        if min and max then
-            local is_high = ammount > 0
-            for y=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
-                self.buffer.pixels[y + ammount], self.buffer.pixels[y] = self.buffer.pixels[y]
-            end
-        end
+        self.buffer.pixels = new_rows
     end
 end
 
@@ -358,12 +356,7 @@ do
     end
 end
 
-local paletteWindow = YAGUI.gui_elements.Window(2, 2, palette_button_width + 2, #palette + 2, colors.lightGray)
-paletteWindow.resizing.enabled = false
-paletteWindow.border, paletteWindow.colors.border_color = true, colors.red
-paletteWindow:set_elements(palette)
-
--- Setting up brush settings
+-- Setting up brush elements
 brush.elements = {}
 local brush_button_width = 1
 do
@@ -398,19 +391,9 @@ do
         button.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI["KEY_" .. brush_type:sub(1,1):upper()]}
         brush.elements[#brush.elements + 1] = button
     end
-
-    for _, button in next, brush.elements do
-        button.size.x = brush_button_width
-    end
 end
 
-local brushesWindow = YAGUI.gui_elements.Window(1, 1, brush_button_width + 2, #brush.elements + 2, colors.lightGray)
-brushesWindow.pos.x, brushesWindow.pos.y = term_w - brushesWindow.size.x, term_h - brushesWindow.size.y
-brushesWindow.resizing.enabled = false
-brushesWindow.border, brushesWindow.colors.border_color = true, colors.red
-brushesWindow:set_elements(brush.elements)
-
--- Setting up Brush Settings Window
+-- Setting up Brush Settings Buttons
 local brush_settings = {}
 local brush_settings_width = 1
 do
@@ -438,33 +421,14 @@ do
         button.active = brush[bool]
         brush_settings[#brush_settings + 1] = button
     end
-
-    for _, button in next, brush_settings do
-        button.size.x = brush_settings_width
-    end
 end
 
-local brushSettingsWindow = YAGUI.gui_elements.Window(1, 1, brush_settings_width + 2, #brush_settings + 2, colors.lightGray)
-brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = term_w - brushSettingsWindow.size.x, 2
-brushSettingsWindow.resizing.enabled = false
-brushSettingsWindow.border, brushSettingsWindow.colors.border_color = true, colors.red
-brushSettingsWindow:set_elements(brush_settings)
+-- Setting up Labels
+local lHelp = YAGUI.gui_elements.Label(term_w / 2, term_h - 1, "Press G to toggle BACKGROUND\nPress H to toggle HUD\nPress I to toggle this HELP", colors.white)
+local lSave = YAGUI.gui_elements.Label(term_w / 2, term_h, "Press S to save: \"" .. path .. "\"", colors.white)
 
--- Eliminating artifacts that could occur when dragging buttons that are on windows
-local function eliminate_drag_artifacts(self, event)
-    if (not self.focussed) and event.name == YAGUI.MOUSEDRAG then
-        if YAGUI.event_utils.in_area(event.x, event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
-            return true
-        end
-    end
-end
-paletteWindow:set_callback(YAGUI.ONEVENT, eliminate_drag_artifacts)
-brushesWindow:set_callback(YAGUI.ONEVENT, eliminate_drag_artifacts)
-brushSettingsWindow:set_callback(YAGUI.ONEVENT, eliminate_drag_artifacts)
+lHelp.text_alignment, lSave.text_alignment = YAGUI.ALIGN_CENTER, YAGUI.ALIGN_CENTER
 
--- Setting up Label
-local lGrid = YAGUI.gui_elements.Label(1, term_h - 1, "Press G to toggle GRID", colors.white)
-local lSave = YAGUI.gui_elements.Label(1, term_h, "Press S to save: \"" .. path .. "\"", colors.white)
 local clSaveSaving = YAGUI.gui_elements.Clock(1)
 clSaveSaving.oneshot = true
 
@@ -476,18 +440,24 @@ clSaveSaving:set_callback(
 )
 
 local function toggle_GUI()
-    local state = paletteWindow.hidden
-    paletteWindow.hidden = not state
-    brushesWindow.hidden = not state
-    brushSettingsWindow.hidden = not state
-    lSave.hidden = not state
+    local new_state = not lSave.hidden
+    lSave.hidden = new_state
+    hide_elements(palette, new_state)
+    hide_elements(brush.elements, new_state)
+    hide_elements(brush_settings, new_state)
 end
 
--- Setting uo main loop
+-- Setting up main loop
 local loop = YAGUI.Loop(20, 6)
 loop.options.raw_mode = true
 loop:set_monitors({"terminal", table.unpack(tArgs)})
-loop:set_elements({brushSettingsWindow, brushesWindow, paletteWindow, lGrid, lSave, brush.Canvas, paintCanvas, clSaveSaving})
+local elements = {}
+append_table(elements, palette)
+append_table(elements, brush.elements)
+append_table(elements, brush_settings)
+append_table(elements, {lHelp, lSave, brush.Canvas, paintCanvas, clSaveSaving})
+
+loop:set_elements(elements)
 
 local function get_monitor_size()
     local w, h = 0, 0
@@ -502,15 +472,20 @@ local function resize_canvas()
     local global_w, global_h = get_monitor_size()
     brush.Canvas.size.x, paintCanvas.size.x = global_w, global_w
     brush.Canvas.size.y, paintCanvas.size.y = global_h, global_h
-    lGrid.pos.y = global_h - 1
-    lSave.pos.y = global_h
 end
 
 local function resize_all()
     term_w, term_h = term.getSize()
-    paletteWindow.pos.x, paletteWindow.pos.y = 2, 2
-    brushesWindow.pos.x, brushesWindow.pos.y = term_w - brushesWindow.size.x, term_h - brushesWindow.size.y
-    brushSettingsWindow.pos.x, brushSettingsWindow.pos.y = term_w - brushSettingsWindow.size.x, 2
+    for _, button in next, brush_settings do
+        button.pos.x = term_w - brush_settings_width
+        button.size.x = brush_settings_width
+    end
+    for k, button in next, brush.elements do
+        button.pos.x, button.pos.y = term_w - brush_button_width, term_h - #brush.elements + k - 1
+        button.size.x = brush_button_width
+    end
+    lHelp.pos.x, lHelp.pos.y = term_w / 2, term_h - 3
+    lSave.pos.x, lSave.pos.y = term_w / 2, term_h
 
     resize_canvas()
 end
@@ -536,6 +511,9 @@ loop:set_callback(
             elseif event.key == YAGUI.KEY_G then
                 grid.state = not grid.state
                 YAGUI.screen_buffer.buffer.background = grid[grid.state]
+                return true
+            elseif event.key == YAGUI.KEY_I then
+                lHelp.hidden = not lHelp.hidden
                 return true
             elseif event.key == YAGUI.KEY_R then
                 resize_canvas()
