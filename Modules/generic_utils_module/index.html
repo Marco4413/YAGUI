@@ -137,6 +137,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#get_type" class="nav-link">get_type</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -224,6 +228,27 @@ local function check_user_input()
 end
 
 check_user_input()
+</code></pre>
+
+<h2 id="get_type">get_type</h2>
+<p><em>string</em> : <strong>get_type</strong>( <em>any</em> : <strong>value</strong> )</p>
+<p>Returns <strong>the type of <code>value</code></strong>, if <strong><code>value</code> is a table</strong> then it will <strong>return <code>value._type</code> if it's a string</strong>.</p>
+<p><strong>value</strong> the <strong>value you want to get the type of</strong>.</p>
+<pre><code class="lua">-- Create a table with a valid custom type
+local tbl1 = {_type = &quot;custom_type&quot;}
+-- Create tables with invalid custom types
+local tbl2 = {_type = 1}
+local tbl3 = {}
+-- Defining a variable that holds something that isn't a table
+local val = 2
+
+-- Print all the types of the variables defined above
+print(
+    generic_utils.get_type(tbl1),
+    generic_utils.get_type(tbl2),
+    generic_utils.get_type(tbl3),
+    generic_utils.get_type(val)
+)
 </code></pre></div>
             </div>
         </div>
