@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.40",
+    ver = "1.41",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -146,8 +146,7 @@ generic_utils = {
         local t = {...}
         local type_separators = "[/%.,]"
 
-        context = context or "unknown"
-        context = tostring(context)
+        context = type(context) == "string" and table.concat({" to '", context, "'"}) or ""
 
         local should_error = false
         local error_msg
@@ -171,10 +170,13 @@ generic_utils = {
             end
 
             if this_should_error then
-                local error_types = types_string:gsub(type_separators, ", ")
+                local required_types = string_utils.split(types_string, type_separators)
+                local last_type = table.remove(required_types, #required_types)
+
+                local expected_types = #required_types == 0 and last_type or table.concat({table.concat(required_types, ", "), " or ", last_type})
                 error_msg = string.format(
-                    "\"%s\": Bad argument #%d (expected %s, got %s)",
-                    context, (i + 1) / 2, error_types, bad_type
+                    "bad argument #%d%s (%s expected, got %s)",
+                    (i + 1) / 2, context, expected_types, bad_type
                 )
                 should_error = true
                 break
@@ -187,7 +189,8 @@ generic_utils = {
         end
 
         return true
-    end
+    end,
+    get_type = function (value) local value_type = type(value); return value_type == "table" and type(value._type) == "string" and value._type or value_type; end
 }
 
 -- STRING UTILS MODULE
@@ -255,11 +258,7 @@ string_utils = {
     end,
     -- GETS THE EXTENSION OF PATH
     get_extension = function (path)
-        local extension, found = path:gsub(".*%.", "")
-        if found > 0 then
-            return extension
-        end
-        return ""
+        return path:match("^.+%.(.+)$") or ""
     end,
     -- FORMATS A NUMBER SO THAT IT HAS precision DECIMAL DIGITS AND TRUNCATES IT AT THE LAST SIGNIFICANT DIGIT
     format_number = function (number, precision)
@@ -982,18 +981,12 @@ local internal_draw = {
     buffer = {
         -- CHECKS IF SPECIFIED PIXEL WAS CREATED WITH "set_pixel" FUNCTION
         is_pixel_custom = function (self, x, y)
-            if self.pixels[x] then
-                if self.pixels[x][y] then
-                    return true
-                end
-            end
-            return false
+            return self.pixels[y] and self.pixels[y][x] and true or false
         end,
         -- RETURNS PIXEL AT X, Y IF CUSTOM ELSE IT WILL RETURN THE DEFAULT PIXEL
         -- "DEFAULT PIXEL" IS THE BACKGROUND PIXEL
         get_pixel = function (self, x, y)
-            if self:is_pixel_custom(x, y) then return self.pixels[x][y]; end
-            return {
+            return self.pixels[y] and self.pixels[y][x] or {
                 char = self.background.char,
                 foreground = self.background.foreground,
                 background = self.background.background,
@@ -1018,11 +1011,11 @@ local internal_draw = {
             end
             pixel.inverted = inverted
             
-            if not self.pixels[x] then self.pixels[x] = {}; end
-            self.pixels[x][y] = pixel
+            if not self.pixels[y] then self.pixels[y] = {}; end
+            self.pixels[y][x] = pixel
         end,
         remove_pixel = function (self, x, y)
-            if self:is_pixel_custom(x, y) then self.pixels[x][y] = nil; end
+            if self.pixels[y] then self.pixels[y][x] = nil; end
         end,
         -- CLEARS PIXELS TABLE
         clear = function (self)
@@ -1256,12 +1249,12 @@ local screen_buffer = {
 
         local real_x1, real_y1, real_x2, real_y2 = 1, 1, 1, 1
         if not (x and y and width and height) then
-            for x in next, self.frame.pixels do
-                real_x1 = math.min(real_x1, x)
-                real_x2 = math.max(real_x2, x)
-                for y in next, self.frame.pixels[x] do
-                    real_y1 = math.min(real_y1, y)
-                    real_y2 = math.max(real_y2, y)
+            for y in next, self.frame.pixels do
+                real_y1 = math.min(real_y1, y)
+                real_y2 = math.max(real_y2, y)
+                for x in next, self.frame.pixels[y] do
+                    real_x1 = math.min(real_x1, x)
+                    real_x2 = math.max(real_x2, x)
                 end
             end
         end
@@ -1297,11 +1290,7 @@ local screen_buffer = {
             local row = {}
             local last_bg, last_fg
             for rel_x=1, width do
-                local pixel = self.frame.pixels[x + rel_x - 1] and self.frame.pixels[x + rel_x - 1][y + rel_y - 1] or {
-                    char = " ",
-                    foreground = self.frame.background,
-                    background = self.frame.background
-                }
+                local pixel = self.frame:get_pixel(x + rel_x - 1, y + rel_y - 1)
 
                 if pixel.background ~= last_bg then
                     row[#row + 1] = "\30"
@@ -1458,6 +1447,7 @@ local input = {
 local gui_elements = {}
 gui_elements = {
     Clock = {
+        _type = "Clock",
         -- RETURNS NEW CLOCK
         new = function (interval)
             local newClock = {
@@ -1498,6 +1488,7 @@ gui_elements = {
         end
     },
     Label = {
+        _type = "Label",
         -- RETURNS NEW LABEL
         new = function (x, y, text, foreground, background)
             local newLabel = {
@@ -1542,6 +1533,7 @@ gui_elements = {
         end
     },
     Button = {
+        _type = "Button",
         -- RETURNS NEW BUTTON
         new = function (x, y, width, height, text, foreground, active_background, unactive_background, hover_background)
             local newButton = {
@@ -1691,6 +1683,7 @@ gui_elements = {
         end
     },
     Progressbar = {
+        _type = "Progressbar",
         -- RETURNS NEW PROGRESSBAR
         new = function (x, y, width, height, current_value, min_value, max_value, foreground, filled_background, unfilled_background)
             local newProgressbar = {
@@ -1754,6 +1747,7 @@ gui_elements = {
         end
     },
     Memo = {
+        _type = "Memo",
         -- RETURNS NEW MEMO
         new = function (x, y, width, height, foreground, background)
             local newMemo = {
@@ -2207,6 +2201,7 @@ gui_elements = {
         end
     },
     Window = {
+        _type = "Window",
         -- RETURNS NEW WINDOW
         new = function (x, y, width, height, background, shadow)
             local newWindow = {
@@ -2475,6 +2470,7 @@ gui_elements = {
     },
     -- It's basically the same as screen_buffer, but it's a gui element
     Canvas = {
+        _type = "Canvas",
         new = function (x, y, width, height)
             local newCanvas = {
                 draw_priority = const.LOW_PRIORITY,
@@ -2508,10 +2504,10 @@ gui_elements = {
         cast = function (self, other)
             if self.transparent then
                 -- This should be faster than the other method
-                for x=1, self.size.x do
-                    if self.buffer.pixels[x] then
-                        for y=1, self.size.y do
-                            local pixel = self.buffer.pixels[x][y]
+                for y=1, self.size.y do
+                    if self.buffer.pixels[y] then
+                        for x=1, self.size.x do
+                            local pixel = self.buffer.pixels[y][x]
                             if pixel then
                                 if pixel.inverted then
                                     other.buffer:set_pixel(self.pos.x + x - 1, self.pos.y + y - 1, pixel.char, pixel.background, pixel.foreground, true)
@@ -2567,6 +2563,7 @@ gui_elements.Canvas.__index = gui_elements.Canvas
 -- WSS MODULE
 local WSS = {}
 WSS = {
+    _type = "WSS",
     new = function (broadcast_interval)
         local newWSS = {
             draw_priority = const.LOW_PRIORITY,
@@ -2732,6 +2729,7 @@ WSS.__index = WSS
 -- FT MODULE
 local FT = {}
 FT = {
+    _type = "FT",
     new = function (psw)
         local newFT = {
             enabled = true,
@@ -2830,6 +2828,7 @@ FT.__index = FT
 -- LOOP MODULE
 local Loop = {}
 Loop = {
+    _type = "Loop",
     -- CREATES A NEW LOOP
     new = function (FPS_target, EPS_target)
         local newLoop = {
@@ -2843,7 +2842,11 @@ Loop = {
             monitors = {
                 terminal = term
             },
-            threads = {},
+            threads = {
+                queue_event = true,
+                draw = {},
+                event = {}
+            },
             elements = {
                 high_priority = {},
                 low_priority = {},
@@ -2899,19 +2902,7 @@ Loop = {
                 self.Loop.stats.EPS = self.Loop.stats.Events / delta_time
                 self.Loop.stats.Events = 0
 
-                if #self.Loop.threads > 0 then
-                    local dead_threads = {}
-                    for i=1, #self.Loop.threads do
-                        local thread = self.Loop.threads[i]
-                        if coroutine.status(thread) == "dead" then
-                            dead_threads[#dead_threads + 1] = i
-                        else
-                            local returns = {coroutine.resume(thread, self.Loop, delta_time)}
-                            os.queueEvent("coroutine", thread, coroutine.status(thread), table.unpack(returns))
-                        end
-                    end
-                    if #dead_threads > 0 then table_utils.better_remove(self.Loop.threads, table.unpack(dead_threads)); end
-                end
+                self.Loop:resume_threads("draw", delta_time)
                 
                 self.Loop:draw_elements(delta_time)
                 
@@ -2973,6 +2964,8 @@ Loop = {
             end
         end
 
+        if formatted_event.name ~= const.COROUTINE then self:resume_threads("event", formatted_event); end
+
         if self.callbacks.onEvent(self, formatted_event) then
             formatted_event = event_utils.delete_event(formatted_event)
         end
@@ -3012,6 +3005,24 @@ Loop = {
         end
 
         event_table(self.elements.low_priority)
+    end,
+    resume_threads = function (self, key, ...)
+        local threads = self.threads[key]
+        if threads and #threads > 0 then
+            local dead_threads = {}
+            for i=1, #threads do
+                local thread = threads[i]
+                if coroutine.status(thread) == "dead" then
+                    dead_threads[#dead_threads + 1] = i
+                else
+                    local returns = {coroutine.resume(thread, self, ...)}
+                    if self.threads.queue_event then
+                        os.queueEvent("coroutine", thread, coroutine.status(thread), table.unpack(returns))
+                    end
+                end
+            end
+            if #dead_threads > 0 then table_utils.better_remove(threads, table.unpack(dead_threads)); end
+        end
     end,
     -- STARTS THE LOOP
     start = function (self)

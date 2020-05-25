@@ -99,3 +99,29 @@ end
 
 check_user_input()
 ```
+
+## get_type
+
+*string* : **get_type**( *any* : **value** )
+
+Returns **the type of `value`**, if **`value` is a table** then it will **return `value._type` if it's a string**.
+
+**value** the **value you want to get the type of**.
+
+```lua
+-- Create a table with a valid custom type
+local tbl1 = {_type = "custom_type"}
+-- Create tables with invalid custom types
+local tbl2 = {_type = 1}
+local tbl3 = {}
+-- Defining a variable that holds something that isn't a table
+local val = 2
+
+-- Print all the types of the variables defined above
+print(
+    generic_utils.get_type(tbl1),
+    generic_utils.get_type(tbl2),
+    generic_utils.get_type(tbl3),
+    generic_utils.get_type(val)
+)
+```

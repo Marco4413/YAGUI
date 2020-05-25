@@ -87,14 +87,18 @@ paintCanvas.transparent = true
 paintCanvas.scroll_horizontal = function (self, ammount)
     if ammount ~= 0 then
         local min, max
-        for k in next, self.buffer.pixels do
-            min, max = math.min(min or k, k), math.max(max or k, k)
+        for _, row in next, self.buffer.pixels do
+            for k in next, row do
+                min, max = math.min(min or k, k), math.max(max or k, k)
+            end
         end
 
         if min and max then
             local is_high = ammount > 0
-            for x=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
-                self.buffer.pixels[x + ammount], self.buffer.pixels[x] = self.buffer.pixels[x]
+            for y, row in next, self.buffer.pixels do
+                for x=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
+                    row[x + ammount], row[x] = row[x]
+                end
             end
         end
     end
@@ -103,18 +107,14 @@ end
 paintCanvas.scroll_vertical = function (self, ammount)
     if ammount ~= 0 then
         local min, max
-        for _, col in next, self.buffer.pixels do
-            for k in next, col do
-                min, max = math.min(min or k, k), math.max(max or k, k)
-            end
+        for k in next, self.buffer.pixels do
+            min, max = math.min(min or k, k), math.max(max or k, k)
         end
 
         if min and max then
             local is_high = ammount > 0
-            for x, col in next, self.buffer.pixels do
-                for y=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
-                    col[y + ammount], col[y] = col[y]
-                end
+            for y=is_high and max or min, is_high and min or max, is_high and -1 or 1 do
+                self.buffer.pixels[y + ammount], self.buffer.pixels[y] = self.buffer.pixels[y]
             end
         end
     end
@@ -145,16 +145,16 @@ brush.Canvas.transparent = true
 brush.Canvas.buffer.background.background = nil
 
 brush.Canvas.change_color = function (self, color)
-    for key, col in next, self.buffer.pixels do
-        for key, pixel in next, col do
+    for key, row in next, self.buffer.pixels do
+        for key, pixel in next, row do
             pixel.background, pixel.foreground = color, color
         end
     end
 end
 
 brush.Canvas.erase = function (self, other)
-    for x in next, self.buffer.pixels do
-        for y in next, self.buffer.pixels[x] do
+    for y in next, self.buffer.pixels do
+        for x in next, self.buffer.pixels[y] do
             other.buffer:remove_pixel(x, y)
         end
     end
