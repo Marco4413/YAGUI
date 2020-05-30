@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.41",
+    ver = "1.41.1",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -207,10 +207,10 @@ string_utils = {
         local pattern = table.concat({"(.-)", sep, "()"})
         local last_pos
         for this_match, pos in string.gfind(str, pattern) do
-            table.insert(return_table, this_match)
+            return_table[#return_table + 1] = this_match
             last_pos = pos
         end
-        table.insert(return_table, string.sub(str, last_pos))
+        return_table[#return_table + 1] = string.sub(str, last_pos)
         return return_table
     end,
     -- SPLITS STRING EVERY TIME CHAR IS FOUND
@@ -219,11 +219,11 @@ string_utils = {
         local lp = 1
         for i=1, #str do
             if str:sub(i, i) == char then
-                table.insert(lines, i == lp and "" or str:sub(lp, i - 1))
+                lines[#lines + 1] = i == lp and "" or str:sub(lp, i - 1)
                 lp = i + 1
             end
         end
-        table.insert(lines, str:sub(lp, #str))
+        lines[#lines + 1] = str:sub(lp, #str)
         return lines
     end,
     -- COMPARES V1 AND V2 AND IF V1 IS NEWER THAN V2 THEN IT RETURNS 1, IF THEY'RE THE SAME IT RETURNS 0 ELSE IT RETURNS -1
@@ -494,7 +494,7 @@ math_utils = {
         local numbers = {...}
         local rounded = {}
         for key, number in next, numbers do
-            table.insert(rounded, math_utils.round(number))
+            rounded[#rounded + 1] = math_utils.round(number)
         end
         return table.unpack(rounded)
     end,
@@ -503,7 +503,7 @@ math_utils = {
         local numbers = {...}
         local floored = {}
         for key, number in next, numbers do
-            table.insert(floored, math.floor(number))
+            floored[#floored + 1] = math.floor(number)
         end
         return table.unpack(floored)
     end,
@@ -512,7 +512,7 @@ math_utils = {
         local numbers = {...}
         local ceiled = {}
         for key, number in next, numbers do
-            table.insert(ceiled, math.ceil(number))
+            ceiled[#ceiled + 1] = math.ceil(number)
         end
         return table.unpack(ceiled)
     end
@@ -818,7 +818,7 @@ event_utils = {
         else
             event.parameters = {}
             for key=2, #event_table do
-                table.insert(event.parameters, event_table[key])
+                event.parameters[#event.parameters + 1] = event_table[key]
             end
         end
         event.raw = event_table
@@ -1781,6 +1781,7 @@ gui_elements = {
                 },
                 callbacks = {
                     onDraw = function () end,
+                    onEvent = function () end,
                     onPress = function () end,
                     onFailedPress = function () end,
                     onFocus = function () end,
@@ -1876,6 +1877,7 @@ gui_elements = {
         -- GIVES EVENT TO MEMO
         event = function (self, formatted_event)
             if self.hidden then return false; end
+            if self.callbacks.onEvent(self, formatted_event) then return true; end
             if not self.editable then return false; end
             if formatted_event.name == const.TOUCH then
                 if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
@@ -2428,7 +2430,7 @@ gui_elements = {
         set_elements = function (self, elements_table)
             self.elements = {}
             for key, element in next, elements_table do
-                table.insert(self.elements, element)
+                self.elements[#self.elements + 1] = element
             end
         end,
         -- DRAWS ALL WINDOW'S ELEMENTS
@@ -2458,10 +2460,8 @@ gui_elements = {
             end
             
             for key, element in next, self.elements do
-                if element.event then
-                    if element:event(formatted_event) then
-                        formatted_event = event_utils.delete_event(formatted_event)
-                    end
+                if element.event and element:event(formatted_event) and formatted_event.name ~= const.DELETED then
+                    formatted_event = event_utils.delete_event(formatted_event)
                 end
             end
 
@@ -2922,9 +2922,9 @@ Loop = {
         self.elements.low_priority = {}
         for key, value in next, elements_table do
             if value.draw_priority == const.HIGH_PRIORITY then
-                table.insert(self.elements.high_priority, value)
+                self.elements.high_priority[#self.elements.high_priority + 1] = value
             else
-                table.insert(self.elements.low_priority, value)
+                self.elements.low_priority[#self.elements.low_priority + 1] = value
             end
         end
     end,
@@ -2985,22 +2985,24 @@ Loop = {
         
         event_table(self.elements.loop)
 
-        local high_focussed = {}
+        local high_elements = {}
+        local high_keys = {}
         for key, element in next, self.elements.high_priority do
             if element.event then
                 local focus = element:event(formatted_event)
                 if focus then
                     formatted_event = event_utils.delete_event(formatted_event)
                     if self.elements.high_priority ~= element then
-                        table.insert(high_focussed, {element = element, key = key})
+                        high_elements[#high_elements + 1] = element
+                        high_keys[#high_keys + 1] = key
                     end
                 end
             end
         end
-        if #high_focussed > 0 then
-            for key, value in next, high_focussed do
-                table.insert(self.elements.high_priority, 1, value.element)
-                table.remove(self.elements.high_priority, value.key + #high_focussed)
+        if #high_elements > 0 then
+            table_utils.better_remove(self.elements.high_priority, table.unpack(high_keys))
+            for i=1, #high_elements do
+                table.insert(self.elements.high_priority, 1, high_elements[i])
             end
         end
 
