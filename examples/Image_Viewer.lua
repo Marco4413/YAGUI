@@ -11,8 +11,8 @@ local function print_usage()
     local lines = {
         { text = "Image_Viewer ...", foreground = colors.green , background = nil},
         { text = " 1. <PATH> (path to the image),", foreground = colors.blue  , background = nil},
-        { text = " 2. <nfp/nft> (image format),", foreground = colors.yellow, background = nil},
-        { text = " 3. [binary] (is the file binary),", foreground = colors.green , background = nil},
+        { text = " 2. <nfp/nft/yai> (image format),", foreground = colors.yellow, background = nil},
+        { text = " 3. [binary] (read image in binary mode),", foreground = colors.green , background = nil},
         { text = " 4. [X] [Y] (origin of the image),", foreground = colors.blue  , background = nil},
         { text = " 5. [IMG_X] [IMG_Y] (crop origin),", foreground = colors.yellow, background = nil},
         { text = " 6. [IMG_WIDTH] [IMG_HEIGHT] (crop size)", foreground = colors.green , background = nil},
@@ -48,8 +48,10 @@ if mode == "nfp" then
     draw_function = YAGUI.screen_buffer.nfp_image
 elseif mode == "nft" then
     draw_function = YAGUI.screen_buffer.nft_image
+elseif mode == "yai" then
+    draw_function = YAGUI.screen_buffer.yai_image
 else
-    YAGUI.monitor_utils.better_print(term, colors.red, nil, "File mode can only be nfp or nft.")
+    YAGUI.monitor_utils.better_print(term, colors.red, nil, "File mode can only be nfp, nft or yai.")
     print_usage()
     return
 end
@@ -73,8 +75,15 @@ if binary then
         local char = string.char(byte)
         if char == "\n" then
             rows[#rows + 1] = table.concat(row)
-            row = {}
-        elseif char ~= "\r" then
+            -- Trying to replace "\n\r" sequence with "\n"
+            local next_byte = img_file.read()
+            if next_byte then
+                local next_char = string.char(next_byte)
+                row = {next_char == "\r" and nil or next_char}
+            else
+                row = {}
+            end
+        else
             row[#row + 1] = char
         end
     end

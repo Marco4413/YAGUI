@@ -14,6 +14,7 @@ This module/table contains **all informations about the library**.
 |   copyright   | string |
 |      nfp      | string |
 |      nft      | string |
+|      yai      | string |
 
 ### ver : string
 
@@ -42,3 +43,7 @@ This is the **version of [nfp files](https://github.com/oeed/CraftOS-Standards/b
 ### nft : string
 
 This is the **version of [nft files](https://github.com/oeed/CraftOS-Standards/blob/master/standards/6-nft.md) that is supported by the library**.
+
+### yai : string
+
+This is the **version of yai (YAGUI IMAGE) files that is supported by the library**.

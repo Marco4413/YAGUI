@@ -16,13 +16,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.41.1",
+    ver = "1.42",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
     copyright = "Copyright (c) 2019, hds536jhmk : https://github.com/hds536jhmk/YAGUI\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
     nfp = "1.0.0",
-    nft = "1.0.0"
+    nft = "1.0.0",
+    yai = "1.0.0"
 }
 
 -- CONSTANTS MODULE
@@ -1236,7 +1237,59 @@ local screen_buffer = {
             end
         end
     end,
-    -- NOTE: TO MAKE SCREENSHOTS CONSIDER USING THE NFT FORMAT (It supports text, it doesn't support transparency tho)
+    yai_image = function (self, x, y, img, img_x, img_y, img_width, img_height)
+        img_x, img_y = img_x or 1, img_y or 1
+        local i, rel_x, rel_y, bg, fg = 1, 1, 1
+        while i < #img do
+            if img_height and rel_y >= img_height + img_y then break; end
+
+            -- Get the current char
+            local char = img:sub(i, i)
+
+            if char == "\9" then -- Change background color
+                i = i + 1
+                bg = color_utils.paint[img:sub(i, i)]
+
+            elseif char == "\13" then -- Change foreground color
+                i = i + 1
+                fg = color_utils.paint[img:sub(i, i)]
+            
+            elseif char == "\n" then -- Go to the next line
+                rel_x, rel_y, bg, fg = 1, rel_y + 1
+
+            else
+                if char == "[" then -- Getting a character: "[13]A", writes "A" 13 times
+                    local end_pos = img:sub(i):find("%]")
+                    local len = tonumber(img:sub(i + 1, i + end_pos - 2))
+                    i = i + end_pos
+                    local char_to_display = img:sub(i, i)
+
+                    if not (char_to_display == " " and not (bg and fg)) then
+
+                        for j=0, len - 1 do
+                            if rel_y >= img_y and rel_x + j >= img_x then
+                                if (not img_width) or rel_x + j < img_width + img_x then
+                                    self.buffer:set_pixel(x + rel_x - img_x + j, y + rel_y - img_y, char_to_display, fg, bg)
+                                else
+                                    break
+                                end
+                            end
+                        end
+
+                    end
+                    
+                    rel_x = rel_x + len
+                else
+                    self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - img_y, char, fg, bg)
+
+                    rel_x = rel_x + 1
+                end
+            end
+
+            i = i + 1
+        end
+    end,
+    -- NOTE: TO MAKE SCREENSHOTS CONSIDER USING THE YAI FORMAT (It supports text and transparency)
     -- Returns a string which is screen_buffer.frame converted into nfp format (https://github.com/oeed/CraftOS-Standards/blob/master/standards/4-paint.md):
     --  transparent is whether or not transparency should count
     --  CROP ARGUMENTS (NOT NECESSARY):
@@ -1306,6 +1359,83 @@ local screen_buffer = {
 
                 row[#row + 1] = pixel.char == "\30" and "\24" or pixel.char == "\31" and "\25" or pixel.char
             end
+            image[#image + 1] = table.concat(row)
+        end
+        return table.concat(image, "\n")
+    end,
+    frame_to_yai = function (self, transparent, x, y, width, height)
+        local image = {}
+
+        local real_x1, real_y1, real_x2, real_y2 = 1, 1, 1, 1
+        if not (x and y and width and height) then
+            for y in next, self.frame.pixels do
+                real_y1 = math.min(real_y1, y)
+                real_y2 = math.max(real_y2, y)
+                for x in next, self.frame.pixels[y] do
+                    real_x1 = math.min(real_x1, x)
+                    real_x2 = math.max(real_x2, x)
+                end
+            end
+        end
+
+        x, y = x or real_x1, y or real_y1
+
+        local row, char_count, last_char, last_bg, last_fg
+
+        local function insert_last_char()
+            if char_count > 0 then
+                if char_count < 4 and not (last_char == "[") then
+                    row[#row + 1] = last_char:rep(char_count)
+                else
+                    row[#row + 1] = "["
+                    row[#row + 1] = char_count
+                    row[#row + 1] = "]"
+                    row[#row + 1] = last_char
+                end
+                char_count = 0
+                last_char = nil
+            end
+        end
+
+        for y=y, height and y + height - 1 or real_y2 do
+            row = {}
+
+            char_count, last_char, last_bg, last_fg = 0
+
+            for x=x, width and x + width - 1 or real_x2 do
+                local pixel = transparent and (not self.frame:is_pixel_custom(x, y)) and {char = " "} or self.frame:get_pixel(x, y)
+                -- If pixel's colour has changed then change it
+                if pixel.background ~= last_bg then
+                    -- Add all characters that should have the old colour
+                    insert_last_char()
+                    row[#row + 1] = "\9"
+                    row[#row + 1] = color_utils.colors[pixel.background] or " "
+                    last_bg = pixel.background
+                end
+                -- If pixel's colour has changed then change it
+                if pixel.foreground ~= last_fg then
+                    -- Add all characters that should have the old colour
+                    insert_last_char()
+                    row[#row + 1] = "\13"
+                    row[#row + 1] = color_utils.colors[pixel.foreground] or " "
+                    last_fg = pixel.foreground
+                end
+
+                -- If pixel's character is one of the sequences to change colour then use the space character instead
+                local char = (pixel.char == "\13" or pixel.char == "\9") and " " or pixel.char
+                if char ~= last_char then
+                    insert_last_char()
+                    char_count = 1
+                    last_char = char
+                else
+                    char_count = char_count + 1
+                end
+            end
+
+            if not (last_char == " " and not (last_fg and last_bg)) then
+                insert_last_char()
+            end
+
             image[#image + 1] = table.concat(row)
         end
         return table.concat(image, "\n")
@@ -2536,6 +2666,9 @@ gui_elements = {
         end,
         to_nft = function (self, ...)
             return screen_buffer.frame_to_nft({frame = self.buffer}, ...)
+        end,
+        to_yai = function (self, ...)
+            return screen_buffer.frame_to_yai({frame = self.buffer}, ...)
         end
     }
 }
