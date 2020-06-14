@@ -89,7 +89,7 @@ This can be **separated into two groups**.
 
 #### Priority
 
-Used to **set an object's priority in a `Loop`** (e.g. If something is in high priority it will get moved into the first place of the table that it's in if interacted with):
+Used to **set an object's priority in a `Loop`** (e.g. If something has high priority it will be drawn on top of everything if it was interacted with):
 
 * **LOW_PRIORITY**
 * **HIGH_PRIORITY**

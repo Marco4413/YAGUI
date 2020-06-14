@@ -16,7 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- INFO MODULE
 local info = {
-    ver = "1.42",
+    ver = "1.43",
     author = "hds536jhmk",
     website = "https://github.com/hds536jhmk/YAGUI/",
     documentation = "https://hds536jhmk.github.io/YAGUI/",
@@ -1240,7 +1240,7 @@ local screen_buffer = {
     yai_image = function (self, x, y, img, img_x, img_y, img_width, img_height)
         img_x, img_y = img_x or 1, img_y or 1
         local i, rel_x, rel_y, bg, fg = 1, 1, 1
-        while i < #img do
+        while i <= #img do
             if img_height and rel_y >= img_height + img_y then break; end
 
             -- Get the current char
@@ -1257,33 +1257,31 @@ local screen_buffer = {
             elseif char == "\n" then -- Go to the next line
                 rel_x, rel_y, bg, fg = 1, rel_y + 1
 
-            else
-                if char == "[" then -- Getting a character: "[13]A", writes "A" 13 times
-                    local end_pos = img:sub(i):find("%]")
-                    local len = tonumber(img:sub(i + 1, i + end_pos - 2))
-                    i = i + end_pos
-                    local char_to_display = img:sub(i, i)
+            elseif char == "[" then -- Getting a character: "[13]A", writes "A" 13 times
+                local end_pos = img:sub(i):find("%]")
+                local len = tonumber(img:sub(i + 1, i + end_pos - 2))
+                i = i + end_pos
+                local char_to_display = img:sub(i, i)
 
-                    if not (char_to_display == " " and not (bg and fg)) then
+                if not (char_to_display == " " and not (bg and fg)) then
 
-                        for j=0, len - 1 do
-                            if rel_y >= img_y and rel_x + j >= img_x then
-                                if (not img_width) or rel_x + j < img_width + img_x then
-                                    self.buffer:set_pixel(x + rel_x - img_x + j, y + rel_y - img_y, char_to_display, fg, bg)
-                                else
-                                    break
-                                end
+                    for j=0, len - 1 do
+                        if rel_y >= img_y and rel_x + j >= img_x then
+                            if (not img_width) or rel_x + j < img_width + img_x then
+                                self.buffer:set_pixel(x + rel_x - img_x + j, y + rel_y - img_y, char_to_display, fg, bg)
+                            else
+                                break
                             end
                         end
-
                     end
-                    
-                    rel_x = rel_x + len
-                else
-                    self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - img_y, char, fg, bg)
 
-                    rel_x = rel_x + 1
                 end
+                
+                rel_x = rel_x + len
+            else
+                self.buffer:set_pixel(x + rel_x - img_x, y + rel_y - img_y, char, fg, bg)
+
+                rel_x = rel_x + 1
             end
 
             i = i + 1
@@ -1573,50 +1571,11 @@ local input = {
     end
 }
 
--- GUI ELEMENTS MODULE
 local gui_elements = {}
+local logic_elements = {}
+
+-- GUI ELEMENTS MODULE
 gui_elements = {
-    Clock = {
-        _type = "Clock",
-        -- RETURNS NEW CLOCK
-        new = function (interval)
-            local newClock = {
-                enabled = true,
-                oneshot = false,
-                clock = os.clock(),
-                interval = interval,
-                callbacks = {
-                    onClock = function() end
-                }
-            }
-            setmetatable(newClock, gui_elements.Clock)
-            return newClock
-        end,
-        -- GIVES EVENT TO CLOCK
-        event = function (self, formatted_event)
-            if not self.enabled then self:reset_timer(); return; end
-            local this_time = os.clock()
-            if this_time >= self.clock + self.interval then
-                local delta_time = this_time - self.clock
-                self:reset_timer()
-                self.callbacks.onClock(self, formatted_event, delta_time)
-                if self.oneshot then self:stop() end
-            end
-        end,
-        -- STARTS CLOCK
-        start = function (self)
-            self:reset_timer()
-            self.enabled = true
-        end,
-        -- STOPS CLOCK
-        stop = function (self)
-            self.enabled = false
-        end,
-        -- RESETS CLOCK TIME
-        reset_timer = function (self)
-            self.clock = os.clock()
-        end
-    },
     Label = {
         _type = "Label",
         -- RETURNS NEW LABEL
@@ -1683,7 +1642,7 @@ gui_elements = {
                 hold = false,
                 timed = {
                     enabled = false,
-                    clock = gui_elements.Clock.new(0.5)
+                    clock = logic_elements.Clock.new(0.5)
                 },
                 colors = {
                     foreground = foreground,
@@ -1895,7 +1854,7 @@ gui_elements = {
                 cursor = {
                     visible = false,
                     text = " ",
-                    blink = gui_elements.Clock.new(0.5),
+                    blink = logic_elements.Clock.new(0.5),
                     pos = math_utils.Vector2.new(1, 1)
                 },
                 limits = math_utils.Vector2.new(0, 0),
@@ -2488,6 +2447,10 @@ gui_elements = {
                         self:resize(formatted_event.x, formatted_event.y, self.resizing.pinned.x, self.resizing.pinned.y)
                     end
                     return true
+                elseif self.focussed and formatted_event.name == const.MOUSEMOVE and formatted_event.x and formatted_event.y then
+                    if event_utils.in_area(formatted_event.x, formatted_event.y, self.pos.x, self.pos.y, self.size.x, self.size.y) then
+                        return true
+                    end
                 elseif formatted_event.name == const.DELETED then
                     self.focussed = false
                     self.callbacks.onFocus(self, formatted_event)
@@ -2560,12 +2523,12 @@ gui_elements = {
         set_elements = function (self, elements_table)
             self.elements = {}
             for key, element in next, elements_table do
-                self.elements[#self.elements + 1] = element
+                table.insert(self.elements, 1, element)
             end
         end,
         -- DRAWS ALL WINDOW'S ELEMENTS
         draw_elements = function (self, delta_time)
-            for key=#self.elements, 1, -1 do
+            for key=1, #self.elements do
                 local element = self.elements[key]
                 if element.draw then
                     element.pos = element.pos + self.pos - self.pos.ONE
@@ -2589,7 +2552,8 @@ gui_elements = {
                 end
             end
             
-            for key, element in next, self.elements do
+            for i=#self.elements, 1, -1 do
+                local element = self.elements[i]
                 if element.event and element:event(formatted_event) and formatted_event.name ~= const.DELETED then
                     formatted_event = event_utils.delete_event(formatted_event)
                 end
@@ -2673,7 +2637,6 @@ gui_elements = {
     }
 }
 
-gui_elements.Clock.__index = gui_elements.Clock
 gui_elements.Label.__index = gui_elements.Label
 gui_elements.Button.__index = gui_elements.Button
 gui_elements.Progressbar.__index = gui_elements.Progressbar
@@ -2693,270 +2656,306 @@ for key, func in next, screen_buffer do
 end
 gui_elements.Canvas.__index = gui_elements.Canvas
 
--- WSS MODULE
-local WSS = {}
-WSS = {
-    _type = "WSS",
-    new = function (broadcast_interval)
-        local newWSS = {
-            draw_priority = const.LOW_PRIORITY,
-            enabled = true,
-            buffer = {},
-            events_whitelist = {
-                [const.TOUCH] = true,
-                [const.KEY] = true,
-                [const.KEYUP] = true,
-                [const.CHAR] = true,
-                [const.MOUSEDRAG] = true,
-                [const.MOUSESCROLL] = true,
-                [const.MOUSEUP] = true
-            },
-            close_on_host_disconnect = true,
-            side = const.NONE,
-            mode = const.NONE,
-            host_id = const.NONE,
-            users = {},
-            protocol = "YAGUI-"..info.ver.."_WSS",
-            broadcast_clock = gui_elements.Clock.new(broadcast_interval or 4),
-            callbacks = {
-                onDraw = function () end,
-                onEvent = function () end,
-                onConnect = function () end,
-                onDisconnect = function () end
+logic_elements = {
+    Clock = {
+        _type = "Clock",
+        new = function (interval)
+            local newClock = {
+                enabled = true,
+                oneshot = false,
+                clock = os.clock(),
+                interval = interval,
+                callbacks = {
+                    onClock = function() end
+                }
             }
-        }
-        newWSS.broadcast_clock.WSS = newWSS
-        newWSS.broadcast_clock:set_callback(
-            const.ONCLOCK,
-            function (self, formatted_event)
-                rednet.broadcast(
-                    screen_buffer.frame,
-                    self.WSS.protocol
-                )
+            setmetatable(newClock, logic_elements.Clock)
+            return newClock
+        end,
+        event = function (self, formatted_event)
+            if not self.enabled then self:reset_timer(); return; end
+            local this_time = os.clock()
+            if this_time >= self.clock + self.interval then
+                local delta_time = this_time - self.clock
+                self:reset_timer()
+                self.callbacks.onClock(self, formatted_event, delta_time)
+                if self.oneshot then self:stop() end
             end
-        )
-        setmetatable(newWSS, WSS)
-        return newWSS
-    end,
-    draw = function (self, delta_time)
-        if not self.enabled then return false; end
-        if self.callbacks.onDraw(self, delta_time) then return; end
-
-        if self.mode == const.USER then
-            if self.buffer and self.buffer.background and self.buffer.pixels then
-                screen_buffer.buffer.background = self.buffer.background
-                screen_buffer.buffer.pixels = self.buffer.pixels
-            end
+        end,
+        start = function (self)
+            self:reset_timer()
+            self.enabled = true
+        end,
+        stop = function (self)
+            self.enabled = false
+        end,
+        reset_timer = function (self)
+            self.clock = os.clock()
         end
-    end,
-    event = function (self, formatted_event)
-        if not self.enabled then return false; end
-        if self.callbacks.onEvent(self, formatted_event) then return true; end
+    },
+    WSS = {
+        _type = "WSS",
+        new = function (broadcast_interval)
+            local newWSS = {
+                draw_priority = const.LOW_PRIORITY,
+                enabled = true,
+                buffer = {},
+                events_whitelist = {
+                    [const.TOUCH] = true,
+                    [const.KEY] = true,
+                    [const.KEYUP] = true,
+                    [const.CHAR] = true,
+                    [const.MOUSEDRAG] = true,
+                    [const.MOUSESCROLL] = true,
+                    [const.MOUSEUP] = true
+                },
+                close_on_host_disconnect = true,
+                side = const.NONE,
+                mode = const.NONE,
+                host_id = const.NONE,
+                users = {},
+                protocol = "YAGUI-"..info.ver.."_WSS",
+                broadcast_clock = logic_elements.Clock.new(broadcast_interval or 4),
+                callbacks = {
+                    onDraw = function () end,
+                    onEvent = function () end,
+                    onConnect = function () end,
+                    onDisconnect = function () end
+                }
+            }
+            newWSS.broadcast_clock.WSS = newWSS
+            newWSS.broadcast_clock:set_callback(
+                const.ONCLOCK,
+                function (self, formatted_event)
+                    rednet.broadcast(
+                        screen_buffer.frame,
+                        self.WSS.protocol
+                    )
+                end
+            )
+            setmetatable(newWSS, logic_elements.WSS)
+            return newWSS
+        end,
+        draw = function (self, delta_time)
+            if not self.enabled then return false; end
+            if self.callbacks.onDraw(self, delta_time) then return; end
 
-        local return_value = false
-        if formatted_event.name == const.REDNET then
-            if formatted_event.protocol == self.protocol then
-                local msg = formatted_event.message
-                if self.mode == const.HOST then
-                    if msg == const.CONNECTION_REQUEST then
-                        rednet.send(formatted_event.from, const.OK, self.protocol)
-                        self.users[formatted_event.from] = true
-                        return_value = true
-                        self.callbacks.onConnect(self, formatted_event)
-                    elseif msg == const.DISCONNECTED then
-                        self.users[formatted_event.from] = nil
-                        return_value = true
-                        self.callbacks.onDisconnect(self, formatted_event)
-                    elseif type(msg) == "table" and self.events_whitelist[msg.name] and self.users[formatted_event.from] then
-                        if msg.raw then os.queueEvent(table.unpack(msg.raw)); end
-                        return_value = true
-                    end
-                elseif self.mode == const.USER then
-                    if formatted_event.from == self.host_id then
-                        if msg == const.DISCONNECTED then
-                            if self.close_on_host_disconnect then self:close(); end
-                            
+            if self.mode == const.USER then
+                if self.buffer and self.buffer.background and self.buffer.pixels then
+                    screen_buffer.buffer.background = self.buffer.background
+                    screen_buffer.buffer.pixels = self.buffer.pixels
+                end
+            end
+        end,
+        event = function (self, formatted_event)
+            if not self.enabled then return false; end
+            if self.callbacks.onEvent(self, formatted_event) then return true; end
+
+            local return_value = false
+            if formatted_event.name == const.REDNET then
+                if formatted_event.protocol == self.protocol then
+                    local msg = formatted_event.message
+                    if self.mode == const.HOST then
+                        if msg == const.CONNECTION_REQUEST then
+                            rednet.send(formatted_event.from, const.OK, self.protocol)
+                            self.users[formatted_event.from] = true
+                            return_value = true
+                            self.callbacks.onConnect(self, formatted_event)
+                        elseif msg == const.DISCONNECTED then
+                            self.users[formatted_event.from] = nil
                             return_value = true
                             self.callbacks.onDisconnect(self, formatted_event)
-                        elseif type(msg) == "table" then
-                            self.buffer = msg
+                        elseif type(msg) == "table" and self.events_whitelist[msg.name] and self.users[formatted_event.from] then
+                            if msg.raw then os.queueEvent(table.unpack(msg.raw)); end
                             return_value = true
                         end
+                    elseif self.mode == const.USER then
+                        if formatted_event.from == self.host_id then
+                            if msg == const.DISCONNECTED then
+                                if self.close_on_host_disconnect then self:close(); end
+                                
+                                return_value = true
+                                self.callbacks.onDisconnect(self, formatted_event)
+                            elseif type(msg) == "table" then
+                                self.buffer = msg
+                                return_value = true
+                            end
+                        end
                     end
                 end
             end
-        end
-        
-        if self.mode == const.USER then
-            if formatted_event.name == const.TOUCH then
-                return_value = true
-            end
-            if self.events_whitelist[formatted_event.name] then
-                rednet.send(self.host_id, formatted_event, self.protocol)
-                return_value = true
-            end
-        elseif self.mode == const.HOST then
-            self.broadcast_clock:event(formatted_event)
-        end
-
-        return return_value
-    end,
-    use_side = function (self, side)
-        self.side = side
-    end,
-    connect = function (self, id, timeout, max_attempts)
-        timeout = timeout or 2
-        max_attempts = max_attempts or 10
-
-        rednet.open(self.side)
-        self.host_id = id
-        self.mode = const.USER
-        rednet.send(self.host_id, const.CONNECTION_REQUEST, self.protocol)
-
-        local attempt = 0
-        while true do
-            attempt = attempt + 1
-            local resp = {rednet.receive(self.protocol, timeout)}
-
-            if resp[1] == id and resp[2] == const.OK and resp[3] == self.protocol then
-                return const.OK
-            elseif attempt >= max_attempts then
-                local err_msg = string.format("Connection timed out on attempt %d after %d ms", attempt, timeout * 1000)
-                if #resp > 0 then
-                    err_msg = string.format("Connection timed out on attempt %d: invalid response (The traffic on the network may be high, try to increase max attempts)", attempt, timeout * 1000)
+            
+            if self.mode == const.USER then
+                if formatted_event.name == const.TOUCH then
+                    return_value = true
                 end
-                WSS:close()
-                error(err_msg, 2)
+                if self.events_whitelist[formatted_event.name] then
+                    rednet.send(self.host_id, formatted_event, self.protocol)
+                    return_value = true
+                end
+            elseif self.mode == const.HOST then
+                self.broadcast_clock:event(formatted_event)
             end
-        end
-        self.callbacks.onConnect(self, id)
-    end,
-    host = function (self)
-        rednet.open(self.side)
-        self.host_id = os.getComputerID()
-        self.mode = const.HOST
-    end,
-    close = function (self)
-        if rednet.isOpen() then
-            if self.mode == const.HOST then
-                rednet.broadcast(
-                    const.DISCONNECTED,
-                    self.protocol
-                )
-            elseif self.mode == const.USER then
-                rednet.send(
-                    self.host_id,
-                    const.DISCONNECTED,
-                    self.protocol
-                )
+
+            return return_value
+        end,
+        use_side = function (self, side)
+            self.side = side
+        end,
+        connect = function (self, id, timeout, max_attempts)
+            timeout = timeout or 2
+            max_attempts = max_attempts or 10
+
+            rednet.open(self.side)
+            self.host_id = id
+            self.mode = const.USER
+            rednet.send(self.host_id, const.CONNECTION_REQUEST, self.protocol)
+
+            local attempt = 0
+            while true do
+                attempt = attempt + 1
+                local resp = {rednet.receive(self.protocol, timeout)}
+
+                if resp[1] == id and resp[2] == const.OK and resp[3] == self.protocol then
+                    return const.OK
+                elseif attempt >= max_attempts then
+                    local err_msg = string.format("Connection timed out on attempt %d after %d ms", attempt, timeout * 1000)
+                    if #resp > 0 then
+                        err_msg = string.format("Connection timed out on attempt %d: invalid response (The traffic on the network may be high, try to increase max attempts)", attempt, timeout * 1000)
+                    end
+                    WSS:close()
+                    error(err_msg, 2)
+                end
             end
-            rednet.close(self.side)
+            self.callbacks.onConnect(self, id)
+        end,
+        host = function (self)
+            rednet.open(self.side)
+            self.host_id = os.getComputerID()
+            self.mode = const.HOST
+        end,
+        close = function (self)
+            if rednet.isOpen() then
+                if self.mode == const.HOST then
+                    rednet.broadcast(
+                        const.DISCONNECTED,
+                        self.protocol
+                    )
+                elseif self.mode == const.USER then
+                    rednet.send(
+                        self.host_id,
+                        const.DISCONNECTED,
+                        self.protocol
+                    )
+                end
+                rednet.close(self.side)
+            end
+            self.host_id = const.NONE
+            self.mode = const.NONE
         end
-        self.host_id = const.NONE
-        self.mode = const.NONE
-    end
-}
-
-WSS.__index = WSS
-
--- FT MODULE
-local FT = {}
-FT = {
-    _type = "FT",
-    new = function (psw)
-        local newFT = {
-            enabled = true,
-            computer_whitelist = {},
-            side = const.NONE,
-            mode = const.ALL,
-            password = psw or const.NONE,
-            protocol = "YAGUI-"..info.ver.."_FT",
-            save_dir = "/FT",
-            callbacks = {
-                onEvent = function () end,
-                onConnect = function () end,
-                onSend = function () end,
-                onReceive = function () end
+    },
+    FT = {
+        _type = "FT",
+        new = function (psw)
+            local newFT = {
+                enabled = true,
+                computer_whitelist = {},
+                side = const.NONE,
+                mode = const.ALL,
+                password = psw or const.NONE,
+                protocol = "YAGUI-"..info.ver.."_FT",
+                save_dir = "/FT",
+                callbacks = {
+                    onEvent = function () end,
+                    onConnect = function () end,
+                    onSend = function () end,
+                    onReceive = function () end
+                }
             }
-        }
-        setmetatable(newFT, FT)
-        return newFT
-    end,
-    event = function (self, formatted_event)
-        if not self.enabled then return false; end
-        if self.callbacks.onEvent(self, formatted_event) then return true; end
-
-        if (formatted_event.name == const.REDNET) and (formatted_event.protocol == self.protocol) then
-            if (self.mode == const.ALL) or (self.mode == const.RECEIVE) then
-                local id = formatted_event.from
-                if self.computer_whitelist[id] or self.callbacks.onConnect(self, formatted_event) then
-                    local msg = formatted_event.message
-                    if type(msg) == "table" and msg.name and msg.content then
-                        if msg.psw == self.password then
-                            local name = fs.getName(tostring(msg.name))
-                            local path = fs.combine(self.save_dir, name)
-                            
-                            if fs.exists(path) then
-                                rednet.send(id, const.NO, self.protocol)
-                            else
-                                local content = tostring(msg.content)
-                                if self.callbacks.onReceive(self, formatted_event, id, name, path, content) then return true; end
-
-                                local file = fs.open(path, "w")
-                                if file then
-                                    file.write(content)
-                                    file.close()
-                                    rednet.send(id, const.OK, self.protocol)
+            setmetatable(newFT, logic_elements.FT)
+            return newFT
+        end,
+        event = function (self, formatted_event)
+            if not self.enabled then return false; end
+            if self.callbacks.onEvent(self, formatted_event) then return true; end
+    
+            if (formatted_event.name == const.REDNET) and (formatted_event.protocol == self.protocol) then
+                if (self.mode == const.ALL) or (self.mode == const.RECEIVE) then
+                    local id = formatted_event.from
+                    if self.computer_whitelist[id] or self.callbacks.onConnect(self, formatted_event) then
+                        local msg = formatted_event.message
+                        if type(msg) == "table" and msg.name and msg.content then
+                            if msg.psw == self.password then
+                                local name = fs.getName(tostring(msg.name))
+                                local path = fs.combine(self.save_dir, name)
+                                
+                                if fs.exists(path) then
+                                    rednet.send(id, const.NO, self.protocol)
                                 else
-                                    rednet.send(id, const.ERROR, self.protocol)
+                                    local content = tostring(msg.content)
+                                    if self.callbacks.onReceive(self, formatted_event, id, name, path, content) then return true; end
+    
+                                    local file = fs.open(path, "w")
+                                    if file then
+                                        file.write(content)
+                                        file.close()
+                                        rednet.send(id, const.OK, self.protocol)
+                                    else
+                                        rednet.send(id, const.ERROR, self.protocol)
+                                    end
                                 end
+                            else
+                                rednet.send(id, const.NO, self.protocol)
                             end
                         else
-                            rednet.send(id, const.NO, self.protocol)
+                            rednet.send(id, const.ERROR, self.protocol)
                         end
                     else
-                        rednet.send(id, const.ERROR, self.protocol)
+                        rednet.send(id, const.NO, self.protocol)
                     end
-                else
-                    rednet.send(id, const.NO, self.protocol)
                 end
             end
+        end,
+        send = function (self, receiver_id, password, file_path, file_name)
+            if (self.mode == const.ALL) or (self.mode == const.SEND) then
+                file_name = file_name or fs.getName(file_path)
+                password = password or const.NONE
+                local file = fs.open(file_path, "r")
+                local content = file.readAll()
+                file.close()
+                local msg = {
+                    psw = password,
+                    name = file_name,
+                    content = content
+                }
+    
+                if self.callbacks.onSend(self, formatted_event, msg) then return true; end
+    
+                rednet.send(
+                    receiver_id,
+                    msg,
+                    self.protocol
+                )
+            end
+        end,
+        open = function (self, side)
+            self.side = side
+            rednet.open(side)
+        end,
+        close = function (self)
+            if rednet.isOpen() then
+                rednet.close(self.side)
+            end
         end
-    end,
-    send = function (self, receiver_id, password, file_path, file_name)
-        if (self.mode == const.ALL) or (self.mode == const.SEND) then
-            file_name = file_name or fs.getName(file_path)
-            password = password or const.NONE
-            local file = fs.open(file_path, "r")
-            local content = file.readAll()
-            file.close()
-            local msg = {
-                psw = password,
-                name = file_name,
-                content = content
-            }
-
-            if self.callbacks.onSend(self, formatted_event, msg) then return true; end
-
-            rednet.send(
-                receiver_id,
-                msg,
-                self.protocol
-            )
-        end
-    end,
-    open = function (self, side)
-        self.side = side
-        rednet.open(side)
-    end,
-    close = function (self)
-        if rednet.isOpen() then
-            rednet.close(self.side)
-        end
-    end
+    }
 }
 
-FT.__index = FT
+logic_elements.Clock.__index = logic_elements.Clock
+logic_elements.WSS.__index = logic_elements.WSS
+logic_elements.FT.__index = logic_elements.FT
+
+logic_elements.wireless_screen_share = logic_elements.WSS
+logic_elements.file_transfer = logic_elements.FT
 
 -- LOOP MODULE
 local Loop = {}
@@ -2983,12 +2982,10 @@ Loop = {
             elements = {
                 high_priority = {},
                 low_priority = {},
-                loop = {
-                    clock = gui_elements.Clock.new(1 / FPS_target),
-                    stats_clock = gui_elements.Clock.new(1),
-                    FPS_label = gui_elements.Label.new(1, 1, "1 FPS", colors.white),
-                    EPS_label = gui_elements.Label.new(1, 2, "1 EPS", colors.white)
-                }
+                loop = {}
+            },
+            internal_elements = {
+                draw_clock = logic_elements.Clock.new(1 / FPS_target)
             },
             stats = {
                 pos = math_utils.Vector2.new(1, 1),
@@ -3002,7 +2999,10 @@ Loop = {
                 end,
                 Events = 0,
                 FPS = 0,
-                EPS = 0
+                EPS = 0,
+                clock = logic_elements.Clock.new(1),
+                FPS_label = gui_elements.Label.new(1, 1, "1 FPS", colors.white),
+                EPS_label = gui_elements.Label.new(1, 2, "1 EPS", colors.white)
             },
             callbacks = {
                 onStart = function () end,
@@ -3011,13 +3011,16 @@ Loop = {
                 onEvent = function () end
             }
         }
+        -- Adding loop elements
+        newLoop.elements.loop = {
+            newLoop.stats.EPS_label,
+            newLoop.stats.FPS_label,
+            newLoop.internal_elements.draw_clock
+        }
         -- Set references to stats in clock
-        newLoop.elements.loop.stats_clock.stats = newLoop.stats
-        -- Set a reference to loop elements in stats table
-        newLoop.stats.FPS_label = newLoop.elements.loop.FPS_label
-        newLoop.stats.EPS_label = newLoop.elements.loop.EPS_label
+        newLoop.stats.clock.stats = newLoop.stats
         -- Set stats_clock callback
-        newLoop.elements.loop.stats_clock:set_callback(
+        newLoop.stats.clock:set_callback(
             const.ONCLOCK,
             function (self, formatted_event, delta_time)
                 self.stats:update_pos()
@@ -3027,19 +3030,19 @@ Loop = {
         )
         newLoop.stats:show(false)
         -- Set draw clock callback
-        newLoop.elements.loop.clock.Loop = newLoop
-        newLoop.elements.loop.clock:set_callback(
+        newLoop.internal_elements.draw_clock.loop = newLoop
+        newLoop.internal_elements.draw_clock:set_callback(
             const.ONCLOCK,
             function (self, formatted_event, delta_time)
-                self.Loop.stats.FPS = 1 / delta_time
-                self.Loop.stats.EPS = self.Loop.stats.Events / delta_time
-                self.Loop.stats.Events = 0
+                self.loop.stats.FPS = 1 / delta_time
+                self.loop.stats.EPS = self.loop.stats.Events / delta_time
+                self.loop.stats.Events = 0
 
-                self.Loop:resume_threads("draw", delta_time)
+                self.loop:resume_threads("draw", delta_time)
                 
-                self.Loop:draw_elements(delta_time)
+                self.loop:draw_elements(delta_time)
                 
-                self.interval = 1 / self.Loop.options.FPS_target
+                self.interval = 1 / self.loop.options.FPS_target
             end
         )
         setmetatable(newLoop, Loop)
@@ -3055,16 +3058,16 @@ Loop = {
         self.elements.low_priority = {}
         for key, value in next, elements_table do
             if value.draw_priority == const.HIGH_PRIORITY then
-                self.elements.high_priority[#self.elements.high_priority + 1] = value
+                table.insert(self.elements.high_priority, 1, value)
             else
-                self.elements.low_priority[#self.elements.low_priority + 1] = value
+                table.insert(self.elements.low_priority, 1, value)
             end
         end
     end,
     -- DRAWS ALL ELEMENTS ON SCREEN BUFFER AND DRAWS IT
     draw_elements = function (self, delta_time)
         local function draw_table(tbl)
-            for key=#tbl, 1, -1 do
+            for key=1, #tbl do
                 local element = tbl[key]
                 if element.draw then
                     element:draw(delta_time)
@@ -3078,11 +3081,7 @@ Loop = {
 
         draw_table(self.elements.low_priority)
         draw_table(self.elements.high_priority)
-        for key, element in next, self.elements.loop do
-            if element.draw then
-                element:draw(delta_time)
-            end
-        end
+        draw_table(self.elements.loop)
 
         screen_buffer:draw()
         screen_buffer.screens = old_screens
@@ -3090,7 +3089,8 @@ Loop = {
     -- GIVES AN EVENT TO ALL LOOP ELEMENTS
     event_elements = function (self, formatted_event)
         local function event_table(tbl)
-            for key, element in next, tbl do
+            for i=#tbl, 1, -1 do
+                local element = tbl[i]
                 if element.event then
                     if element:event(formatted_event) then formatted_event = event_utils.delete_event(formatted_event); end
                 end
@@ -3118,25 +3118,19 @@ Loop = {
         
         event_table(self.elements.loop)
 
-        local high_elements = {}
-        local high_keys = {}
-        for key, element in next, self.elements.high_priority do
-            if element.event then
-                local focus = element:event(formatted_event)
-                if focus then
-                    formatted_event = event_utils.delete_event(formatted_event)
-                    if self.elements.high_priority ~= element then
-                        high_elements[#high_elements + 1] = element
-                        high_keys[#high_keys + 1] = key
-                    end
-                end
+        local focussed_elements = {}
+        local focussed_elements_keys = {}
+        for i=#self.elements.high_priority, 1, -1 do
+            local element = self.elements.high_priority[i]
+            if element:event(formatted_event) then
+                formatted_event = event_utils.delete_event(formatted_event)
+                focussed_elements[#focussed_elements + 1] = element
+                focussed_elements_keys[#focussed_elements_keys + 1] = i
             end
         end
-        if #high_elements > 0 then
-            table_utils.better_remove(self.elements.high_priority, table.unpack(high_keys))
-            for i=1, #high_elements do
-                table.insert(self.elements.high_priority, 1, high_elements[i])
-            end
+        table_utils.better_remove(self.elements.high_priority, table.unpack(focussed_elements_keys))
+        for i=#focussed_elements, 1, -1 do
+            self.elements.high_priority[#self.elements.high_priority + 1] = focussed_elements[i]
         end
 
         event_table(self.elements.low_priority)
@@ -3263,8 +3257,9 @@ setmetatable(math_utils.Vector2, simple_new)
 setmetatable(math_utils.Vector3, simple_new)
 
 -- Setting objects_methods as a metatable to the tables that support it
-setmetatable(WSS, objects_methods)
-setmetatable(FT, objects_methods)
+for key, element in next, logic_elements do
+    setmetatable(element, objects_methods)
+end
 for key, element in next, gui_elements do
     setmetatable(element, objects_methods)
 end
@@ -3348,11 +3343,8 @@ local lib = {
     monitor_utils = monitor_utils,
     screen_buffer = screen_buffer,
     input = input,
-    WSS = WSS,
-    wireless_screen_share = WSS,
-    FT = FT,
-    file_transfer = FT,
     gui_elements = gui_elements,
+    logic_elements = logic_elements,
     Loop = Loop
 }
 

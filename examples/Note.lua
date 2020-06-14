@@ -176,7 +176,7 @@ local loops = {
 }
 
 -- Creating WSS (Wireless Screen Share)
-local WSS = YAGUI.WSS(WSS_broadcast_interval)
+local WSS = YAGUI.logic_elements.WSS(WSS_broadcast_interval)
 
 -- Creating main loop elements
 local lLines    = YAGUI.gui_elements.Label(0, 0, "Lines: 0", text_color)
@@ -184,7 +184,7 @@ local lCursor   = YAGUI.gui_elements.Label(0, 0, "Cursor: (1; 1)", text_color)
 local bCompact  = YAGUI.gui_elements.Button(0, 0, 0, 0, "C", text_color, special_button_active_color, special_button_not_active_color, special_button_hover_color)
 local mEditor   = YAGUI.gui_elements.Memo(0, 0, 0, 0, text_color, editor_background)
 local lPath     = YAGUI.gui_elements.Label(0, 0, "/path/", text_color)
-local cSHL      = YAGUI.gui_elements.Clock(SH_timeout)
+local cSHL      = YAGUI.logic_elements.Clock(SH_timeout)
 
 bCompact.hold = true
 bCompact.shortcut = {YAGUI.KEY_LEFTCTRL, YAGUI.KEY_LEFTSHIFT, YAGUI.KEY_C}

@@ -429,7 +429,7 @@ local lSave = YAGUI.gui_elements.Label(term_w / 2, term_h, "Press S to save: \""
 
 lHelp.text_alignment, lSave.text_alignment = YAGUI.ALIGN_CENTER, YAGUI.ALIGN_CENTER
 
-local clSaveSaving = YAGUI.gui_elements.Clock(1)
+local clSaveSaving = YAGUI.logic_elements.Clock(1)
 clSaveSaving.oneshot = true
 
 clSaveSaving:set_callback(

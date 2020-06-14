@@ -34,7 +34,7 @@ local lStatus = YAGUI.gui_elements.Label(2, 2, "", colors.red)
 local bQuit = YAGUI.gui_elements.Button(w, h, 1, 1, "X", colors.white, colors.green, colors.red)
 bQuit.timed.enabled = true
 
-local WSS = YAGUI.WSS()
+local WSS = YAGUI.logic_elements.WSS()
 WSS:use_side(modem_side)
 WSS:connect(host_id, timeout, max_attempts)
 

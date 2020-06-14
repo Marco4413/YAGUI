@@ -15,7 +15,7 @@ I chose to use tables for these reasons:
 
 ## All the modules that are available
 
-There are currently 18 modules available, where 1 is dumped into the library and 2 are duplicates of other ones:
+There are currently 15 modules available, where 1 is dumped into the library:
 
 1. [**info**](./info_module.md) : Contains **all informations about the library** ([version](./info_module.md#ver-string), [copyright](./info_module.md#copyright-string), [docs](./info_module.md#documentation-string), ...).
 2. [**const**](./constants.md) : This is the one that's **dumped into the library** and **contains all available constants** that you can use to make future proofing easier.
@@ -30,8 +30,5 @@ There are currently 18 modules available, where 1 is dumped into the library and
 11. **screen_buffer** : It's a **screen buffer that lets you draw things on it and draw it to the screen** (or multiple screens).
 12. **input** : This module contains **all functions that can help you with keyboard input**. It has a table which contains keycodes that are pressed, **this doesn't work by itself** but it has functions to add, remove and check keys (if you're using a `Loop` it's already managed by it).
 13. **gui_elements** : Contains **all elements that make a GUI** (e.g. `Button`, `Progressbar`).
-14. **WSS** : This is an **object** that **works just like all the ones on `gui_elements`** that **enables screen sharing over** [**rednet**](https://computercraft.info/wiki/Rednet_(API)). The **HOST sends `screen_buffer` informations to all connected users** while the **CLIENT sends events to the HOST** (This description is **only valid for YAGUI versions 1.23+**)
-15. wireless_screen_share : Duplicate of WSS.
-16. FT : This is an **object** that **works just like all the ones on `gui_elements`** that **enables file transfer over** [**rednet**](https://computercraft.info/wiki/Rednet_(API)).
-17. file_transfer : Duplicate of FT
-18. **Loop** : A **loop that automatically manages specified `gui_elements`** by giving them events and drawing them to the screen, **also manages `screen_buffer`** (it just draws it when it's done drawing the elements, so you can draw things on the screen and see the effects. Note that elements are always on top of what you draw if you draw stuff on `onEvent` and `onClock` `Loop` callbacks) **and `input` modules**.
+14. **logic_elements** : Contains **all elements that can't be seen on the screen** (e.g. `WSS` and `FT` protocols, `Clock` element).
+15. **Loop** : A **loop that automatically manages specified `gui_elements`** by giving them events and drawing them to the screen, **also manages `screen_buffer`** (it just draws it when it's done drawing the elements, so you can draw things on the screen and see the effects. Note that elements are always on top of what you draw if you draw stuff on `onEvent` and `onClock` `Loop` callbacks) **and `input` modules**.

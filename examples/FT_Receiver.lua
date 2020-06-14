@@ -36,7 +36,7 @@ mLog.editable = false
 local bQuit = YAGUI.gui_elements.Button(w, h, 1, 1, "X", colors.white, colors.green, colors.red)
 bQuit.timed.enabled = true
 
-local FT = YAGUI.FT(tArgs[3])
+local FT = YAGUI.logic_elements.FT(tArgs[3])
 FT:open(modem_side)
 FT.mode = YAGUI.RECEIVE
 FT.save_dir = dir
