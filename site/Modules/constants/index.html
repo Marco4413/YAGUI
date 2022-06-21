@@ -8,17 +8,17 @@
         <meta name="author" content="Marco4413">
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>General - YAGUI's Documentation</title>
+        <title>Constants - YAGUI's Documentation</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../../style.css" rel="stylesheet">
 
         <script src="../../js/jquery-1.10.2.min.js" defer></script>
         <script src="../../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/lua.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -54,7 +54,7 @@
 </li>
                                     
 <li>
-    <a href="../constants/" class="dropdown-item">Constants</a>
+    <a href="./" class="dropdown-item active">Constants</a>
 </li>
                                     
 <li>
@@ -70,7 +70,7 @@
     <ul class="dropdown-menu">
             
 <li>
-    <a href="./" class="dropdown-item active">General</a>
+    <a href="../math_utils_module/" class="dropdown-item">General</a>
 </li>
             
 <li>
@@ -93,17 +93,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../string_utils_module/" class="nav-link">
+                                <a rel="prev" href="../info_module/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../Vectors/" class="nav-link">
+                                <a rel="next" href="../generic_utils_module/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/Marco4413/YAGUI/edit/master/docs/Modules/math_utils_module.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/Marco4413/YAGUI/edit/master/docs/Modules/constants.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -123,34 +123,50 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#math_utils" class="nav-link">math_utils</a>
+            <li class="nav-item" data-level="1"><a href="#constants" class="nav-link">Constants</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#vectors" class="nav-link">Vectors</a>
+            <li class="nav-item" data-level="2"><a href="#categories" class="nav-link">Categories</a>
               <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#map" class="nav-link">map</a>
+            <li class="nav-item" data-level="3"><a href="#state-checking" class="nav-link">State Checking</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#constrain" class="nav-link">constrain</a>
+            <li class="nav-item" data-level="3"><a href="#events" class="nav-link">Events</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="4"><a href="#names" class="nav-link">Names</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#round" class="nav-link">round</a>
+            <li class="nav-item" data-level="4"><a href="#inputs" class="nav-link">Inputs</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#round_numbers" class="nav-link">round_numbers</a>
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#callbacks" class="nav-link">Callbacks</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#floor_numbers" class="nav-link">floor_numbers</a>
+            <li class="nav-item" data-level="3"><a href="#objects" class="nav-link">Objects</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="4"><a href="#priority" class="nav-link">Priority</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#ceil_numbers" class="nav-link">ceil_numbers</a>
+            <li class="nav-item" data-level="4"><a href="#text-alignment" class="nav-link">Text Alignment</a>
               <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#computer-type" class="nav-link">Computer Type</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#wss-ft" class="nav-link">WSS &amp; FT</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -160,110 +176,112 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="math_utils">math_utils</h1>
-<p>Contains all <strong>functions that are helpful when dealing with numbers</strong>.</p>
-<h2 id="vectors">Vectors</h2>
-<p><strong>Vectors are going to be explained in <a href="../Vectors/">this document</a></strong>.</p>
-<h2 id="map">map</h2>
-<p><em>number</em> : <strong>map</strong>( <em>number</em> : <strong>value</strong>, <em>number</em> : <strong>value_start</strong>, <em>number</em> : <strong>value_stop</strong>, <em>number</em> : <strong>return_start</strong>, <em>number</em> : <strong>return_stop</strong>, <em>boolean</em> : <strong>constrained</strong>)</p>
-<p><strong>Returns a number from a number that is in the range [<code>value_start</code>; <code>value_stop</code>] mapped in the range [<code>return_start</code>; <code>return_stop</code>]</strong> and <strong>constrained</strong> in the <strong>return range if <code>constrained</code> is set to true</strong>.</p>
-<p><strong>value</strong> is the <strong>number that is going to be mapped</strong>.</p>
-<p><strong>value_start</strong> is the <strong>lowest number that <code>value</code> can be</strong>.</p>
-<p><strong>value_stop</strong> is the <strong>biggest number that <code>value</code> can be</strong>.</p>
-<p><strong>return_start</strong> is the <strong>lowest number that the returned number can be</strong>.</p>
-<p><strong>return_start</strong> is the <strong>biggest number that the returned number can be</strong>.</p>
-<p><em>constrained</em> <strong>if set to true</strong> the <strong>returned value</strong> is going to be <strong>constrained to its range of numbers</strong>.</p>
-<pre><code class="lua">-- Define the range of value
-local value_min = 0
-local value_max = 10
-
--- Map value in range without constrain
-local mapped_value = math_utils.map(2, value_min, value_max, 0, 100, false)
--- Map value in range with constrain
-local mapped_constrained_value = math_utils.map(2, value_min, value_max, 0, 100, true)
-
--- Map value out of range without constrain
-local mapped_outofrange_value = math_utils.map(11, value_min, value_max, 0, 100, false)
--- Map value out of range with constrain
-local mapped_constrained_outofrange_value = math_utils.map(11, value_min, value_max, 0, 100, true)
-
--- Print mapped values
-print(
-string.format(
-[[
-Mapped value: %.2f;
-Mapped constrained value: %.2f;
-Mapped out of range value: %.2f;
-Mapped constrained out of range value: %.2f.
-]],
-mapped_value,
-mapped_constrained_value,
-mapped_outofrange_value,
-mapped_constrained_outofrange_value
-)
-)
-</code></pre>
-
-<h2 id="constrain">constrain</h2>
-<p><em>number</em> : <strong>constrain</strong>( <em>number</em> : <strong>value</strong>, <em>number</em> : <strong>min_value</strong>, <em>number</em> : <strong>max_value</strong>)</p>
-<p>It <strong>returns a number</strong> that is <strong><code>value</code> constrained in the range [<code>min_value</code>; <code>max_value</code>]</strong>.</p>
-<p><strong>value</strong> is the <strong>number to be constrained</strong>.</p>
-<p><strong>min_value</strong> is the <strong>lowest number that value can be</strong>.</p>
-<p><strong>max_value</strong> is the <strong>biggest number that value can be</strong>.</p>
-<pre><code class="lua">-- Define the range of value
-local value_min = 0
-local value_max = 10
-
--- Constrain value in range
-local constrained_value = math_utils.constrain(2, 0, 10)
--- Constrain out of range value in range
-local constrained_outofrange_value = math_utils.constrain(11, 0, 10)
-
--- Print constrained values
-print(
-string.format(
-[[
-Constrained value: %.2f;
-Constrained out of range value: %.2f.
-]],
-constrained_value,
-constrained_outofrange_value
-)
-)
-</code></pre>
-
-<h2 id="round">round</h2>
-<p><em>number</em> : <strong>round</strong>( <em>number</em> : <strong>number</strong> )</p>
-<p><strong>Returns a number</strong> that is <strong><code>number rounded</code> to the closest unit</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.round(0.1),
-    math_utils.round(0.6)
-)
-</code></pre>
-
-<h2 id="round_numbers">round_numbers</h2>
-<p><em>numbers</em> : <strong>round_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
-<p><strong>Returns all specified numbers rounded to their closest unit</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.round_numbers(0.1, 0.6)
-)
-</code></pre>
-
-<h2 id="floor_numbers">floor_numbers</h2>
-<p><em>numbers</em> : <strong>floor_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
-<p><strong>Returns all specified numbers floored</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.floor_numbers(0.1, 0.6)
-)
-</code></pre>
-
-<h2 id="ceil_numbers">ceil_numbers</h2>
-<p><em>numbers</em> : <strong>ceil_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
-<p><strong>Returns all specified numbers ceiled</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.ceil_numbers(0.1, 0.6)
-)
-</code></pre></div>
+<h1 id="constants">Constants</h1>
+<p>Constants <strong>can help you future proofing your application</strong>. If you use them you're almost certain that if one of them changes value you're safe because you're just using a variable, and your application will automatically use the changed value when the library is updated.</p>
+<h2 id="categories">Categories</h2>
+<p>Constants <strong>can be separated in categories based on what they are used for</strong>.</p>
+<h3 id="state-checking">State Checking</h3>
+<p>These constants are used to <strong>check return values of some functions to see in what state they returned</strong>:</p>
+<ul>
+<li><strong>OK</strong></li>
+<li><strong>NO</strong></li>
+<li><strong>ERROR</strong></li>
+</ul>
+<h3 id="events">Events</h3>
+<p>These constants are <strong>useful when you're doing something with a <code>formatted_event</code></strong>, like checking what's the name of the event (e.g. <code>if formatted_event.name == TOUCH then --[[do stuff]] end</code>) or what mouse button was pressed (e.g. <code>if formatted_event.name == MOUSEUP and formatted_event.button == MOUSE_LEFT then --[[do stuff]] end</code>).</p>
+<p>These can also be <strong>separated in two main categories</strong>.</p>
+<h4 id="names">Names</h4>
+<p>All event <strong>constants that have to do with the name of an event</strong>:</p>
+<ul>
+<li><strong>TIMER</strong></li>
+<li><strong>TOUCH</strong></li>
+<li><strong>MOUSEUP</strong></li>
+<li><strong>MOUSEDRAG</strong></li>
+<li><strong>MOUSEMOVE</strong></li>
+<li><strong>MOUSESCROLL</strong></li>
+<li><strong>CHAR</strong></li>
+<li><strong>KEY</strong></li>
+<li><strong>KEYUP</strong></li>
+<li><strong>PASTE</strong></li>
+<li><strong>REDNET</strong></li>
+<li><strong>MODEM</strong></li>
+<li><strong>TERMINATE</strong></li>
+<li><strong>TERMRESIZE</strong></li>
+<li><strong>COROUTINE</strong></li>
+<li><strong>DELETED</strong></li>
+</ul>
+<h4 id="inputs">Inputs</h4>
+<p>All event <strong>constants that will help you when you need to check what key or button was pressed</strong>:</p>
+<ul>
+<li><strong>MOUSE_LEFT</strong></li>
+<li><strong>MOUSE_RIGHT</strong></li>
+<li><strong>MOUSE_MIDDLE</strong></li>
+<li><strong>SCROLL_UP</strong></li>
+<li><strong>SCROLL_DOWN</strong></li>
+<li>All <strong>keys from</strong> <a href="http://www.computercraft.info/wiki/Keys_(API)"><strong>Keys API</strong></a> except that they're written in UPPERCASE and have the prefix "KEY_".</li>
+</ul>
+<h3 id="callbacks">Callbacks</h3>
+<p>All <strong>constants that will help you to set objects' callbacks</strong> through <a href="../generic_utils_module/#set_callback"><code>generic_utils.set_callback</code></a>:</p>
+<ul>
+<li><strong>ONSTART</strong></li>
+<li><strong>ONSTOP</strong></li>
+<li><strong>ONDRAW</strong></li>
+<li><strong>ONPRESS</strong></li>
+<li><strong>ONFAILEDPRESS</strong></li>
+<li><strong>ONTIMEOUT</strong></li>
+<li><strong>ONCLOCK</strong></li>
+<li><strong>ONEVENT</strong></li>
+<li><strong>ONFOCUS</strong></li>
+<li><strong>ONKEY</strong></li>
+<li><strong>ONCHAR</strong></li>
+<li><strong>ONMOUSESCROLL</strong></li>
+<li><strong>ONCURSORCHANGE</strong></li>
+<li><strong>ONWRITE</strong></li>
+<li><strong>ONCONNECT</strong></li>
+<li><strong>ONDISCONNECT</strong></li>
+<li><strong>ONSEND</strong></li>
+<li><strong>ONRECEIVE</strong></li>
+<li><strong>ONDRAG</strong></li>
+<li><strong>ONRESIZE</strong></li>
+<li><strong>ONPASTE</strong></li>
+<li><strong>ONHOVER</strong></li>
+<li><strong>ONRELEASE</strong></li>
+</ul>
+<h3 id="objects">Objects</h3>
+<p>These constants are <strong>used to set some special properties in objects</strong>.</p>
+<p>This can be <strong>separated into two groups</strong>.</p>
+<h4 id="priority">Priority</h4>
+<p>Used to <strong>set an object's priority in a <code>Loop</code></strong> (e.g. If something has high priority it will be drawn on top of everything if it was interacted with):</p>
+<ul>
+<li><strong>LOW_PRIORITY</strong></li>
+<li><strong>HIGH_PRIORITY</strong></li>
+</ul>
+<h4 id="text-alignment">Text Alignment</h4>
+<p>Used to <strong>specify text alignment on some objects</strong>:</p>
+<ul>
+<li><strong>ALIGN_LEFT</strong></li>
+<li><strong>ALIGN_CENTER</strong></li>
+<li><strong>ALIGN_RIGHT</strong></li>
+</ul>
+<h3 id="computer-type">Computer Type</h3>
+<p>Used to check <strong>what type of computer you're on depending on what <a href="../generic_utils_module/#get_computer_type"><code>generic_utils.get_computer_type</code></a> returns</strong>:</p>
+<ul>
+<li><strong>COMPUTER</strong></li>
+<li><strong>TURTLE</strong></li>
+<li><strong>POCKET</strong></li>
+</ul>
+<h3 id="wss-ft">WSS &amp; FT</h3>
+<p>These <strong>constants are used to check <code>WSS</code> or <code>FT</code> return values and variables</strong>:</p>
+<ul>
+<li><strong>NONE</strong></li>
+<li><strong>ALL</strong></li>
+<li><strong>SEND</strong></li>
+<li><strong>RECEIVE</strong></li>
+<li><strong>HOST</strong></li>
+<li><strong>USER</strong></li>
+<li><strong>DISCONNECTED</strong></li>
+<li><strong>CONNECTION_REQUEST</strong></li>
+</ul></div>
             </div>
         </div>
 
@@ -287,16 +305,13 @@ constrained_outofrange_value
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

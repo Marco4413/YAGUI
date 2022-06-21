@@ -1,0 +1,41 @@
+
+:root {
+    --p-margin-bottom: 12px;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    font-weight: 100;
+    color: gainsboro;
+}
+
+strong {
+    font-weight: bold;
+    color: white;
+}
+
+.container {
+    max-width: none;
+}
+
+.bs-sidebar.affix {
+    position: static;
+}
+
+.col-md-9 th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+.col-md-9 th {
+    background: #383880;
+}
+
+.col-md-9 p {
+    margin-bottom: var(--p-margin-bottom);
+}
+
+.col-md-9 ul, ol {
+    margin-top: calc(var(--p-margin-bottom) * -1);
+}

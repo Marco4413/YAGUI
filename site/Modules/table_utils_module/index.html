@@ -12,13 +12,13 @@
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../../style.css" rel="stylesheet">
 
         <script src="../../js/jquery-1.10.2.min.js" defer></script>
         <script src="../../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/lua.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -167,7 +167,7 @@
 <p><strong>Returns a boolean and a string/number/nil</strong>, the <strong>first return value</strong> is <strong>whether or not <code>value</code> was found as a value in <code>tbl</code></strong>, the <strong>second one</strong> is the <strong>key at which <code>value</code> was found in <code>tbl</code></strong> if <strong>not found it's nil</strong>.</p>
 <p><strong>tbl</strong> is the table <strong>where <code>value</code> should be searched in</strong>.</p>
 <p><strong>value</strong> is the <strong>value to be found in <code>tbl</code></strong>.</p>
-<pre><code class="lua">-- Creating a table
+<pre><code class="language-lua">-- Creating a table
 local tbl = {
     1, 6, 3,
     [&quot;foo bar&quot;] = 23
@@ -179,13 +179,12 @@ local has, key = table_utils.has_value(tbl, 23)
 -- Printing if value was found, value's key and getting the value on the found key
 print(has, key, has and tbl[key] or &quot;NOVALUE&quot;)
 </code></pre>
-
 <h2 id="has_key">has_key</h2>
 <p><em>boolean</em>, <em>any</em> : <strong>has_key</strong>( <em>table</em> : <strong>tbl</strong>, <em>string/number</em> : <strong>key</strong> )</p>
 <p><strong>Returns a boolean and any</strong>, the <strong>first return value</strong> is <strong>whether or not <code>key</code> was found in <code>tbl</code></strong>, the <strong>second one</strong> is the <strong>value of <code>tbl</code> at <code>key</code></strong> if <strong>not found it's nil</strong>.</p>
 <p><strong>tbl</strong> is the <strong>table where <code>key</code> should be in</strong>.</p>
 <p><strong>key</strong> is the <strong>key to search for in <code>tbl</code></strong>.</p>
-<pre><code class="lua">-- Creating a table
+<pre><code class="language-lua">-- Creating a table
 local tbl = {
     1, 6, 3,
     [&quot;foo bar&quot;] = 23
@@ -197,7 +196,6 @@ local has, value = table_utils.has_key(tbl, &quot;foo bar&quot;)
 -- Printing if key was found, value at key and getting the value at key found
 print(has, value, has and tbl[&quot;foo bar&quot;] or &quot;NOKEY&quot;)
 </code></pre>
-
 <h2 id="serialise">serialise</h2>
 <p><em>string</em> : <strong>serialise</strong>( <em>table</em> : <strong>tbl</strong>, <em>number</em> : <strong>depth</strong>, <em>boolean</em> : <strong>pretty</strong>, <em>boolean</em> : <strong>recursion</strong>, <em>boolean</em> : <strong>serialise_metatables</strong>, <em>boolean</em> : <strong>serialise_index</strong>, <em>string</em> : <strong>indent</strong>, <em>string</em> : <strong>new_line</strong>, <em>string</em> : <strong>space</strong> )</p>
 <p><strong>Returns a string which is <code>tbl</code> serialised</strong>, if <strong>functions are found</strong> they're <strong>serialised as <code>tostring(func)</code></strong>.</p>
@@ -210,7 +208,7 @@ print(has, value, has and tbl[&quot;foo bar&quot;] or &quot;NOKEY&quot;)
 <p><strong>indent</strong> is the <strong>string that is going to be used to indent the serialised table</strong> if <code>pretty</code> was set to true.</p>
 <p><strong>new_line</strong> is the <strong>string to be used at the end of a line</strong> (e.g. <code>"\n"</code>) if <code>pretty</code> was set to true.</p>
 <p><strong>space</strong> is the <strong>string to be used as a space</strong> if <code>pretty</code> was set to true.</p>
-<pre><code class="lua">-- Creating a table
+<pre><code class="language-lua">-- Creating a table
 local tbl = {
     1, 6, 3,
     [&quot;foo bar&quot;] = 23
@@ -222,7 +220,6 @@ local s_tbl = table_utils.serialise(tbl, -1, true)
 -- Printing serialised tbl
 print(s_tbl)
 </code></pre>
-
 <h2 id="unserialise">unserialise</h2>
 <p><strong>COPY OF <a href="https://computercraft.info/wiki/Textutils.unserialize"><code>textutils.unserialise</code></a></strong>.</p>
 <h2 id="get">get</h2>
@@ -230,7 +227,7 @@ print(s_tbl)
 <p><strong>Returns the value going through the keys <code>...</code> in <code>tbl</code></strong> (e.g. <code>{...} = {1, 2}</code> then it will <code>return tbl[1][2]</code>).</p>
 <p><strong>tbl</strong> the <strong>table where you want to get the value from</strong>.</p>
 <p><strong>...</strong> the <strong>keys to go through in <code>tbl</code></strong>.</p>
-<pre><code class="lua">-- Creating a table
+<pre><code class="language-lua">-- Creating a table
 local tbl = {
     1, 6, 3,
     [&quot;foo bar&quot;] = {
@@ -244,14 +241,13 @@ print(
     table_utils.get(tbl, {&quot;foo bar&quot;, 2})
 )
 </code></pre>
-
 <h2 id="set">set</h2>
 <p><em>any</em> : <strong>set</strong>( <em>any</em> : <strong>value</strong>, <em>table</em> : <strong>tbl</strong>, <em>any</em> : <strong>...</strong> )</p>
 <p><strong>Sets the value found going through keys <code>...</code> in <code>tbl</code> to <code>value</code></strong> and <strong>returns the old value</strong> (e.g. <code>{...} = {1, 2}</code> then it will set <code>tbl[1][2] = value</code>).</p>
 <p><strong>value</strong> the <strong>value you want to set</strong>.</p>
 <p><strong>tbl</strong> the <strong>table where you want to set the value</strong>.</p>
 <p><strong>...</strong> the <strong>keys to go through in <code>tbl</code> to get to the value</strong> you want to set.</p>
-<pre><code class="lua">-- Creating a table
+<pre><code class="language-lua">-- Creating a table
 local tbl = {
     1, 6, 3,
     [&quot;foo bar&quot;] = {
@@ -268,13 +264,12 @@ print(
     tbl[&quot;foo bar&quot;][2]
 )
 </code></pre>
-
 <h2 id="better_remove">better_remove</h2>
 <p><em>nil</em> : <strong>better_remove</strong>( <em>table</em> : <strong>tbl</strong>, <em>number</em> : <strong>...</strong> )</p>
 <p><strong>Removes keys <code>...</code> in <code>tbl</code></strong> (<code>tbl</code> must be an array and <code>...</code> must be sorted).</p>
 <p><strong>tbl</strong> the <strong>table where you want to remove the keys</strong>.</p>
 <p><strong>...</strong> the <strong>keys to remove from <code>tbl</code></strong>.</p>
-<pre><code class="lua">-- Creating a table
+<pre><code class="language-lua">-- Creating a table
 local tbl = {
     10, 20, 30, 40, 50
 }
@@ -315,16 +310,13 @@ print(
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

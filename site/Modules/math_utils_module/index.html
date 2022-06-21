@@ -12,13 +12,13 @@
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../../style.css" rel="stylesheet">
 
         <script src="../../js/jquery-1.10.2.min.js" defer></script>
         <script src="../../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/lua.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -173,7 +173,7 @@
 <p><strong>return_start</strong> is the <strong>lowest number that the returned number can be</strong>.</p>
 <p><strong>return_start</strong> is the <strong>biggest number that the returned number can be</strong>.</p>
 <p><em>constrained</em> <strong>if set to true</strong> the <strong>returned value</strong> is going to be <strong>constrained to its range of numbers</strong>.</p>
-<pre><code class="lua">-- Define the range of value
+<pre><code class="language-lua">-- Define the range of value
 local value_min = 0
 local value_max = 10
 
@@ -203,14 +203,13 @@ mapped_constrained_outofrange_value
 )
 )
 </code></pre>
-
 <h2 id="constrain">constrain</h2>
 <p><em>number</em> : <strong>constrain</strong>( <em>number</em> : <strong>value</strong>, <em>number</em> : <strong>min_value</strong>, <em>number</em> : <strong>max_value</strong>)</p>
 <p>It <strong>returns a number</strong> that is <strong><code>value</code> constrained in the range [<code>min_value</code>; <code>max_value</code>]</strong>.</p>
 <p><strong>value</strong> is the <strong>number to be constrained</strong>.</p>
 <p><strong>min_value</strong> is the <strong>lowest number that value can be</strong>.</p>
 <p><strong>max_value</strong> is the <strong>biggest number that value can be</strong>.</p>
-<pre><code class="lua">-- Define the range of value
+<pre><code class="language-lua">-- Define the range of value
 local value_min = 0
 local value_max = 10
 
@@ -231,36 +230,32 @@ constrained_outofrange_value
 )
 )
 </code></pre>
-
 <h2 id="round">round</h2>
 <p><em>number</em> : <strong>round</strong>( <em>number</em> : <strong>number</strong> )</p>
 <p><strong>Returns a number</strong> that is <strong><code>number rounded</code> to the closest unit</strong>.</p>
-<pre><code class="lua">print(
+<pre><code class="language-lua">print(
     math_utils.round(0.1),
     math_utils.round(0.6)
 )
 </code></pre>
-
 <h2 id="round_numbers">round_numbers</h2>
 <p><em>numbers</em> : <strong>round_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
 <p><strong>Returns all specified numbers rounded to their closest unit</strong>.</p>
-<pre><code class="lua">print(
+<pre><code class="language-lua">print(
     math_utils.round_numbers(0.1, 0.6)
 )
 </code></pre>
-
 <h2 id="floor_numbers">floor_numbers</h2>
 <p><em>numbers</em> : <strong>floor_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
 <p><strong>Returns all specified numbers floored</strong>.</p>
-<pre><code class="lua">print(
+<pre><code class="language-lua">print(
     math_utils.floor_numbers(0.1, 0.6)
 )
 </code></pre>
-
 <h2 id="ceil_numbers">ceil_numbers</h2>
 <p><em>numbers</em> : <strong>ceil_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
 <p><strong>Returns all specified numbers ceiled</strong>.</p>
-<pre><code class="lua">print(
+<pre><code class="language-lua">print(
     math_utils.ceil_numbers(0.1, 0.6)
 )
 </code></pre></div>
@@ -287,16 +282,13 @@ constrained_outofrange_value
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

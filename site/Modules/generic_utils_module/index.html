@@ -8,17 +8,17 @@
         <meta name="author" content="Marco4413">
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>General - YAGUI's Documentation</title>
+        <title>generic_utils - YAGUI's Documentation</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../../style.css" rel="stylesheet">
 
         <script src="../../js/jquery-1.10.2.min.js" defer></script>
         <script src="../../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/lua.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -58,7 +58,7 @@
 </li>
                                     
 <li>
-    <a href="../generic_utils_module/" class="dropdown-item">generic_utils</a>
+    <a href="./" class="dropdown-item active">generic_utils</a>
 </li>
                                     
 <li>
@@ -70,7 +70,7 @@
     <ul class="dropdown-menu">
             
 <li>
-    <a href="./" class="dropdown-item active">General</a>
+    <a href="../math_utils_module/" class="dropdown-item">General</a>
 </li>
             
 <li>
@@ -93,17 +93,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../string_utils_module/" class="nav-link">
+                                <a rel="prev" href="../constants/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../Vectors/" class="nav-link">
+                                <a rel="next" href="../string_utils_module/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/Marco4413/YAGUI/edit/master/docs/Modules/math_utils_module.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/Marco4413/YAGUI/edit/master/docs/Modules/generic_utils_module.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -123,33 +123,21 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#math_utils" class="nav-link">math_utils</a>
+            <li class="nav-item" data-level="1"><a href="#generic_utils" class="nav-link">generic_utils</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#vectors" class="nav-link">Vectors</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#map" class="nav-link">map</a>
+            <li class="nav-item" data-level="2"><a href="#set_callback" class="nav-link">set_callback</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#constrain" class="nav-link">constrain</a>
+            <li class="nav-item" data-level="2"><a href="#get_computer_type" class="nav-link">get_computer_type</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#round" class="nav-link">round</a>
+            <li class="nav-item" data-level="2"><a href="#expect" class="nav-link">expect</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#round_numbers" class="nav-link">round_numbers</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#floor_numbers" class="nav-link">floor_numbers</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#ceil_numbers" class="nav-link">ceil_numbers</a>
+            <li class="nav-item" data-level="2"><a href="#get_type" class="nav-link">get_type</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -160,108 +148,103 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="math_utils">math_utils</h1>
-<p>Contains all <strong>functions that are helpful when dealing with numbers</strong>.</p>
-<h2 id="vectors">Vectors</h2>
-<p><strong>Vectors are going to be explained in <a href="../Vectors/">this document</a></strong>.</p>
-<h2 id="map">map</h2>
-<p><em>number</em> : <strong>map</strong>( <em>number</em> : <strong>value</strong>, <em>number</em> : <strong>value_start</strong>, <em>number</em> : <strong>value_stop</strong>, <em>number</em> : <strong>return_start</strong>, <em>number</em> : <strong>return_stop</strong>, <em>boolean</em> : <strong>constrained</strong>)</p>
-<p><strong>Returns a number from a number that is in the range [<code>value_start</code>; <code>value_stop</code>] mapped in the range [<code>return_start</code>; <code>return_stop</code>]</strong> and <strong>constrained</strong> in the <strong>return range if <code>constrained</code> is set to true</strong>.</p>
-<p><strong>value</strong> is the <strong>number that is going to be mapped</strong>.</p>
-<p><strong>value_start</strong> is the <strong>lowest number that <code>value</code> can be</strong>.</p>
-<p><strong>value_stop</strong> is the <strong>biggest number that <code>value</code> can be</strong>.</p>
-<p><strong>return_start</strong> is the <strong>lowest number that the returned number can be</strong>.</p>
-<p><strong>return_start</strong> is the <strong>biggest number that the returned number can be</strong>.</p>
-<p><em>constrained</em> <strong>if set to true</strong> the <strong>returned value</strong> is going to be <strong>constrained to its range of numbers</strong>.</p>
-<pre><code class="lua">-- Define the range of value
-local value_min = 0
-local value_max = 10
+<h1 id="generic_utils">generic_utils</h1>
+<p>Contains <strong>functions that could be moved into another Module</strong> if another function that's similar to one of them is made, <strong>it has functions that haven't got their own group yet</strong>.</p>
+<h2 id="set_callback">set_callback</h2>
+<p><strong>NOTE: THIS FUNCTION HAS BEEN DEPRECATED ON v1.29</strong></p>
+<ul>
+<li><strong>Now the "modern" syntax is <code>gui_element.set_callback</code>.</strong></li>
+</ul>
+<p><em>nil</em> : <strong>set_callback</strong>( <em>table</em> : <strong>gui_element</strong>, <em>constant</em> : <strong>event</strong>, <em>function</em> : <strong>callback</strong> )</p>
+<p>It <strong>returns nil</strong>.</p>
+<p><strong>gui_element</strong> is the <strong>object that you want to add a callback to</strong>.</p>
+<p><strong>event</strong> is the <a href="../constants/#callbacks"><strong>callback constant</strong></a> <strong>that determines which callback you're setting</strong>.</p>
+<p><strong>callback</strong> is the <strong>function that is called when the object event was triggered</strong>.</p>
+<pre><code class="language-lua">-- Create a clock that &quot;ticks&quot; every second
+local c = gui_elements.Clock.new(1)
 
--- Map value in range without constrain
-local mapped_value = math_utils.map(2, value_min, value_max, 0, 100, false)
--- Map value in range with constrain
-local mapped_constrained_value = math_utils.map(2, value_min, value_max, 0, 100, true)
+-- Add callback for when the clock &quot;ticks&quot;
+generic_utils.set_callback(
+    c,              -- object
+    ONCLOCK,        -- event
+    function (self) -- callback
+        -- DO STUFF WHEN THE CLOCK TRIGGERS
+    end
+)
 
--- Map value out of range without constrain
-local mapped_outofrange_value = math_utils.map(11, value_min, value_max, 0, 100, false)
--- Map value out of range with constrain
-local mapped_constrained_outofrange_value = math_utils.map(11, value_min, value_max, 0, 100, true)
+-- Loop that updates the clock
+while true do
+    sleep(0.1) -- Using sleep to not get &quot;too long without yielding&quot; error
+    c:event()
+end
+</code></pre>
+<h2 id="get_computer_type">get_computer_type</h2>
+<p><em>constant</em>, <em>boolean</em> : <strong>get_computer_type</strong>()</p>
+<p>Returns a <a href="../constants/#computer-type"><strong>computer type constant</strong></a> and a boolean that's true if the <strong>computer is advanced</strong> and false if not.</p>
+<pre><code class="language-lua">-- Get computer type and if it's advanced
+local computer_type, advanced = generic_utils.get_computer_type()
 
--- Print mapped values
+-- Check if computer_type is a COMPUTER
+if computer_type ~= COMPUTER then
+    printError(&quot;You must be using a computer to start this script.&quot;)
+    return
+end
+-- Check if computer is advanced
+if not advanced then
+    printError(&quot;This script only works on advanced computers.&quot;)
+    return
+end
+
+-- DO STUFF
+</code></pre>
+<h2 id="expect">expect</h2>
+<p><em>boolean</em> : <strong>expect</strong>( <em>string</em> : <strong>context</strong>, <em>any</em> : <strong>...</strong> )</p>
+<p>Returns <strong>true if it doesn't error</strong>.</p>
+<p>It <strong>checks if even arguments in <code>...</code> are of type specified by the previous string in <code>...</code></strong>, if they aren't it errors.</p>
+<p><strong>context</strong> is a <strong>string that can be specified by the code that's useful to get more information about the error</strong> (Usually it's the function's name) <strong>if <code>nil</code> it's <code>"unknown"</code> by default</strong>.</p>
+<pre><code class="language-lua">-- Get user input
+print(&quot;Insert a number:&quot;)
+local var1 = read()
+print(&quot;Insert a string:&quot;)
+local var2 = read()
+
+-- Convert user input into a number if it is a valid number
+var1 = tonumber(var1) or var1
+var2 = tonumber(var2) or var2
+
+-- Check that the first user input is a number and the second one is a string
+-- Note: if you want an argument that can be of multiple types you can use a string that
+--  has multiple types separated by &quot;/&quot;, &quot;.&quot; or &quot;,&quot; (e.g. &quot;number/string&quot; or &quot;number,string&quot;)
+--  and be aware that types mustn't have spaces in between (They don't get trimmed) else
+--  it won't work properly
+local function check_user_input()
+    generic_utils.expect(
+        &quot;User Input&quot;,
+        &quot;number&quot;, var1,
+        &quot;string&quot;, var2
+    )
+end
+
+check_user_input()
+</code></pre>
+<h2 id="get_type">get_type</h2>
+<p><em>string</em> : <strong>get_type</strong>( <em>any</em> : <strong>value</strong> )</p>
+<p>Returns <strong>the type of <code>value</code></strong>, if <strong><code>value</code> is a table</strong> then it will <strong>return <code>value._type</code> if it's a string</strong>.</p>
+<p><strong>value</strong> the <strong>value you want to get the type of</strong>.</p>
+<pre><code class="language-lua">-- Create a table with a valid custom type
+local tbl1 = {_type = &quot;custom_type&quot;}
+-- Create tables with invalid custom types
+local tbl2 = {_type = 1}
+local tbl3 = {}
+-- Defining a variable that holds something that isn't a table
+local val = 2
+
+-- Print all the types of the variables defined above
 print(
-string.format(
-[[
-Mapped value: %.2f;
-Mapped constrained value: %.2f;
-Mapped out of range value: %.2f;
-Mapped constrained out of range value: %.2f.
-]],
-mapped_value,
-mapped_constrained_value,
-mapped_outofrange_value,
-mapped_constrained_outofrange_value
-)
-)
-</code></pre>
-
-<h2 id="constrain">constrain</h2>
-<p><em>number</em> : <strong>constrain</strong>( <em>number</em> : <strong>value</strong>, <em>number</em> : <strong>min_value</strong>, <em>number</em> : <strong>max_value</strong>)</p>
-<p>It <strong>returns a number</strong> that is <strong><code>value</code> constrained in the range [<code>min_value</code>; <code>max_value</code>]</strong>.</p>
-<p><strong>value</strong> is the <strong>number to be constrained</strong>.</p>
-<p><strong>min_value</strong> is the <strong>lowest number that value can be</strong>.</p>
-<p><strong>max_value</strong> is the <strong>biggest number that value can be</strong>.</p>
-<pre><code class="lua">-- Define the range of value
-local value_min = 0
-local value_max = 10
-
--- Constrain value in range
-local constrained_value = math_utils.constrain(2, 0, 10)
--- Constrain out of range value in range
-local constrained_outofrange_value = math_utils.constrain(11, 0, 10)
-
--- Print constrained values
-print(
-string.format(
-[[
-Constrained value: %.2f;
-Constrained out of range value: %.2f.
-]],
-constrained_value,
-constrained_outofrange_value
-)
-)
-</code></pre>
-
-<h2 id="round">round</h2>
-<p><em>number</em> : <strong>round</strong>( <em>number</em> : <strong>number</strong> )</p>
-<p><strong>Returns a number</strong> that is <strong><code>number rounded</code> to the closest unit</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.round(0.1),
-    math_utils.round(0.6)
-)
-</code></pre>
-
-<h2 id="round_numbers">round_numbers</h2>
-<p><em>numbers</em> : <strong>round_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
-<p><strong>Returns all specified numbers rounded to their closest unit</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.round_numbers(0.1, 0.6)
-)
-</code></pre>
-
-<h2 id="floor_numbers">floor_numbers</h2>
-<p><em>numbers</em> : <strong>floor_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
-<p><strong>Returns all specified numbers floored</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.floor_numbers(0.1, 0.6)
-)
-</code></pre>
-
-<h2 id="ceil_numbers">ceil_numbers</h2>
-<p><em>numbers</em> : <strong>ceil_numbers</strong>( <em>numbers</em> : <strong>...</strong> )</p>
-<p><strong>Returns all specified numbers ceiled</strong>.</p>
-<pre><code class="lua">print(
-    math_utils.ceil_numbers(0.1, 0.6)
+    generic_utils.get_type(tbl1),
+    generic_utils.get_type(tbl2),
+    generic_utils.get_type(tbl3),
+    generic_utils.get_type(val)
 )
 </code></pre></div>
             </div>
@@ -287,16 +270,13 @@ constrained_outofrange_value
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

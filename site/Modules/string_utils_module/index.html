@@ -12,13 +12,13 @@
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../../style.css" rel="stylesheet">
 
         <script src="../../js/jquery-1.10.2.min.js" defer></script>
         <script src="../../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/lua.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/lua.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -174,7 +174,7 @@
 <p>It <strong>returns a table</strong> which <strong>contains all characters in <code>str</code> separated by <code>sep</code> except for <code>sep</code></strong>.</p>
 <p><strong>str</strong> is the <strong>string that is going to be split</strong>.</p>
 <p><strong>sep</strong> is the <strong>string that determines where <code>str</code> is split</strong> (this must have more than 0 characters or it will return an empty table).</p>
-<pre><code class="lua">-- Create a string that has some sort of text in it
+<pre><code class="language-lua">-- Create a string that has some sort of text in it
 local s = &quot;f o o b a r&quot;
 
 -- Split s on every empty space
@@ -187,13 +187,12 @@ print(textutils.serialise(t1))
 -- Prints the joined table (it should be equal to s)
 print(s1)
 </code></pre>
-
 <h2 id="split_by_char">split_by_char</h2>
 <p><em>table</em> : <strong>split_by_char</strong>( <em>string</em> : <strong>str</strong>, <em>string</em> : <strong>char</strong> )</p>
 <p>It <strong>returns a table</strong> which <strong>contains all characters in <code>str</code> separated by <code>char</code> except for <code>char</code></strong>, this <strong>doesn't accept patterns</strong> so it's <strong>A LOT faster than <a href="#split"><code>string_utils.split</code></a></strong>.</p>
 <p><strong>str</strong> is the <strong>string that is going to be split</strong>.</p>
 <p><strong>char</strong> is the <strong>character that determines where <code>str</code> is split</strong> (this can't be an empty string or it will return an empty table).</p>
-<pre><code class="lua">-- Create a string that has some sort of text in it
+<pre><code class="language-lua">-- Create a string that has some sort of text in it
 local s = &quot;f o o b a r&quot;
 
 -- Split s on every &quot;o&quot; character
@@ -206,12 +205,11 @@ print(textutils.serialise(t1))
 -- Prints the joined table (it should be equal to s)
 print(s1)
 </code></pre>
-
 <h2 id="compare_versions">compare_versions</h2>
 <p>This can be <strong>used to see if the library is a newer <a href="../info_module/#ver-string">version</a> than the one supported by the program</strong>.</p>
 <p><em>number</em> : <strong>compare_versions</strong>( <em>string</em> : <strong>v1</strong>, <em>string</em> : <strong>v2</strong> )</p>
 <p>It <strong>returns a number</strong> that can be -1, 0 or 1, if it returns <strong>-1</strong> then <strong>v1 is lower than v2</strong>, if it's <strong>0</strong> they're the <strong>same version</strong> and if <strong>v1 is newer than v2 it returns 1</strong>.</p>
-<pre><code class="lua">-- Store the first compatible version of the library
+<pre><code class="language-lua">-- Store the first compatible version of the library
 local first_compatible_version = &quot;1.12.1&quot;
 
 -- Check if compatible (basically info.ver &lt; first_compatible_version)
@@ -222,12 +220,11 @@ end
 
 -- WRITE YOUR PROGRAM
 </code></pre>
-
 <h2 id="escape_magic_characters">escape_magic_characters</h2>
 <p><em>string</em> : <strong>escape_magic_characters</strong>( <em>string</em> : <strong>str</strong> )</p>
 <p><strong>Returns a <a href="https://www.lua.org/pil/20.2.html">magic character</a> free version of <code>str</code></strong>.</p>
 <p><strong>str</strong> is the <strong>string that contains lua's <a href="https://www.lua.org/pil/20.2.html">magic characters</a></strong>.</p>
-<pre><code class="lua">-- Create a lua pattern
+<pre><code class="language-lua">-- Create a lua pattern
 local pattern = &quot;[^fobar]&quot;
 -- Create a string from pattern that hasn't got any magic character
 local magic_free_pattern = string_utils.escape_magic_characters(pattern)
@@ -245,12 +242,11 @@ print(s1)
 -- On str2 pattern is replaced with &quot;&quot;
 print(s2)
 </code></pre>
-
 <h2 id="get_extension">get_extension</h2>
 <p><em>string</em> : <strong>get_extension</strong>( <em>string</em> : <strong>path</strong> )</p>
 <p><strong>Returns a string that is the extension of the file in <code>path</code></strong>.</p>
 <p><strong>path</strong> is the <strong>path of the file</strong> that you want to know its extension.</p>
-<pre><code class="lua">-- First file path
+<pre><code class="language-lua">-- First file path
 local f1 = &quot;./foobar.txt&quot;
 -- Get extension of f1
 local ext1 = string_utils.get_extension(f1)
@@ -265,13 +261,12 @@ print(ext1)
 -- Should print &quot;&quot; because f2 doesn't have any extension
 print(ext2)
 </code></pre>
-
 <h2 id="format_number">format_number</h2>
 <p><em>string</em> : <strong>format_number</strong>( <em>number</em> : <strong>number</strong>, <em>number</em> : <strong>precision</strong> )</p>
 <p><strong>Returns a string that is <code>number</code> with <code>precision</code> decimal digits and truncated to the last significant digit</strong>.</p>
 <p><strong>number</strong> is the <strong>number to be formatted</strong>.</p>
 <p><strong>precision</strong> is how many <strong>decimal digits the returned string of <code>number</code> should have</strong> (if not specified it's 0).</p>
-<pre><code class="lua">-- A number
+<pre><code class="language-lua">-- A number
 local num = 1405.14008
 
 -- Printing num formatted with 0 decimal digits
@@ -287,12 +282,11 @@ print(
     string_utils.format_number(num, 5)
 )
 </code></pre>
-
 <h2 id="trim">trim</h2>
 <p><em>string</em> : <strong>trim</strong>( <em>string</em> : <strong>str</strong> )</p>
 <p><strong>Returns <code>str</code> without extra spaces from both sides of the string.</strong></p>
 <p><strong>str</strong> is the <strong>string to be trimmed</strong>.</p>
-<pre><code class="lua">-- A string
+<pre><code class="language-lua">-- A string
 local str = &quot;    I don't know how to write   , and I want this string to be trimmed !     &quot;
 
 -- Printing the trimmed string concatenated by another one to prove that there is no space between the two
@@ -323,16 +317,13 @@ print(
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>
