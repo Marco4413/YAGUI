@@ -32,7 +32,7 @@ Terminal arguments are **options with which you can launch the library** to get 
 
 There are **two main ways of downloading the library**:
 
-1. Downloading it from [**Raw GitHub**](https://raw.githubusercontent.com/hds536jhmk/YAGUI/master/YAGUI-mini.lua) using `wget`.
+1. Downloading it from [**Raw GitHub**](https://raw.githubusercontent.com/Marco4413/YAGUI/master/YAGUI-mini.lua) using `wget`.
 2. Running `pastebin run 5qQ6t6ZX` on the terminal.
 
 By doing it with **the first method you just download the library**, by doing it with **the second one you also get some examples to try** as soon as you've set up the library.

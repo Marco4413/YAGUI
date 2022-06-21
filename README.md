@@ -4,7 +4,7 @@ To **download YAGUI** you can **run** `pastebin run 5qQ6t6ZX` on your computer!
 
 To **make examples** work you should do "**LIBFILE setup**" **once** you **downloaded** the Library and **every time you move it to another location**.
 
-This is a **remake** of my other **GUI LIB**: [***APLib***](https://github.com/hds536jhmk/APLib)
+This is a **remake** of my other **GUI LIB**: [***APLib***](https://github.com/Marco4413/APLib)
 
 What does YAGUI stand for? **YAGUI** stands for "Yet Another Graphical User Interface", this library tries to make GUIs easier to make and more powerful by having these objectives:
 * Has a Loop that makes **easier event management**;
@@ -17,7 +17,7 @@ What does YAGUI stand for? **YAGUI** stands for "Yet Another Graphical User Inte
 
 ***Documentation:***
 
-* **Github Pages**: https://hds536jhmk.github.io/YAGUI/
+* **Github Pages**: https://Marco4413.github.io/YAGUI/
 
 [***Trello Board***](https://trello.com/b/neTyIWej/yagui), where you can find all the things that are planned for the Library!
 

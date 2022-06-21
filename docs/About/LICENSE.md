@@ -1,7 +1,7 @@
 
 # COPYRIGHT NOTICE
 
-Copyright (c) 2019, hds536jhmk : [https://github.com/hds536jhmk/YAGUI](https://github.com/hds536jhmk/YAGUI)
+Copyright (c) 2022, Marco4413 : [https://github.com/Marco4413/YAGUI](https://github.com/Marco4413/YAGUI)
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above

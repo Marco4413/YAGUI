@@ -1,8 +1,8 @@
 site_name: YAGUI's Documentation
-site_description: "Documentation for ComputerCraft's YAGUI library made by hds536jhmk : https://github.com/hds536jhmk/YAGUI/"
-repo_url: https://github.com/hds536jhmk/YAGUI/
-site_author: hds536jhmk
-copyright: Copyright (c) 2019, hds536jhmk
+site_description: "Documentation for ComputerCraft's YAGUI library made by Marco4413 : https://github.com/Marco4413/YAGUI/"
+repo_url: https://github.com/Marco4413/YAGUI/
+site_author: Marco4413
+copyright: Copyright (c) 2022, Marco4413
 nav:
     - Introduction: index.md
     - About: About/LICENSE.md

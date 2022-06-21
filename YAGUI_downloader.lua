@@ -1,5 +1,5 @@
 
-local repo = 'https://raw.githubusercontent.com/hds536jhmk/YAGUI/'
+local repo = 'https://raw.githubusercontent.com/Marco4413/YAGUI/'
 local master = repo..'master/'
 
 local PROGRAMS = {
